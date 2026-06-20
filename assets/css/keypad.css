@@ -1,0 +1,169 @@
+/* ===== CalcVerse Keypad System ===== */
+
+/* Standard keypad grid (4 cols) */
+.keypad-standard {
+  @apply grid grid-cols-4 gap-2;
+}
+
+/* Scientific extension (5 cols for function row) */
+.keypad-sci-ext {
+  @apply grid grid-cols-5 gap-2 mb-2;
+}
+
+.keypad-scientific .keypad-standard {
+  @apply mt-2;
+}
+
+/* Financial keypad (4 cols, special first row) */
+.keypad-financial {
+  @apply grid grid-cols-4 gap-2;
+}
+
+/* Number pad for form calcs (3 cols) */
+.keypad-numpad {
+  @apply grid grid-cols-3 gap-2;
+  max-width: 200px;
+}
+
+/* Unit converter keypad */
+.keypad-unit {
+  @apply flex items-center gap-2;
+}
+
+/* ===== Key Styles ===== */
+
+.calc-key {
+  @apply h-14 w-full;
+  @apply bg-white dark:bg-raised-dark;
+  @apply border border-gray-200 dark:border-gray-700;
+  @apply rounded-xl font-mono text-lg font-medium;
+  @apply transition-all duration-75;
+  @apply hover:bg-gray-50 dark:hover:bg-gray-800;
+  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary;
+  @apply active:scale-95;
+  @apply cursor-pointer select-none;
+  @apply text-gray-900 dark:text-gray-100;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.calc-key:active {
+  @apply scale-95;
+  @apply bg-gray-100 dark:bg-gray-700;
+}
+
+/* Operator keys */
+.calc-key-op {
+  @apply bg-primary/10 text-primary font-semibold;
+  @apply hover:bg-primary/20;
+  @apply border-primary/20;
+}
+
+.calc-key-op:active {
+  @apply bg-primary/30;
+}
+
+/* Equals key */
+.calc-key-equals {
+  @apply bg-brand-gradient text-white font-bold;
+  @apply shadow-glow hover:shadow-glow-lg;
+  @apply border-transparent;
+}
+
+.calc-key-equals:active {
+  @apply shadow-glow-lg;
+  @apply scale-95;
+}
+
+/* Clear key */
+.calc-key-clear {
+  @apply bg-red-500/10 text-red-500;
+  @apply hover:bg-red-500/20;
+  @apply border-red-500/20;
+}
+
+.calc-key-clear:active {
+  @apply bg-red-500/30;
+}
+
+/* Function keys (scientific) */
+.calc-key-fn {
+  @apply bg-gray-100 dark:bg-gray-800;
+  @apply text-gray-600 dark:text-gray-400;
+  @apply text-sm;
+  @apply border-gray-200 dark:border-gray-700;
+}
+
+.calc-key-fn:hover {
+  @apply bg-gray-200 dark:bg-gray-700;
+}
+
+.calc-key-fn:active {
+  @apply bg-gray-300 dark:bg-gray-600;
+}
+
+/* Memory keys */
+.calc-key-mem {
+  @apply bg-purple-500/10 text-purple-500;
+  @apply hover:bg-purple-500/20;
+  @apply text-sm;
+}
+
+/* Special large keys (0 key spans 2 cols) */
+.calc-key-wide {
+  @apply col-span-2;
+}
+
+/* Active key highlight (from physical key press) */
+.calc-key.active {
+  @apply scale-95 bg-primary/20 border-primary;
+  transition: none;
+}
+
+/* Key press ripple effect */
+.calc-key::after {
+  content: '';
+  @apply absolute inset-0 rounded-xl;
+  background: radial-gradient(circle, rgba(119, 210, 2, 0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.calc-key:active::after {
+  opacity: 1;
+}
+
+/* Disabled key */
+.calc-key:disabled {
+  @apply opacity-30 cursor-not-allowed;
+  @apply hover:bg-white dark:hover:bg-raised-dark;
+  @apply active:scale-100;
+}
+
+/* Dark mode glass effect for keypad container */
+.dark .keypad-container {
+  background: rgba(26, 28, 28, 0.5);
+  backdrop-filter: blur(4px);
+  @apply rounded-2xl p-3;
+}
+
+/* Responsive key sizes */
+@media (max-width: 480px) {
+  .calc-key {
+    @apply h-12 text-base;
+  }
+
+  .calc-key-fn {
+    @apply text-xs;
+  }
+
+  .keypad-standard {
+    @apply gap-1.5;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .calc-key {
+    @apply h-13;
+  }
+}

@@ -1,0 +1,349 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Base Brand */
+    --color-primary: #77d202;
+    --color-primary-dark: #5aaa00;
+    --color-primary-light: #a3e84a;
+
+    /* Gradient */
+    --gradient-brand: linear-gradient(135deg, #77d202 0%, #3a6b00 50%, #000000 100%);
+    --gradient-brand-h: linear-gradient(90deg, #77d202, #000000);
+    --gradient-brand-v: linear-gradient(180deg, #77d202, #000000);
+
+    /* Light Mode Surface */
+    --bg-base: #f3f5f6;
+    --bg-surface: #ffffff;
+    --bg-surface-raised: #eef0f1;
+    --border-light: #dde1e4;
+    --text-primary: #0d0f10;
+    --text-secondary: #4a5568;
+    --text-muted: #8e9aab;
+
+    /* Semantic */
+    --color-success: #77d202;
+    --color-warning: #f5a623;
+    --color-error: #e53e3e;
+    --color-info: #3182ce;
+
+    /* Spacing & Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.18);
+    --shadow-glow: 0 0 20px rgba(119, 210, 2, 0.25);
+
+    /* Typography */
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.25rem;
+    --text-display: 3.5rem;
+    --text-jumbo: 5rem;
+  }
+
+  html.dark {
+    --bg-base: #000000;
+    --bg-surface: #0f1010;
+    --bg-surface-raised: #1a1c1c;
+    --border-light: #2a2e2e;
+    --text-primary: #f3f5f6;
+    --text-secondary: #a0aec0;
+    --text-muted: #5a6377;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-surface-light dark:bg-surface-dark text-gray-900 dark:text-gray-100;
+    @apply font-sans antialiased transition-colors duration-300;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-white dark:ring-offset-black;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* ===== Buttons ===== */
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
+    @apply font-semibold text-white text-sm;
+    @apply bg-gradient-to-r from-primary to-black;
+    @apply shadow-glow hover:shadow-glow-lg;
+    @apply transition-all duration-200 ease-out;
+    @apply hover:translate-y-[-1px];
+    @apply active:scale-[0.98];
+    @apply focus-visible:ring-2 focus-visible:ring-primary;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
+    @apply font-semibold text-primary text-sm;
+    @apply border-2 border-primary bg-transparent;
+    @apply transition-all duration-200 ease-out;
+    @apply hover:bg-primary/10;
+    @apply hover:translate-y-[-1px];
+    @apply active:scale-[0.98];
+    @apply focus-visible:ring-2 focus-visible:ring-primary;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg;
+    @apply text-sm font-medium text-gray-600 dark:text-gray-400;
+    @apply hover:bg-gray-100 dark:hover:bg-gray-800;
+    @apply transition-all duration-150;
+    @apply focus-visible:ring-2 focus-visible:ring-primary;
+  }
+
+  .btn-icon {
+    @apply inline-flex items-center justify-center w-10 h-10 rounded-xl;
+    @apply text-gray-600 dark:text-gray-400;
+    @apply hover:bg-gray-100 dark:hover:bg-gray-800;
+    @apply transition-all duration-150;
+    @apply active:scale-95;
+    @apply focus-visible:ring-2 focus-visible:ring-primary;
+  }
+
+  /* ===== Cards ===== */
+
+  .card {
+    @apply bg-white dark:bg-raised-dark rounded-xl;
+    @apply border border-gray-200 dark:border-gray-700;
+    @apply shadow-sm;
+    @apply transition-all duration-200;
+  }
+
+  .card-hover {
+    @apply card;
+    @apply hover:shadow-md hover:-translate-y-0.5;
+    @apply cursor-pointer;
+  }
+
+  .card-gradient-border {
+    @apply card relative overflow-hidden;
+  }
+
+  .card-gradient-border::before {
+    content: '';
+    @apply absolute top-0 left-0 w-1 h-full;
+    @apply bg-gradient-to-b from-primary to-black;
+    @apply rounded-l-xl;
+  }
+
+  /* ===== Badges ===== */
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full;
+    @apply text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply badge;
+    @apply bg-primary/10 text-primary;
+  }
+
+  .badge-coming-soon {
+    @apply badge;
+    @apply bg-gradient-to-r from-primary/20 to-black/30;
+    @apply border border-primary/30 text-primary;
+  }
+
+  .badge-dot {
+    @apply w-1.5 h-1.5 rounded-full bg-primary;
+    animation: pulse 2s infinite;
+  }
+
+  /* ===== Inputs ===== */
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl;
+    @apply bg-white dark:bg-raised-dark;
+    @apply border border-gray-200 dark:border-gray-700;
+    @apply text-gray-900 dark:text-gray-100;
+    @apply font-sans text-base;
+    @apply transition-all duration-150;
+    @apply focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20;
+    @apply placeholder:text-gray-400 dark:placeholder:text-gray-500;
+  }
+
+  .input-label {
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5;
+  }
+
+  .input-group {
+    @apply flex flex-col gap-1;
+  }
+
+  /* ===== Breadcrumb ===== */
+
+  .breadcrumb {
+    @apply flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4;
+  }
+
+  .breadcrumb a {
+    @apply hover:text-primary transition-colors duration-150;
+  }
+
+  .breadcrumb-separator {
+    @apply text-gray-300 dark:text-gray-600;
+  }
+
+  /* ===== Calculator Page ===== */
+
+  .calc-page {
+    @apply p-6 max-w-6xl mx-auto;
+    @apply animate-fade-in;
+  }
+
+  .calc-header {
+    @apply flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6;
+  }
+
+  .calc-category-badge {
+    @apply inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider;
+    @apply bg-primary/10 text-primary mb-2;
+  }
+
+  .calc-title {
+    @apply text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100;
+    @apply font-sans;
+  }
+
+  .calc-description {
+    @apply text-gray-500 dark:text-gray-400 mt-1 max-w-2xl;
+  }
+
+  .calc-actions {
+    @apply flex items-center gap-2 shrink-0;
+  }
+
+  .calc-body {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-6;
+  }
+
+  .calc-display-panel {
+    @apply card p-4;
+  }
+
+  .calc-form-box {
+    @apply card p-6;
+  }
+
+  .calc-formula-box {
+    @apply card p-4 mt-6;
+    @apply text-sm text-gray-600 dark:text-gray-400;
+  }
+
+  .calc-formula-box summary {
+    @apply cursor-pointer font-medium text-gray-800 dark:text-gray-200;
+    @apply hover:text-primary transition-colors duration-150;
+  }
+
+  .calc-formula-box .formula-content {
+    @apply mt-3 p-4 rounded-lg;
+    @apply bg-gray-50 dark:bg-black/30;
+    @apply font-mono text-sm;
+  }
+
+  /* ===== Related Calculators ===== */
+
+  .related-calcs {
+    @apply mt-8;
+  }
+
+  .related-calcs h3 {
+    @apply text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4;
+  }
+
+  /* ===== Stat Cards ===== */
+
+  .stat-card {
+    @apply card p-4 text-center;
+  }
+
+  .stat-value {
+    @apply text-3xl font-bold font-mono text-primary;
+  }
+
+  .stat-label {
+    @apply text-sm text-gray-500 dark:text-gray-400 mt-1;
+  }
+
+  /* ===== Coming Soon ===== */
+
+  .coming-soon-card {
+    @apply card p-8 text-center;
+    @apply border-primary/20;
+    @apply bg-gradient-to-br from-primary/[0.03] to-black/[0.05] dark:from-primary/[0.05] dark:to-black/[0.2];
+  }
+
+  .coming-soon-card .sparkle-container {
+    @apply flex justify-center gap-2 mb-4;
+    @apply text-3xl;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* ===== Section Headers ===== */
+
+  .section-title {
+    @apply text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100;
+  }
+
+  .section-subtitle {
+    @apply text-gray-500 dark:text-gray-400 mt-2 max-w-2xl;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary to-primary-dark;
+  }
+
+  .text-gradient-brand {
+    @apply bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary to-black;
+  }
+
+  .bg-dot-grid {
+    background-image: radial-gradient(circle, currentColor 0.5px, transparent 0.5px);
+    background-size: 20px 20px;
+  }
+
+  .bg-dot-grid-light {
+    @apply bg-dot-grid text-gray-300 dark:text-gray-800;
+  }
+
+  .glass {
+    @apply bg-white/80 dark:bg-black/50 backdrop-blur-xl;
+    @apply border border-white/20 dark:border-white/10;
+  }
+}

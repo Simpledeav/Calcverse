@@ -1,0 +1,6 @@
+fastapi==0.111.0
+uvicorn==0.30.0
+numpy==1.26.4
+scipy==1.13.0
+sympy==1.12
+pydantic==2.7.0

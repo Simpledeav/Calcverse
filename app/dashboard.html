@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — CalcVerse</title>
+  <meta name="description" content="CalcVerse Dashboard — Access all 64 calculators across 7 categories." />
+  <meta name="theme-color" content="#77d202" />
+
+  <!-- Anti-FOUC Script -->
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" as="style" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/keypad.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+</head>
+<body>
+  <!-- Sidebar Container -->
+  <div id="sidebar-container"></div>
+
+  <!-- Mobile sidebar toggle -->
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Main Content -->
+  <main class="ml-64 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <!-- Top Bar -->
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-between px-6 h-16">
+        <!-- Search -->
+        <div class="flex-1 max-w-md">
+          <div class="relative">
+            <input type="text" id="global-search" class="w-full px-4 py-2 pl-10 rounded-xl bg-gray-100 dark:bg-gray-800 border-0 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="🔍 Search calculators... (press / to focus)" />
+            <kbd class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded hidden sm:inline">/</kbd>
+          </div>
+        </div>
+
+        <!-- Right actions -->
+        <div class="flex items-center gap-2 ml-4">
+          <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/>
+            </svg>
+          </button>
+          <button class="btn-icon" id="theme-toggle-dash" aria-label="Toggle theme">
+            <span class="dark:hidden">🌙</span>
+            <span class="hidden dark:inline">☀️</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="p-6" id="page-content">
+      <!-- Dashboard Home (default view) -->
+      <div id="dashboard-home" class="animate-fade-in">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="stat-card">
+            <div class="stat-value">64</div>
+            <div class="stat-label">Calculators</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">7</div>
+            <div class="stat-label">Categories</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="recent-count">0</div>
+            <div class="stat-label">Recent</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="fav-count">0</div>
+            <div class="stat-label">Favorites</div>
+          </div>
+        </div>
+
+        <!-- Favorites -->
+        <section class="mb-8" id="favorites-section">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+            <span>⭐</span> Favorites
+          </h2>
+          <div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="favorites-list">
+            <div class="text-sm text-gray-400 italic">No favorites yet. Star a calculator to add it here.</div>
+          </div>
+        </section>
+
+        <!-- Recent Calculators -->
+        <section class="mb-8">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Recent Calculators</h2>
+          <div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="recent-list">
+            <div class="text-sm text-gray-400 italic">No recent calculators.</div>
+          </div>
+        </section>
+
+        <!-- Category Grid -->
+        <section>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">All Categories</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <a href="#math" class="card-hover p-4 flex items-center gap-3" data-category="math">
+              <span class="text-2xl">∑</span>
+              <div>
+                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Mathematics</h3>
+                <p class="text-xs text-gray-400">10 calculators</p>
+              </div>
+            </a>
+            <a href="#finance" class="card-hover p-4 flex items-center gap-3" data-category="finance">
+              <span class="text-2xl">$</span>
+              <div>
+                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Finance</h3>
+                <p class="text-xs text-gray-400">16 calculators</p>
+              </div>
+            </a>
+            <a href="#health" class="card-hover p-4 flex items-center gap-3" data-category="health">
+              <span class="text-2xl">♥</span>
+              <div>
+                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Health & Fitness</h3>
+                <p class="text-xs text-gray-400">10 calculators</p>
+              </div>
+            </a>
+            <a href="#science" class="card-hover p-4 flex items-center gap-3" data-category="science">
+              <span class="text-2xl">⚗</span>
+              <div>
+                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Science & Physics</h3>
+                <p class="text-xs text-gray-400">8 calculators</p>
+              </div>
+            </a>
+            <a href="#engineering" class="card-hover p-4 flex items-center gap-3" data-category="engineering">
+              <span class="text-2xl">⚙</span>
+              <div>
+                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Engineering & Tech</h3>
+                <p class="text-xs text-gray-400">8 calculators</p>
+              </div>
+            </a>
+            <a href="#everyday" class="card-hover p-4 flex items-center gap-3" data-category="everyday">
+              <span class="text-2xl">📅</span>
+              <div>
+                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Everyday Utilities</h3>
+                <p class="text-xs text-gray-400">10 calculators</p>
+              </div>
+            </a>
+          </div>
+        </section>
+      </div>
+
+      <!-- Search Results Dropdown -->
+      <div id="search-results" class="hidden card absolute top-full left-6 right-6 mt-2 max-h-96 overflow-y-auto z-30 shadow-lg"></div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // ===== Init Sidebar =====
+      const sidebar = new CalcVerseSidebar('#sidebar-container', {
+        collapsed: window.innerWidth < 1280
+      });
+      window.calcSidebar = sidebar;
+
+      // ===== Init Theme =====
+      window.themeEngine = themeEngine;
+
+      // Theme toggle in dashboard
+      document.getElementById('theme-toggle-dash')?.addEventListener('click', () => {
+        themeEngine.toggle();
+      });
+
+      // ===== Init Search =====
+      const searchEngine = new CalcVerseSearch([]);
+
+      // Register calculators
+      const registry = [
+        { id: 'math-basic', name: 'Basic Calculator', category: 'Mathematics', description: 'Standard arithmetic operations', tags: ['math', 'arithmetic', 'basic'] },
+        { id: 'math-scientific', name: 'Scientific Calculator', category: 'Mathematics', description: 'Advanced scientific functions', tags: ['math', 'scientific', 'trig'] },
+        { id: 'math-algebra', name: 'Algebra Solver', category: 'Mathematics', description: 'Linear & quadratic equations', tags: ['math', 'algebra', 'equations'] },
+        { id: 'math-percentage', name: 'Percentage Calculator', category: 'Mathematics', description: 'Percentages, changes, and ratios', tags: ['math', 'percentage', 'percent'] },
+        { id: 'math-fraction', name: 'Fraction Calculator', category: 'Mathematics', description: 'Fraction arithmetic and simplification', tags: ['math', 'fraction', 'rational'] },
+        { id: 'math-prime', name: 'Prime Number Calculator', category: 'Mathematics', description: 'Prime checking and factorization', tags: ['math', 'prime', 'factors'] },
+        { id: 'math-matrix', name: 'Matrix Calculator', category: 'Mathematics', description: 'Matrix operations (2x2, 3x3)', tags: ['math', 'matrix', 'linear'] },
+        { id: 'math-statistics', name: 'Statistics Calculator', category: 'Mathematics', description: 'Mean, median, standard deviation', tags: ['math', 'statistics', 'stats'] },
+        { id: 'math-graphing', name: 'Function Grapher', category: 'Mathematics', description: 'Plot mathematical functions', tags: ['math', 'graphing', 'plot'] },
+        { id: 'math-base', name: 'Number Base Converter', category: 'Mathematics', description: 'Binary, octal, decimal, hex', tags: ['math', 'base', 'binary', 'hex'] },
+        { id: 'fin-loan', name: 'Loan / EMI Calculator', category: 'Finance', description: 'Monthly payment and amortization', tags: ['finance', 'loan', 'emi', 'payment'] },
+        { id: 'fin-mortgage', name: 'Mortgage Calculator', category: 'Finance', description: 'Mortgage with amortization table', tags: ['finance', 'mortgage', 'home', 'loan'] },
+        { id: 'fin-compound', name: 'Compound Interest', category: 'Finance', description: 'Compound growth with contributions', tags: ['finance', 'compound', 'interest', 'growth'] },
+        { id: 'fin-simple', name: 'Simple Interest', category: 'Finance', description: 'Simple interest calculations', tags: ['finance', 'simple', 'interest'] },
+        { id: 'fin-roi', name: 'ROI Calculator', category: 'Finance', description: 'Return on investment', tags: ['finance', 'roi', 'return'] },
+        { id: 'fin-npv', name: 'NPV / DCF Calculator', category: 'Finance', description: 'Net present value and DCF', tags: ['finance', 'npv', 'dcf', 'valuation'] },
+        { id: 'fin-irr', name: 'IRR Calculator', category: 'Finance', description: 'Internal rate of return', tags: ['finance', 'irr', 'return'] },
+        { id: 'fin-salary', name: 'Salary Calculator', category: 'Finance', description: 'Paycheck and tax breakdown', tags: ['finance', 'salary', 'paycheck', 'tax'] },
+        { id: 'fin-tax', name: 'Tax Estimator', category: 'Finance', description: 'Income tax estimation', tags: ['finance', 'tax', 'income'] },
+        { id: 'fin-vat', name: 'VAT / GST Calculator', category: 'Finance', description: 'Value added tax calculations', tags: ['finance', 'vat', 'gst', 'tax'] },
+        { id: 'fin-currency', name: 'Currency Converter', category: 'Finance', description: 'Live exchange rates', tags: ['finance', 'currency', 'exchange', 'forex'] },
+        { id: 'fin-savings', name: 'Savings Goal Planner', category: 'Finance', description: 'Plan savings toward a goal', tags: ['finance', 'savings', 'goal'] },
+        { id: 'fin-retirement', name: 'Retirement Calculator', category: 'Finance', description: 'Retirement savings projection', tags: ['finance', 'retirement', 'savings'] },
+        { id: 'fin-breakeven', name: 'Break-Even Analysis', category: 'Finance', description: 'Break-even point calculator', tags: ['finance', 'breakeven', 'business'] },
+        { id: 'fin-margin', name: 'Profit Margin', category: 'Finance', description: 'Margin and markup calculator', tags: ['finance', 'margin', 'profit', 'markup'] },
+        { id: 'fin-crypto', name: 'Crypto P&L Calculator', category: 'Finance', description: 'Cryptocurrency profit/loss', tags: ['finance', 'crypto', 'bitcoin', 'profit'] },
+        { id: 'health-bmi', name: 'BMI Calculator', category: 'Health', description: 'Body Mass Index', tags: ['health', 'bmi', 'weight'] },
+        { id: 'health-bmr', name: 'BMR Calculator', category: 'Health', description: 'Basal Metabolic Rate', tags: ['health', 'bmr', 'metabolism'] },
+        { id: 'health-tdee', name: 'TDEE Calculator', category: 'Health', description: 'Total Daily Energy Expenditure', tags: ['health', 'tdee', 'calories', 'energy'] },
+        { id: 'health-bodyfat', name: 'Body Fat Calculator', category: 'Health', description: 'Body fat percentage', tags: ['health', 'bodyfat', 'fat'] },
+        { id: 'health-idealwt', name: 'Ideal Weight', category: 'Health', description: 'Ideal body weight', tags: ['health', 'weight', 'ideal'] },
+        { id: 'health-calorie', name: 'Calorie Burn', category: 'Health', description: 'Calories burned during exercise', tags: ['health', 'calories', 'exercise', 'burn'] },
+        { id: 'health-water', name: 'Water Intake', category: 'Health', description: 'Daily water intake recommendation', tags: ['health', 'water', 'hydration'] },
+        { id: 'health-pregnancy', name: 'Due Date Calculator', category: 'Health', description: 'Pregnancy due date', tags: ['health', 'pregnancy', 'due date'] },
+        { id: 'health-ovulation', name: 'Ovulation Calculator', category: 'Health', description: 'Fertility window', tags: ['health', 'ovulation', 'fertility'] },
+        { id: 'health-heartrate', name: 'Heart Rate Zones', category: 'Health', description: 'Target heart rate zones', tags: ['health', 'heart', 'cardio', 'zones'] },
+        { id: 'sci-physics', name: 'Physics Calculator', category: 'Science', description: 'Kinematics and mechanics', tags: ['science', 'physics', 'mechanics'] },
+        { id: 'sci-chemistry', name: 'Chemistry Calculator', category: 'Science', description: 'Molar mass and molarity', tags: ['science', 'chemistry', 'molar'] },
+        { id: 'sci-ohm', name: "Ohm's Law Calculator", category: 'Science', description: 'Voltage, current, resistance', tags: ['science', 'ohm', 'voltage', 'current'] },
+        { id: 'sci-force', name: 'Force Calculator', category: 'Science', description: "Newton's second law", tags: ['science', 'force', 'newton'] },
+        { id: 'sci-pressure', name: 'Gas Laws Calculator', category: 'Science', description: 'Boyle, Charles, Ideal Gas', tags: ['science', 'pressure', 'gas', 'ideal'] },
+        { id: 'sci-energy', name: 'Energy Calculator', category: 'Science', description: 'Energy, work, power', tags: ['science', 'energy', 'power', 'work'] },
+        { id: 'sci-wavelength', name: 'Wavelength Calculator', category: 'Science', description: 'Wave speed and frequency', tags: ['science', 'wavelength', 'frequency'] },
+        { id: 'sci-periodic', name: 'Periodic Table', category: 'Science', description: 'Element lookup', tags: ['science', 'periodic', 'elements'] },
+        { id: 'eng-unit', name: 'Unit Converter', category: 'Engineering', description: 'Universal unit conversion', tags: ['engineering', 'units', 'conversion'] },
+        { id: 'eng-resistor', name: 'Resistor Color Code', category: 'Engineering', description: 'Resistor value decoder', tags: ['engineering', 'resistor', 'electronics'] },
+        { id: 'eng-voltage', name: 'Voltage Divider', category: 'Engineering', description: 'Voltage divider circuit', tags: ['engineering', 'voltage', 'divider'] },
+        { id: 'eng-binary', name: 'Binary Calculator', category: 'Engineering', description: 'Bitwise operations', tags: ['engineering', 'binary', 'bitwise'] },
+        { id: 'eng-hex', name: 'Hex Color Converter', category: 'Engineering', description: 'Color code conversion', tags: ['engineering', 'hex', 'color', 'rgb'] },
+        { id: 'eng-subnet', name: 'IP Subnet Calculator', category: 'Engineering', description: 'CIDR and subnetting', tags: ['engineering', 'ip', 'subnet', 'cidr'] },
+        { id: 'eng-datastorage', name: 'Data Storage Converter', category: 'Engineering', description: 'Storage unit conversion', tags: ['engineering', 'storage', 'data'] },
+        { id: 'eng-bandwidth', name: 'Bandwidth Calculator', category: 'Engineering', description: 'Transfer time and speed', tags: ['engineering', 'bandwidth', 'network'] },
+        { id: 'day-age', name: 'Age Calculator', category: 'Everyday', description: 'Age from birth date', tags: ['everyday', 'age', 'birthday'] },
+        { id: 'day-datediff', name: 'Date Difference', category: 'Everyday', description: 'Days between dates', tags: ['everyday', 'date', 'difference'] },
+        { id: 'day-timezone', name: 'Time Zone Converter', category: 'Everyday', description: 'Convert between time zones', tags: ['everyday', 'timezone', 'time'] },
+        { id: 'day-tip', name: 'Tip Calculator', category: 'Everyday', description: 'Bill splitting and tips', tags: ['everyday', 'tip', 'bill', 'split'] },
+        { id: 'day-discount', name: 'Discount Calculator', category: 'Everyday', description: 'Sale price and savings', tags: ['everyday', 'discount', 'sale'] },
+        { id: 'day-fuel', name: 'Fuel Cost Calculator', category: 'Everyday', description: 'Trip fuel costs', tags: ['everyday', 'fuel', 'gas', 'trip'] },
+        { id: 'day-speed', name: 'Speed/Distance/Time', category: 'Everyday', description: 'Travel time calculator', tags: ['everyday', 'speed', 'distance', 'time'] },
+        { id: 'day-cooking', name: 'Cooking Converter', category: 'Everyday', description: 'Recipe scaling and units', tags: ['everyday', 'cooking', 'recipe', 'units'] },
+        { id: 'day-grade', name: 'Grade / GPA Calculator', category: 'Everyday', description: 'Grade point average', tags: ['everyday', 'grade', 'gpa', 'school'] },
+        { id: 'day-random', name: 'Random Generator', category: 'Everyday', description: 'Random numbers and passwords', tags: ['everyday', 'random', 'password'] },
+      ];
+
+      searchEngine.setRegistry(registry);
+
+      // Search input handling
+      const searchInput = document.getElementById('global-search');
+      const searchResults = document.getElementById('search-results');
+
+      searchInput?.addEventListener('input', (e) => {
+        const query = e.target.value;
+        if (query.length > 0) {
+          const results = searchEngine.search(query);
+          searchEngine.renderResults(results, searchResults);
+        } else {
+          searchResults.classList.add('hidden');
+        }
+      });
+
+      // Keyboard shortcut for search
+      document.addEventListener('keydown', (e) => {
+        if (e.key === '/' && e.target.tagName !== 'INPUT') {
+          e.preventDefault();
+          searchInput?.focus();
+        }
+        if (e.key === 'Escape') {
+          searchInput?.blur();
+          searchResults?.classList.add('hidden');
+        }
+      });
+
+      // Close search on outside click
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#global-search') && !e.target.closest('#search-results')) {
+          searchResults?.classList.add('hidden');
+        }
+      });
+
+      // ===== Favorites & Recent counts =====
+      function updateStats() {
+        const favCount = CalcStorage.getFavorites().length;
+        const recentCount = CalcStorage.getRecent().length;
+        document.getElementById('fav-count').textContent = favCount;
+        document.getElementById('recent-count').textContent = recentCount;
+      }
+
+      // Listen for updates
+      document.addEventListener('cv:favorites-update', updateStats);
+      document.addEventListener('cv:recent-update', updateStats);
+      updateStats();
+
+      // ===== Mobile menu toggle =====
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click', () => {
+        sidebar.toggle();
+      });
+
+      // ===== Keyboard shortcuts help =====
+      document.getElementById('btn-keyboard-help')?.addEventListener('click', () => {
+        const shortcuts = [
+          ['/', 'Focus search'],
+          ['Escape', 'Close search / Clear'],
+          ['Enter', 'Calculate'],
+          ['0-9', 'Numbers'],
+          ['.', 'Decimal'],
+          ['+ - * /', 'Operators'],
+          ['Backspace', 'Delete last'],
+        ];
+        Modal.show({
+          title: '⌨️ Keyboard Shortcuts',
+          content: `
+            <div class="grid grid-cols-2 gap-3">
+              ${shortcuts.map(([key, desc]) => `
+                <div class="flex items-center gap-2 text-sm">
+                  <kbd class="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 font-mono text-xs">${key}</kbd>
+                  <span class="text-gray-600 dark:text-gray-400">${desc}</span>
+                </div>
+              `).join('')}
+            </div>
+          `
+        });
+      });
+
+      // ===== Handle resize for sidebar =====
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (window.innerWidth < 1280) {
+            sidebar.collapse();
+          } else {
+            sidebar.expand();
+          }
+        }, 150);
+      });
+    });
+  </script>
+</body>
+</html>

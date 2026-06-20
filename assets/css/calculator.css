@@ -1,0 +1,148 @@
+/* ===== CalcVerse Calculator Layouts ===== */
+
+/* Display Panel */
+.calc-display {
+  @apply relative;
+}
+
+.calc-display-expression {
+  @apply text-sm text-gray-500 dark:text-gray-400 font-mono text-right;
+  @apply overflow-x-auto whitespace-nowrap pb-1;
+  @apply scrollbar-thin;
+  min-height: 1.5rem;
+}
+
+.calc-display-result {
+  @apply text-right font-mono text-display font-bold;
+  @apply text-gray-900 dark:text-gray-100;
+  @apply transition-all duration-200;
+  @apply overflow-x-auto whitespace-nowrap;
+  line-height: 1.1;
+}
+
+.calc-display-result.error {
+  @apply text-red-500;
+  animation: shake 0.3s ease-in-out;
+}
+
+.calc-display-result.success {
+  @apply text-primary;
+}
+
+/* Display action bar */
+.calc-display-actions {
+  @apply flex items-center justify-end gap-1 mt-2 pt-2;
+  @apply border-t border-gray-100 dark:border-gray-800;
+}
+
+/* History sliding panel */
+.calc-history-panel {
+  @apply absolute top-0 right-0 w-full h-full;
+  @apply bg-white dark:bg-raised-dark;
+  @apply rounded-xl border border-gray-200 dark:border-gray-700;
+  @apply shadow-lg;
+  @apply transform transition-transform duration-250 ease-out;
+  @apply z-10;
+}
+
+.calc-history-panel.open {
+  @apply translate-x-0;
+}
+
+.calc-history-panel.closed {
+  @apply translate-x-full;
+}
+
+.calc-history-item {
+  @apply px-4 py-2.5 border-b border-gray-100 dark:border-gray-800;
+  @apply text-sm font-mono;
+  @apply hover:bg-gray-50 dark:hover:bg-black/20;
+  @apply cursor-pointer transition-colors duration-100;
+}
+
+.calc-history-item:last-child {
+  @apply border-b-0;
+}
+
+.calc-history-expression {
+  @apply text-gray-500 dark:text-gray-400;
+}
+
+.calc-history-result {
+  @apply text-gray-900 dark:text-gray-100 font-semibold text-right;
+}
+
+/* Form-based calculator layout */
+.calc-form-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+}
+
+.calc-form-full {
+  @apply sm:col-span-2;
+}
+
+.calc-result-display {
+  @apply mt-6 p-4 rounded-xl;
+  @apply bg-gradient-to-r from-primary/[0.08] to-black/[0.05];
+  @apply dark:from-primary/[0.05] dark:to-black/[0.15];
+  @apply border border-primary/20;
+}
+
+.calc-result-value {
+  @apply text-3xl sm:text-4xl font-bold font-mono text-primary;
+}
+
+.calc-result-label {
+  @apply text-sm text-gray-500 dark:text-gray-400;
+}
+
+.calc-result-breakdown {
+  @apply mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3;
+}
+
+.calc-result-item {
+  @apply p-3 rounded-lg bg-white/50 dark:bg-black/30;
+}
+
+.calc-result-item-label {
+  @apply text-xs text-gray-500 dark:text-gray-400;
+}
+
+.calc-result-item-value {
+  @apply text-lg font-semibold font-mono text-gray-900 dark:text-gray-100;
+}
+
+/* Shake animation for errors */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+/* Count-up animation */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.calc-count-up {
+  animation: countUp 0.4s ease-out;
+}
+
+/* Category selector tabs */
+.category-tabs {
+  @apply flex gap-2 overflow-x-auto pb-2;
+  @apply scrollbar-none;
+}
+
+.category-tab {
+  @apply px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap;
+  @apply bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400;
+  @apply transition-all duration-150;
+  @apply hover:bg-gray-200 dark:hover:bg-gray-700;
+}
+
+.category-tab.active {
+  @apply bg-primary text-white;
+  @apply shadow-glow;
+}

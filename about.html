@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — CalcVerse</title>
+  <meta name="description" content="About CalcVerse — the all-in-one calculator platform." />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+</head>
+<body>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+    <span class="theme-toggle-icon dark:hidden">🌙</span>
+    <span class="theme-toggle-icon hidden dark:inline">☀️</span>
+  </button>
+
+  <div class="max-w-3xl mx-auto px-6 py-20">
+    <a href="/" class="text-sm text-gray-400 hover:text-primary transition-colors mb-8 inline-block">← Back to Home</a>
+    
+    <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">About CalcVerse</h1>
+    <p class="text-xl text-gray-500 dark:text-gray-400 mb-12">A precision-first, dark-capable calculator ecosystem built for humans who calculate.</p>
+
+    <div class="grid grid-cols-3 gap-6 mb-12">
+      <div class="stat-card"><div class="stat-value">64</div><div class="stat-label">Calculators</div></div>
+      <div class="stat-card"><div class="stat-value">7</div><div class="stat-label">Categories</div></div>
+      <div class="stat-card"><div class="stat-value">62</div><div class="stat-label">Live Tools</div></div>
+    </div>
+
+    <div class="space-y-8">
+      <section>
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Our Mission</h2>
+        <p class="text-gray-600 dark:text-gray-400 leading-relaxed">To provide every calculation a person might need — from basic arithmetic to complex financial projections — all from a single, beautifully designed interface that works everywhere.</p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Technology Stack</h2>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="card p-4"><span class="font-semibold text-primary">HTML5</span><p class="text-sm text-gray-400 mt-1">Semantic markup, accessibility</p></div>
+          <div class="card p-4"><span class="font-semibold text-primary">Tailwind CSS</span><p class="text-sm text-gray-400 mt-1">Utility-first styling</p></div>
+          <div class="card p-4"><span class="font-semibold text-primary">Vanilla JS (ES6+)</span><p class="text-sm text-gray-400 mt-1">No frameworks, maximum performance</p></div>
+          <div class="card p-4"><span class="font-semibold text-primary">Python FastAPI</span><p class="text-sm text-gray-400 mt-1">Complex computation engine</p></div>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Open Source</h2>
+        <p class="text-gray-600 dark:text-gray-400 leading-relaxed">CalcVerse is built with transparency and community in mind. Contributions, feedback, and feature requests are always welcome.</p>
+      </section>
+    </div>
+  </div>
+
+  <script src="/assets/js/core/theme.js"></script>
+  <script>
+    document.getElementById('theme-toggle')?.addEventListener('click', () => themeEngine.toggle());
+  </script>
+</body>
+</html>
