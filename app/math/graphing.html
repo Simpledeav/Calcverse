@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Function Grapher — CalcVerse</title>
+  <meta name="description" content="Plot mathematical functions on an interactive canvas with zoom, pan, and multi-function support." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.color-dot{display:inline-block;width:12px;height:12px;border-radius:9999px}.func-input{border:0;background:transparent;border-bottom:2px solid;font-family:'JetBrains Mono',monospace;padding:4px 8px;font-size:14px;outline:none;transition:border-color .15s;width:100%}.func-input:focus{border-bottom-width:3px}.func-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.func-controls label{font-size:12px;color:theme('colors.gray.400')}.canvas-wrap{position:relative;border-radius:12px;overflow:hidden;border:1px solid theme('colors.gray.200');background:white;touch-action:none}.dark .canvas-wrap{background:theme('colors.raised-dark');border-color:theme('colors.gray.700')}.canvas-wrap canvas{display:block;width:100%;height:auto;cursor:grab}.canvas-wrap canvas:active{cursor:grabbing}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Mathematics</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Function Grapher</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Mathematics</span>
+          <h1 class="calc-title">Function Grapher</h1>
+          <p class="calc-description" id="calc-desc">Plot mathematical functions on an interactive canvas. Supports zoom, pan, and up to 4 simultaneous functions.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="math-graphing"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body !lg:grid-cols-1" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <!-- Function inputs -->
+          <div class="space-y-2 mb-4" id="func-inputs">
+            <div class="func-controls"><span class="color-dot" style="background:#77d202"></span><input class="func-input" style="border-color:#77d202" id="f0" value="sin(x)" placeholder="f(x) = " /><button class="text-xs text-gray-400 hover:text-red-500 del-func" data-i="0">✕</button></div>
+            <div class="func-controls"><span class="color-dot" style="background:#3b82f6"></span><input class="func-input" style="border-color:#3b82f6" id="f1" value="x^2" placeholder="f(x) = " /><button class="text-xs text-gray-400 hover:text-red-500 del-func" data-i="1">✕</button></div>
+            <div class="func-controls"><span class="color-dot" style="background:#f59e0b"></span><input class="func-input" style="border-color:#f59e0b" id="f2" value="" placeholder="f(x) = " /><button class="text-xs text-gray-400 hover:text-red-500 del-func" data-i="2">✕</button></div>
+            <div class="func-controls"><span class="color-dot" style="background:#ef4444"></span><input class="func-input" style="border-color:#ef4444" id="f3" value="" placeholder="f(x) = " /><button class="text-xs text-gray-400 hover:text-red-500 del-func" data-i="3">✕</button></div>
+          </div>
+          <div class="func-controls mb-4">
+            <button class="btn-ghost text-xs" id="btn-add-preset">+ Examples</button>
+            <span class="text-xs text-gray-400">|</span>
+            <label><input type="checkbox" id="chk-grid" checked /> Grid</label>
+            <label><input type="checkbox" id="chk-deriv" /> Derivative</label>
+            <label><input type="checkbox" id="chk-trace" /> Trace</label>
+            <button class="btn-ghost text-xs ml-auto" id="btn-reset-view">Reset View</button>
+          </div>
+          <!-- Canvas -->
+          <div class="canvas-wrap" id="canvas-wrap">
+            <canvas id="graph-canvas" width="800" height="450"></canvas>
+          </div>
+          <div class="flex items-center justify-between mt-2 text-xs text-gray-400">
+            <span>🖱 Drag to pan · Scroll to zoom</span>
+            <span id="trace-coords"></span>
+          </div>
+        </div>
+        <div class="calc-form-box" id="calc-right" style="display:none">
+          <div id="calc-results"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content"><p class="text-gray-500 dark:text-gray-400">Functions are evaluated using MathEngine on a dense grid of x-values. The canvas renders coordinate axes, grid lines, and function curves. The viewport supports interactive pan and zoom.</p></div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'math-graphing',name:'Function Grapher',category:'Mathematics',categoryPath:'/app/dashboard.html',description:'Plot mathematical functions on an interactive canvas.',icon:'📈',related:[{id:'math-basic',name:'Basic',icon:'🔢',category:'Mathematics',path:'/app/math/basic.html'},{id:'math-scientific',name:'Scientific',icon:'∑',category:'Mathematics',path:'/app/math/scientific.html'},{id:'math-algebra',name:'Algebra',icon:'x²',category:'Mathematics',path:'/app/math/algebra.html'},{id:'math-statistics',name:'Statistics',icon:'📊',category:'Mathematics',path:'/app/math/statistics.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'Function evaluation via MathEngine on a dense x-grid.',CALC.description,{'f(x)':'Function expression','Zoom':'Scroll to zoom','Pan':'Drag to pan'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Controls',content:'<p class="text-sm text-gray-500">Scroll to zoom. Drag to pan. R to reset view. Tab between function inputs.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      // Graphing engine
+      const canvas=document.getElementById('graph-canvas');
+      const ctx=canvas.getContext('2d');
+      const wrap=document.getElementById('canvas-wrap');
+      const colors=['#77d202','#3b82f6','#f59e0b','#ef4444'];
+
+      let view={xMin:-10,xMax:10,yMin:-7,yMax:7};
+      let isDragging=false;let dragStart={x:0,y:0};let viewStart={xMin:0,xMax:0,yMin:0,yMax:0};
+      let traceMode=false;
+
+      function resizeCanvas(){
+        const rect=wrap.getBoundingClientRect();
+        canvas.width=rect.width-2;
+        canvas.height=Math.max(300,Math.min(500,rect.width*0.56));
+      }
+
+      function toScreenX(x){return ((x-view.xMin)/(view.xMax-view.xMin))*canvas.width}
+      function toScreenY(y){return canvas.height-((y-view.yMin)/(view.yMax-view.yMin))*canvas.height}
+      function toWorldX(sx){return (sx/canvas.width)*(view.xMax-view.xMin)+view.xMin}
+      function toWorldY(sy){return ((canvas.height-sy)/canvas.height)*(view.yMax-view.yMin)+view.yMin}
+
+      function draw(){
+        const w=canvas.width,h=canvas.height;if(w===0||h===0)return;
+        const isDark=document.documentElement.classList.contains('dark');
+        const bg=isDark?'#0f1010':'#ffffff';
+        const gridColor=isDark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.06)';
+        const axisColor=isDark?'rgba(255,255,255,0.2)':'rgba(0,0,0,0.15)';
+        const textColor=isDark?'rgba(255,255,255,0.35)':'rgba(0,0,0,0.3)';
+
+        ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+
+        // Grid
+        const showGrid=document.getElementById('chk-grid').checked;
+        if(showGrid){
+          ctx.strokeStyle=gridColor;ctx.lineWidth=1;
+          const xStep=Math.pow(10,Math.round(Math.log10((view.xMax-view.xMin)/5)));
+          const yStep=Math.pow(10,Math.round(Math.log10((view.yMax-view.yMin)/5)));
+          for(let x=Math.ceil(view.xMin/xStep)*xStep;x<=view.xMax;x+=xStep){
+            ctx.beginPath();ctx.moveTo(toScreenX(x),0);ctx.lineTo(toScreenX(x),h);ctx.stroke();
+          }
+          for(let y=Math.ceil(view.yMin/yStep)*yStep;y<=view.yMax;y+=yStep){
+            ctx.beginPath();ctx.moveTo(0,toScreenY(y));ctx.lineTo(w,toScreenY(y));ctx.stroke();
+          }
+        }
+
+        // Axes
+        ctx.strokeStyle=axisColor;ctx.lineWidth=1.5;
+        if(view.xMin<=0&&view.xMax>=0){ctx.beginPath();ctx.moveTo(toScreenX(0),0);ctx.lineTo(toScreenX(0),h);ctx.stroke()}
+        if(view.yMin<=0&&view.yMax>=0){ctx.beginPath();ctx.moveTo(0,toScreenY(0));ctx.lineTo(w,toScreenY(0));ctx.stroke()}
+
+        // Labels
+        ctx.fillStyle=textColor;ctx.font='11px Inter,sans-serif';ctx.textAlign='center';
+        const xStepL=Math.pow(10,Math.round(Math.log10((view.xMax-view.xMin)/5)));
+        for(let x=Math.ceil(view.xMin/xStepL)*xStepL;x<=view.xMax;x+=xStepL){if(Math.abs(x)>1e-10){ctx.fillText(MathEngine.formatNumber(x),toScreenX(x),toScreenY(0)+16)}}
+        ctx.textAlign='right';
+        const yStepL=Math.pow(10,Math.round(Math.log10((view.yMax-view.yMin)/5)));
+        for(let y=Math.ceil(view.yMin/yStepL)*yStepL;y<=view.yMax;y+=yStepL){if(Math.abs(y)>1e-10){ctx.fillText(MathEngine.formatNumber(y),toScreenX(0)-6,toScreenY(y)+4)}}
+
+        // Functions
+        const showDeriv=document.getElementById('chk-deriv').checked;
+        for(let i=0;i<4;i++){
+          const inp=document.getElementById('f'+i);if(!inp)continue;
+          const expr=inp.value.trim();if(!expr)continue;
+          ctx.strokeStyle=colors[i];ctx.lineWidth=2.5;ctx.beginPath();let first=true;
+          const steps=Math.max(200,Math.floor(w/3));
+          for(let s=0;s<=steps;s++){
+            const x=view.xMin+(view.xMax-view.xMin)*(s/steps);
+            const expr2=expr.replace(/\bx\b/g,`(${x})`);
+            const {result,error}=MathEngine.evaluate(expr2);
+            if(error||!isFinite(result)){first=true;continue}
+            const sx=toScreenX(x),sy=toScreenY(result);
+            if(sy<-1000||sy>h+1000||result>1e15||result<-1e15){first=true;continue}
+            if(first){ctx.moveTo(sx,sy);first=false}else ctx.lineTo(sx,sy);
+          }ctx.stroke();
+
+          // Derivative (numerical)
+          if(showDeriv){
+            ctx.strokeStyle=colors[i];ctx.globalAlpha=0.3;ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.beginPath();first=true;
+            const hStep=(view.xMax-view.xMin)/steps;
+            for(let s=0;s<=steps;s++){
+              const x=view.xMin+(view.xMax-view.xMin)*(s/steps);
+              const x1=x+hStep,x2=x-hStep;
+              const e1=expr.replace(/\bx\b/g,`(${x1})`);const e2=expr.replace(/\bx\b/g,`(${x2})`);
+              const r1=MathEngine.evaluate(e1).result;const r2=MathEngine.evaluate(e2).result;
+              if(!isFinite(r1)||!isFinite(r2)){first=true;continue}
+              const deriv=(r1-r2)/(2*hStep);
+              const sy=toScreenY(deriv);
+              if(sy<-1000||sy>h+1000){first=true;continue}
+              if(first){ctx.moveTo(toScreenX(x),sy);first=false}else ctx.lineTo(toScreenX(x),sy);
+            }ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+          }
+        }
+
+        // Trace
+        if(traceMode&&document.getElementById('chk-trace').checked){
+          const coords=document.getElementById('trace-coords');
+          canvas.addEventListener('mousemove',function(e){
+            const rect=canvas.getBoundingClientRect();
+            const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+            const wx=toWorldX(mx),wy=toWorldY(my);
+            coords.textContent=`x: ${MathEngine.formatNumber(wx)}, y: ${MathEngine.formatNumber(wy)}`;
+          });
+        }
+      }
+
+      // Canvas events
+      canvas.addEventListener('mousedown',(e)=>{isDragging=true;dragStart={x:e.clientX,y:e.clientY};viewStart={xMin:view.xMin,xMax:view.xMax,yMin:view.yMin,yMax:view.yMax};canvas.style.cursor='grabbing'});
+      window.addEventListener('mousemove',(e)=>{if(!isDragging)return;const dx=e.clientX-dragStart.x,dy=e.clientY-dragStart.y;const xRange=view.xMax-view.xMin,yRange=view.yMax-view.yMin;view.xMin=viewStart.xMin-(dx/canvas.width)*xRange;view.xMax=viewStart.xMax-(dx/canvas.width)*xRange;view.yMin=viewStart.yMin+(dy/canvas.height)*yRange;view.yMax=viewStart.yMax+(dy/canvas.height)*yRange;draw()});
+      window.addEventListener('mouseup',()=>{isDragging=false;canvas.style.cursor='grab'});
+
+      canvas.addEventListener('wheel',(e)=>{e.preventDefault();const rect=canvas.getBoundingClientRect();const mx=e.clientX-rect.left,my=e.clientY-rect.top;const wx=toWorldX(mx),wy=toWorldY(my);const zoomFactor=e.deltaY>0?1.15:0.87;const xRange=(view.xMax-view.xMin)*zoomFactor,yRange=(view.yMax-view.yMin)*zoomFactor;view.xMin=wx-xRange*(mx/canvas.width);view.xMax=view.xMin+xRange;view.yMin=wy-yRange*(1-my/canvas.height);view.yMax=view.yMin+yRange;draw()},{passive:false});
+
+      // Input events
+      for(let i=0;i<4;i++){
+        document.getElementById('f'+i).addEventListener('input',draw);
+      }
+      document.getElementById('chk-grid').addEventListener('change',draw);
+      document.getElementById('chk-deriv').addEventListener('change',draw);
+      document.getElementById('chk-trace').addEventListener('change',(e)=>{traceMode=e.target.checked;if(!traceMode)document.getElementById('trace-coords').textContent=''});
+
+      document.getElementById('btn-reset-view').addEventListener('click',()=>{view={xMin:-10,xMax:10,yMin:-7,yMax:7};draw()});
+
+      // Delete buttons
+      document.querySelectorAll('.del-func').forEach(btn=>{
+        btn.addEventListener('click',()=>{document.getElementById('f'+btn.dataset.i).value='';draw()});
+      });
+
+      // Presets
+      const presets=['sin(x)','cos(x)','tan(x)','x^2','x^3','sqrt(x)','abs(x)','1/x','e^x','log(x)','sin(x)+cos(x)','x^3-3*x'];
+      let pi=0;
+      document.getElementById('btn-add-preset').addEventListener('click',()=>{
+        const p=presets[pi%presets.length];pi++;
+        for(let i=0;i<4;i++){
+          const inp=document.getElementById('f'+i);
+          if(!inp.value.trim()){inp.value=p;draw();Toast.show('Loaded: f(x) = '+p,'info');return}
+        }
+        Toast.show('All 4 function slots are full','warning');
+      });
+
+      // Trace: single persistent listener
+      canvas.addEventListener('mousemove',function(e){
+        if(!traceMode||!document.getElementById('chk-trace').checked)return;
+        const rect=canvas.getBoundingClientRect();
+        const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+        const wx=toWorldX(mx),wy=toWorldY(my);
+        document.getElementById('trace-coords').textContent=`x: ${MathEngine.formatNumber(wx)}, y: ${MathEngine.formatNumber(wy)}`;
+      });
+
+      // Resize
+      window.addEventListener('resize',()=>{resizeCanvas();draw()});
+      resizeCanvas();draw();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

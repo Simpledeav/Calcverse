@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Algebra Solver — CalcVerse</title>
+  <meta name="description" content="Solve linear and quadratic equations with step-by-step solutions, discriminant analysis, and graphical representation." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.step-box{padding:12px;margin-bottom:8px;border-radius:12px;background:theme('colors.gray.50');border:1px solid theme('colors.gray.200')}.dark .step-box{background:theme('colors.black')/30;border-color:theme('colors.gray.700')}.step-number{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:9999px;background:theme('colors.primary.DEFAULT');color:white;font-size:12px;font-weight:700;margin-right:8px;flex-shrink:0}.solution-box{padding:16px;border-radius:12px;background:theme('colors.primary.DEFAULT')/8;border:1px solid theme('colors.primary.DEFAULT')/30}.dark .solution-box{background:theme('colors.primary.DEFAULT')/10;border-color:theme('colors.primary.DEFAULT')/20}.tab-btn{padding:8px 20px;border-radius:9999px;font-size:14px;font-weight:500;transition:all .15s;background:theme('colors.gray.100');color:theme('colors.gray.600')}.dark .tab-btn{background:theme('colors.gray.800');color:theme('colors.gray.400')}.tab-btn.active{background:theme('colors.primary.DEFAULT');color:white}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Mathematics</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Algebra Solver</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Mathematics</span>
+          <h1 class="calc-title">Algebra Solver</h1>
+          <p class="calc-description" id="calc-desc">Solve linear and quadratic equations with step-by-step working and discriminant analysis.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="math-algebra"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <!-- Mode Tabs -->
+          <div class="flex gap-2 mb-6" id="mode-tabs">
+            <button class="tab-btn active" data-mode="linear">Linear</button>
+            <button class="tab-btn" data-mode="quadratic">Quadratic</button>
+          </div>
+          <!-- Linear Mode -->
+          <div id="mode-linear" class="mode-panel">
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 font-mono text-center text-lg">a · x + b = c</p>
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <div class="input-group"><label class="input-label" for="linear-a">a</label><input type="number" class="input-field" id="linear-a" value="2" step="any" /></div>
+              <div class="input-group"><label class="input-label" for="linear-b">b</label><input type="number" class="input-field" id="linear-b" value="5" step="any" /></div>
+              <div class="input-group"><label class="input-label" for="linear-c">c</label><input type="number" class="input-field" id="linear-c" value="13" step="any" /></div>
+            </div>
+            <button class="btn-primary w-full" id="btn-solve-linear">Solve for x</button>
+            <div id="linear-result" class="mt-4"></div>
+          </div>
+          <!-- Quadratic Mode -->
+          <div id="mode-quadratic" class="mode-panel hidden">
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 font-mono text-center text-lg">a · x² + b · x + c = 0</p>
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <div class="input-group"><label class="input-label" for="quad-a">a</label><input type="number" class="input-field" id="quad-a" value="1" step="any" /></div>
+              <div class="input-group"><label class="input-label" for="quad-b">b</label><input type="number" class="input-field" id="quad-b" value="-3" step="any" /></div>
+              <div class="input-group"><label class="input-label" for="quad-c">c</label><input type="number" class="input-field" id="quad-c" value="2" step="any" /></div>
+            </div>
+            <button class="btn-primary w-full" id="btn-solve-quadratic">Solve for x</button>
+            <div id="quadratic-result" class="mt-4"></div>
+          </div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Solution Steps</h3>
+          <div id="steps-container">
+            <p class="text-sm text-gray-400 italic">Enter values and click Solve to see step-by-step working.</p>
+          </div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content">
+          <p class="text-gray-500 dark:text-gray-400 mb-2">Linear: <code>ax + b = c → x = (c - b) / a</code></p>
+          <p class="text-gray-500 dark:text-gray-400">Quadratic: <code>ax² + bx + c = 0 → x = [-b ± √(b² - 4ac)] / 2a</code><br/>Discriminant Δ = b² - 4ac determines the nature of roots.</p>
+        </div>
+      </details>
+      <div class="related-calcs">
+        <h3>Related Calculators</h3>
+        <div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div>
+      </div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'math-algebra',name:'Algebra Solver',category:'Mathematics',categoryPath:'/app/dashboard.html',description:'Solve linear and quadratic equations with step-by-step solutions.',icon:'x²',related:[{id:'math-basic',name:'Basic',icon:'🔢',category:'Mathematics',path:'/app/math/basic.html'},{id:'math-scientific',name:'Scientific',icon:'∑',category:'Mathematics',path:'/app/math/scientific.html'},{id:'math-percentage',name:'Percentage',icon:'%',category:'Mathematics',path:'/app/math/percentage.html'},{id:'math-graphing',name:'Graphing',icon:'📈',category:'Mathematics',path:'/app/math/graphing.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');
+      function updateFavBtn(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);updateFavBtn();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});updateFavBtn();document.addEventListener('cv:favorites-update',updateFavBtn);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'Uses the quadratic formula and linear algebra to solve equations step by step.',CALC.description,{'ax + b = c':'Linear: x = (c-b)/a','ax²+bx+c=0':'Quadratic Formula','Δ = b²-4ac':'Discriminant'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<div class="text-sm text-gray-600 dark:text-gray-400"><p>Tab between inputs. Enter to solve. Arrow keys adjust values.</p></div>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      // Mode tabs
+      document.querySelectorAll('.tab-btn').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+          document.querySelectorAll('.mode-panel').forEach(p=>p.classList.add('hidden'));
+          document.getElementById('mode-'+btn.dataset.mode).classList.remove('hidden');
+          document.getElementById('steps-container').innerHTML='<p class="text-sm text-gray-400 italic">Enter values and click Solve to see step-by-step working.</p>';
+        });
+      });
+
+      // Algebra engine
+      const AlgebraEngine={
+        solveLinear(a,b,c){
+          if(a===0)return{error:'a cannot be zero'};
+          const x=(c-b)/a;
+          const steps=[
+            {text:`Start: ${a}x + ${b} = ${c}`},
+            {text:`Subtract ${b} from both sides: ${a}x = ${c} - ${b} = ${c-b}`},
+            {text:`Divide both sides by ${a}: x = ${c-b} / ${a}`},
+            {text:`Solution: x = ${MathEngine.formatNumber(x)}`},
+          ];
+          return{result:x,steps};
+        },
+        solveQuadratic(a,b,c){
+          if(a===0)return{error:'a cannot be zero for a quadratic'};
+          const disc=b*b-4*a*c;let root1,root2,steps=[];
+          steps.push({text:`Start: ${a}x² + ${b}x + ${c} = 0`});
+          steps.push({text:`Discriminant: Δ = b² - 4ac = ${b}² - 4(${a})(${c}) = ${b*b} - ${4*a*c} = ${disc}`});
+          if(disc<0){
+            steps.push({text:`Δ < 0: No real roots (two complex roots)`});
+            const real=-b/(2*a),imag=Math.sqrt(Math.abs(disc))/(2*a);
+            root1=`${MathEngine.formatNumber(real)} + ${MathEngine.formatNumber(imag)}i`;
+            root2=`${MathEngine.formatNumber(real)} - ${MathEngine.formatNumber(imag)}i`;
+            steps.push({text:`Root 1: x = ${root1}`});steps.push({text:`Root 2: x = ${root2}`});
+            return{root1,root2,discriminant:disc,nature:'complex',steps};
+          }
+          if(disc===0){
+            root1=root2=-b/(2*a);
+            steps.push({text:`Δ = 0: One repeated real root`});
+            steps.push({text:`x = -b / 2a = -(${b}) / 2(${a}) = ${MathEngine.formatNumber(root1)}`});
+            return{root1:MathEngine.formatNumber(root1),root2:MathEngine.formatNumber(root2),discriminant:disc,nature:'repeated',steps};
+          }
+          const sqrtDisc=Math.sqrt(disc);root1=(-b+sqrtDisc)/(2*a);root2=(-b-sqrtDisc)/(2*a);
+          steps.push({text:`Δ > 0: Two distinct real roots`});
+          steps.push({text:`x = [-b ± √Δ] / 2a`});
+          steps.push({text:`x = [-(${b}) ± √(${disc})] / 2(${a})`});
+          steps.push({text:`x₁ = ${MathEngine.formatNumber((-b+sqrtDisc)/(2*a))}`});
+          steps.push({text:`x₂ = ${MathEngine.formatNumber((-b-sqrtDisc)/(2*a))}`});
+          return{root1:MathEngine.formatNumber(root1),root2:MathEngine.formatNumber(root2),discriminant:disc,nature:'real',steps};
+        }
+      };
+
+      function renderSteps(steps,container){
+        container.innerHTML=steps.map((s,i)=>`<div class="step-box flex items-start gap-2"><span class="step-number">${i+1}</span><span class="text-sm text-gray-700 dark:text-gray-300">${s.text}</span></div>`).join('');
+      }
+
+      // Linear solve
+      document.getElementById('btn-solve-linear').addEventListener('click',()=>{
+        const a=parseFloat(document.getElementById('linear-a').value);const b=parseFloat(document.getElementById('linear-b').value);const c=parseFloat(document.getElementById('linear-c').value);
+        const stepsEl=document.getElementById('steps-container');
+        if(isNaN(a)||isNaN(b)||isNaN(c)){stepsEl.innerHTML='<div class="text-sm text-red-500">Please enter valid numbers.</div>';return;}
+        const result=AlgebraEngine.solveLinear(a,b,c);
+        if(result.error){stepsEl.innerHTML=`<div class="text-sm text-red-500">${result.error}</div>`;return;}
+        document.getElementById('linear-result').innerHTML=`<div class="solution-box"><span class="text-sm text-gray-500 dark:text-gray-400">Solution</span><div class="text-2xl font-bold font-mono text-primary mt-1">x = ${MathEngine.formatNumber(result.result)}</div></div>`;
+        renderSteps(result.steps,stepsEl);
+        CalcStorage.addHistory(CALC.id,{expression:`${a}x + ${b} = ${c}`,result:`x = ${MathEngine.formatNumber(result.result)}`});
+      });
+
+      // Quadratic solve
+      document.getElementById('btn-solve-quadratic').addEventListener('click',()=>{
+        const a=parseFloat(document.getElementById('quad-a').value);const b=parseFloat(document.getElementById('quad-b').value);const c=parseFloat(document.getElementById('quad-c').value);
+        const stepsEl=document.getElementById('steps-container');
+        if(isNaN(a)||isNaN(b)||isNaN(c)){stepsEl.innerHTML='<div class="text-sm text-red-500">Please enter valid numbers.</div>';return;}
+        const result=AlgebraEngine.solveQuadratic(a,b,c);
+        if(result.error){stepsEl.innerHTML=`<div class="text-sm text-red-500">${result.error}</div>`;return;}
+        const natureColors={real:'text-primary',repeated:'text-yellow-500',complex:'text-blue-500'};
+        document.getElementById('quadratic-result').innerHTML=`<div class="solution-box"><div class="flex items-center gap-2 mb-2"><span class="text-sm text-gray-500">Δ = ${MathEngine.formatNumber(result.discriminant)}</span><span class="text-xs px-2 py-0.5 rounded-full font-semibold ${natureColors[result.nature]} bg-current/10">${result.nature}</span></div><div class="grid grid-cols-2 gap-3"><div><span class="text-xs text-gray-400">x₁</span><div class="text-xl font-bold font-mono text-primary">${result.root1}</div></div><div><span class="text-xs text-gray-400">x₂</span><div class="text-xl font-bold font-mono text-primary">${result.root2}</div></div></div></div>`;
+        renderSteps(result.steps,stepsEl);
+        CalcStorage.addHistory(CALC.id,{expression:`${a}x² + ${b}x + ${c} = 0`,result:`x₁=${result.root1}, x₂=${result.root2}`});
+      });
+
+      // Trigger default solve
+      document.getElementById('btn-solve-linear').click();
+
+      // Related
+      const rl=document.getElementById('related-list');
+      rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

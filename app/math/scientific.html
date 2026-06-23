@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scientific Calculator — CalcVerse</title>
+  <meta name="description" content="Perform scientific calculations with trigonometric functions, logarithms, exponentiation, factorials, constants, and full expression-based evaluation using the shunting-yard algorithm." />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/keypad.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>
+    /* Scientific-specific overrides */
+    .sci-mode-indicator {
+      @apply flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold;
+      background: theme('colors.gray.100');
+      color: theme('colors.gray.600');
+    }
+    .dark .sci-mode-indicator {
+      background: theme('colors.gray.800');
+      color: theme('colors.gray.400');
+    }
+    .sci-mode-indicator.active {
+      background: theme('colors.primary.DEFAULT / 10%');
+      color: theme('colors.primary.DEFAULT');
+    }
+    .dark .sci-mode-indicator.active {
+      background: theme('colors.primary.DEFAULT / 15%');
+    }
+    .sci-mode-indicator button {
+      @apply cursor-pointer transition-colors duration-150;
+    }
+    .sci-mode-indicator button:hover {
+      color: theme('colors.primary.DEFAULT');
+    }
+    .sci-expression-line {
+      @apply font-mono text-sm text-gray-500 dark:text-gray-400;
+      min-height: 1.5em;
+      overflow-x: auto;
+      white-space: pre;
+      scrollbar-width: none;
+    }
+    .sci-expression-line::-webkit-scrollbar {
+      display: none;
+    }
+    /* Make the scientific keypad function row more compact */
+    .keypad-scientific .keypad-sci-ext .calc-key {
+      height: 52px;
+      font-size: 0.75rem;
+    }
+    .keypad-scientific .keypad-standard .calc-key {
+      height: 58px;
+    }
+    @media (max-width: 480px) {
+      .keypad-scientific .keypad-sci-ext .calc-key {
+        height: 44px;
+        font-size: 0.65rem;
+      }
+      .keypad-scientific .keypad-standard .calc-key {
+        height: 50px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div id="sidebar-container"></div>
+
+  <!-- Mobile toggle -->
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Main -->
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <!-- Top Bar -->
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/>
+          </svg>
+        </button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme">
+          <span class="dark:hidden">🌙</span>
+          <span class="hidden dark:inline">☀️</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Calculator Content -->
+    <div class="calc-page" id="calc-app">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" id="calc-breadcrumb">
+        <a href="/app/dashboard.html">Dashboard</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="/app/dashboard.html" id="breadcrumb-category">Mathematics</a>
+        <span class="breadcrumb-separator">/</span>
+        <span id="breadcrumb-name">Scientific Calculator</span>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge" id="calc-badge">Mathematics</span>
+          <h1 class="calc-title" id="calc-title">Scientific Calculator</h1>
+          <p class="calc-description" id="calc-desc">Perform scientific calculations with trigonometric functions, logarithms, exponentiation, and constants.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="math-scientific" aria-label="Toggle favorite">
+            <span>☆</span> <span class="hidden sm:inline">Favorite</span>
+          </button>
+          <button class="btn-ghost" id="btn-share" aria-label="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            <span class="hidden sm:inline">Share</span>
+          </button>
+          <button class="btn-ghost" id="btn-formula" aria-label="Formula">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <span class="hidden sm:inline">Formula</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Calculator Body -->
+      <div class="calc-body" id="calc-body">
+        <!-- LEFT COLUMN: Display + Keypad -->
+        <div class="calc-display-panel" id="calc-left">
+          <!-- Custom display area for scientific -->
+          <div id="display-container">
+            <div class="calc-display">
+              <div class="flex items-center justify-between px-2 mb-1">
+                <!-- Mode indicators -->
+                <div class="flex items-center gap-2">
+                  <span class="sci-mode-indicator" id="mode-angle">
+                    <button id="btn-angle-mode" title="Toggle angle mode">DEG</button>
+                  </span>
+                  <span class="sci-mode-indicator" id="mode-second">
+                    <button id="btn-second-mode" title="Toggle second functions">2nd</button>
+                  </span>
+                </div>
+              </div>
+              <!-- Expression line -->
+              <div class="calc-display-expression" id="calc-expression">&nbsp;</div>
+              <!-- Result line -->
+              <div class="calc-display-result" id="calc-result">0</div>
+              <!-- Action Bar -->
+              <div class="calc-display-actions">
+                <button class="btn-ghost" id="btn-history" title="History" aria-label="Toggle calculation history">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <span class="hidden sm:inline text-xs">History</span>
+                </button>
+                <button class="btn-ghost" id="btn-copy" title="Copy result" aria-label="Copy result to clipboard">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                </button>
+              </div>
+              <!-- History Panel -->
+              <div class="calc-history-panel closed" id="history-panel">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                  <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">History</h3>
+                  <button class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" id="btn-clear-history">Clear</button>
+                </div>
+                <div class="overflow-y-auto max-h-64" id="history-list">
+                  <div class="px-4 py-6 text-center text-xs text-gray-400">No calculations yet</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="keypad-container" class="mt-3"></div>
+        </div>
+
+        <!-- RIGHT COLUMN: Memory & Controls -->
+        <div class="calc-form-box" id="calc-right">
+          <!-- Memory Controls -->
+          <div class="mb-4">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Memory</h3>
+            <div class="grid grid-cols-4 gap-2">
+              <button class="btn-ghost text-xs py-2" id="btn-mc" title="Memory Clear">MC</button>
+              <button class="btn-ghost text-xs py-2" id="btn-mr" title="Memory Recall">MR</button>
+              <button class="btn-ghost text-xs py-2" id="btn-m-plus" title="Memory Add">M+</button>
+              <button class="btn-ghost text-xs py-2" id="btn-m-minus" title="Memory Subtract">M−</button>
+            </div>
+          </div>
+
+          <!-- Constants Quick Reference -->
+          <div class="mb-4">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Constants</h3>
+            <div class="grid grid-cols-2 gap-2">
+              <button class="btn-ghost text-xs py-2 font-mono" id="btn-insert-pi" title="Insert π (3.14159…)">π = 3.14159…</button>
+              <button class="btn-ghost text-xs py-2 font-mono" id="btn-insert-e" title="Insert e (2.71828…)">e = 2.71828…</button>
+            </div>
+          </div>
+
+          <!-- Quick Tips -->
+          <div>
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Quick Tips</h3>
+            <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1.5">
+              <li class="flex items-start gap-2">
+                <span class="text-primary shrink-0 mt-0.5">🔢</span>
+                <span>Type expressions like <code class="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">sin(45) + 3^2</code></span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-primary shrink-0 mt-0.5">🔄</span>
+                <span>Toggle DEG/RAD for angle input mode</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-primary shrink-0 mt-0.5">⌨️</span>
+                <span><kbd class="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">s</kbd> sin, <kbd class="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">c</kbd> cos, <kbd class="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">t</kbd> tan</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-primary shrink-0 mt-0.5">⏎</span>
+                <span>Enter or = to evaluate the full expression</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Results panel -->
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+
+      <!-- Formula Reference -->
+      <details class="calc-formula-box" id="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content">
+          <p class="text-gray-500 dark:text-gray-400">This calculator evaluates expressions using the shunting-yard algorithm with full operator precedence:</p>
+          <ol class="list-decimal list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1 mt-2">
+            <li><strong>Parentheses</strong> — expressions inside ( ) are evaluated first</li>
+            <li><strong>Functions</strong> — sin, cos, tan, log, ln, √, and their inverses</li>
+            <li><strong>Exponents</strong> — ^ (power), √ (root), ! (factorial)</li>
+            <li><strong>Multiplication &amp; Division</strong> — × and ÷, left to right</li>
+            <li><strong>Addition &amp; Subtraction</strong> — + and −, left to right</li>
+          </ol>
+          <p class="text-xs text-gray-400 mt-3">
+            In DEG mode, trigonometric functions convert degrees to radians internally. 
+            Common constants π and e are recognized as named values.
+          </p>
+        </div>
+      </details>
+
+      <!-- Related Calculators -->
+      <div class="related-calcs" id="related-calcs">
+        <h3>Related Calculators</h3>
+        <div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/display.js"></script>
+  <script src="/assets/js/components/keypad.js"></script>
+  <script src="/assets/js/core/keyboard.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // ============================================================
+      // 1. Init Components
+      // ============================================================
+
+      // Sidebar
+      const sidebar = new CalcVerseSidebar('#sidebar-container', {
+        collapsed: window.innerWidth < 1024
+      });
+      window.calcSidebar = sidebar;
+
+      // Theme
+      window.themeEngine = themeEngine;
+      document.getElementById('theme-toggle-calc')?.addEventListener('click', () => themeEngine.toggle());
+
+      // ============================================================
+      // 2. Calculator Config
+      // ============================================================
+
+      const CALC = {
+        id: 'math-scientific',
+        name: 'Scientific Calculator',
+        category: 'Mathematics',
+        categoryPath: '/app/dashboard.html',
+        description: 'Perform scientific calculations with trigonometric functions, logarithms, exponentiation, constants, and full expression-based evaluation.',
+        icon: '∑',
+        layout: 'scientific',
+        related: [
+          { id: 'math-basic', name: 'Basic', icon: '🔢', category: 'Mathematics', path: '/app/math/basic.html' },
+          { id: 'math-algebra', name: 'Algebra', icon: 'x²', category: 'Mathematics', path: '/app/math/algebra.html' },
+          { id: 'math-graphing', name: 'Graphing', icon: '📈', category: 'Mathematics', path: '/app/math/graphing.html' },
+          { id: 'math-statistics', name: 'Statistics', icon: '📊', category: 'Mathematics', path: '/app/math/statistics.html' },
+        ],
+      };
+
+      // Apply config
+      document.getElementById('calc-badge').textContent = CALC.category;
+      document.getElementById('calc-title').textContent = CALC.name;
+      document.getElementById('calc-desc').textContent = CALC.description;
+      document.getElementById('breadcrumb-category').textContent = CALC.category;
+      document.getElementById('breadcrumb-category').href = CALC.categoryPath;
+      document.getElementById('breadcrumb-name').textContent = CALC.name;
+      document.getElementById('btn-favorite').dataset.calcId = CALC.id;
+      document.title = CALC.name + ' — CalcVerse';
+      document.querySelector('meta[name="description"]').content = CALC.description;
+      sidebar.setActive(CALC.id);
+      CalcStorage.recordVisit(CALC.id, CALC.name);
+
+      // ============================================================
+      // 3. Scientific Calculator State Machine
+      // ============================================================
+
+      const state = {
+        expression: '',           // The full expression string being built
+        result: '0',              // The computed result or current display
+        justEvaluated: false,     // True right after = was pressed
+        newNumber: true,          // True when we expect a fresh number (after op or paren)
+        lastCharIsOp: false,      // Track if we need a number next
+        parenCount: 0,            // Track open parentheses count
+        memory: 0,
+        angleMode: 'deg',         // 'deg' or 'rad'
+        secondMode: false,        // Toggle for inverse trig functions
+        hasHistory: false,
+      };
+
+      // DOM refs
+      const exprEl = document.getElementById('calc-expression');
+      const resultEl = document.getElementById('calc-result');
+
+      function updateDisplay() {
+        const displayExpr = state.expression || '\u00A0';
+        exprEl.textContent = displayExpr;
+        exprEl.scrollLeft = exprEl.scrollWidth;
+
+        resultEl.className = 'calc-display-result';
+        resultEl.textContent = state.result;
+      }
+
+      function setError(msg) {
+        state.result = msg;
+        resultEl.className = 'calc-display-result error';
+        resultEl.textContent = msg;
+      }
+
+      function updateAngleModeIndicator() {
+        const btn = document.getElementById('btn-angle-mode');
+        const indicator = document.getElementById('mode-angle');
+        btn.textContent = state.angleMode.toUpperCase();
+        indicator.classList.toggle('active', state.angleMode === 'rad');
+      }
+
+      function updateSecondModeIndicator() {
+        const btn = document.getElementById('btn-second-mode');
+        const indicator = document.getElementById('mode-second');
+        btn.textContent = '2nd';
+        indicator.classList.toggle('active', state.secondMode);
+      }
+
+      // ============================================================
+      // 4. Expression Evaluation
+      // ============================================================
+
+      // Patch MathEngine to support deg2sin, deg2cos, deg2tan
+      if (!MathEngine.__patched) {
+        MathEngine.__patched = true;
+        MathEngine._deg2sin = function(a) { return Math.sin(a * Math.PI / 180); };
+        MathEngine._deg2cos = function(a) { return Math.cos(a * Math.PI / 180); };
+        MathEngine._deg2tan = function(a) { return Math.tan(a * Math.PI / 180); };
+
+        MathEngine._evaluateRPN = function(rpn) {
+          const stack = [];
+          for (const token of rpn) {
+            if (token.type === 'num') {
+              stack.push(token.value);
+            } else if (token.type === 'op') {
+              const b = stack.pop();
+              const a = token.value === '!' ? null : stack.pop();
+              switch (token.value) {
+                case '+': stack.push(a + b); break;
+                case '−': case '-': stack.push(a - b); break;
+                case '×': case '*': stack.push(a * b); break;
+                case '÷': case '/':
+                  if (b === 0) throw new Error('Division by zero');
+                  stack.push(a / b); break;
+                case '%': stack.push(a % b); break;
+                case '^': stack.push(Math.pow(a, b)); break;
+                case '√': stack.push(Math.sqrt(b)); break;
+                case '!':
+                  if (b < 0 || !Number.isInteger(b)) throw new Error('Factorial requires non-negative integer');
+                  stack.push(MathEngine._factorial(b)); break;
+                default: throw new Error('Unknown operator: ' + token.value);
+              }
+            } else if (token.type === 'func') {
+              const a = stack.pop();
+              switch (token.value) {
+                case 'sin': stack.push(Math.sin(a)); break;
+                case 'cos': stack.push(Math.cos(a)); break;
+                case 'tan': stack.push(Math.tan(a)); break;
+                case 'deg2sin': stack.push(MathEngine._deg2sin(a)); break;
+                case 'deg2cos': stack.push(MathEngine._deg2cos(a)); break;
+                case 'deg2tan': stack.push(MathEngine._deg2tan(a)); break;
+                case 'asin': case 'arcsin': stack.push(Math.asin(a)); break;
+                case 'acos': case 'arccos': stack.push(Math.acos(a)); break;
+                case 'atan': case 'arctan': stack.push(Math.atan(a)); break;
+                case 'log': stack.push(Math.log10(a)); break;
+                case 'ln': stack.push(Math.log(a)); break;
+                case 'sqrt': stack.push(Math.sqrt(a)); break;
+                case 'cbrt': stack.push(Math.cbrt(a)); break;
+                case 'abs': stack.push(Math.abs(a)); break;
+                case 'ceil': stack.push(Math.ceil(a)); break;
+                case 'floor': stack.push(Math.floor(a)); break;
+                case 'round': stack.push(Math.round(a)); break;
+                case 'exp': stack.push(Math.exp(a)); break;
+                case 'sinh': stack.push(Math.sinh(a)); break;
+                case 'cosh': stack.push(Math.cosh(a)); break;
+                case 'tanh': stack.push(Math.tanh(a)); break;
+                default: throw new Error('Unknown function: ' + token.value);
+              }
+            }
+          }
+          if (stack.length !== 1) throw new Error('Invalid expression');
+          const result = stack[0];
+          if (!isFinite(result)) throw new Error('Result is not finite');
+          return result;
+        };
+      }
+
+      // ============================================================
+      // 5. Key Handler
+      // ============================================================
+
+      function handleKey(key) {
+        // === Backspace ===
+        if (key === '⌫') {
+          if (state.justEvaluated) {
+            state.expression = '';
+            state.result = '0';
+            state.justEvaluated = false;
+            state.newNumber = true;
+            state.lastCharIsOp = false;
+            updateDisplay();
+            return;
+          }
+          if (state.expression.length === 0) return;
+
+          const expr = state.expression;
+          const trigTokens = ['sin(', 'cos(', 'tan(', 'asin(', 'acos(', 'atan(', 'arcsin(', 'arccos(', 'arctan(', 'log(', 'ln(', 'sqrt('];
+          let removed = false;
+          for (const tok of trigTokens) {
+            if (expr.endsWith(tok)) {
+              state.expression = expr.slice(0, -tok.length);
+              removed = true;
+              break;
+            }
+          }
+          if (!removed) {
+            state.expression = expr.slice(0, -1);
+          }
+
+          if (state.expression.length === 0) {
+            state.result = '0';
+            state.newNumber = true;
+            state.lastCharIsOp = false;
+          } else {
+            const lastCh = state.expression.slice(-1);
+            state.lastCharIsOp = '+-×÷*/^%'.includes(lastCh);
+            state.newNumber = state.lastCharIsOp || lastCh === '(';
+            try {
+              const { result, error } = MathEngine.evaluate(state.expression);
+              if (!error && isFinite(result)) {
+                state.result = MathEngine.formatNumber(result);
+              } else {
+                state.result = state.expression;
+              }
+            } catch {
+              state.result = state.expression;
+            }
+          }
+          updateDisplay();
+          return;
+        }
+
+        // === Clear ===
+        if (key === 'C') {
+          state.expression = '';
+          state.result = '0';
+          state.justEvaluated = false;
+          state.newNumber = true;
+          state.lastCharIsOp = false;
+          updateDisplay();
+          return;
+        }
+
+        // === Clear Entry ===
+        if (key === 'CE') {
+          if (state.justEvaluated) {
+            state.expression = '';
+            state.result = '0';
+            state.justEvaluated = false;
+            state.newNumber = true;
+            state.lastCharIsOp = false;
+            updateDisplay();
+            return;
+          }
+          let expr = state.expression;
+          while (expr.length > 0 && /[\d.eE]/.test(expr.slice(-1))) {
+            expr = expr.slice(0, -1);
+          }
+          state.expression = expr;
+          if (state.expression.length === 0) {
+            state.result = '0';
+            state.newNumber = true;
+            state.lastCharIsOp = false;
+          } else {
+            state.newNumber = false;
+            state.lastCharIsOp = '+-×÷*/^%'.includes(state.expression.slice(-1));
+          }
+          updateDisplay();
+          return;
+        }
+
+        // === After =, start fresh for numbers ===
+        if (state.justEvaluated && !['+', '−', '×', '÷', '^', '%', '!', ')', '=', 'C'].includes(key)) {
+          if (/^[0-9.]$/.test(key)) {
+            state.expression = '';
+            state.result = '0';
+            state.justEvaluated = false;
+            state.newNumber = true;
+            state.lastCharIsOp = false;
+          }
+        }
+
+        // === Numbers 0-9 ===
+        if (/^[0-9]$/.test(key)) {
+          if (state.expression === '0' && !state.newNumber) {
+            state.expression = key;
+          } else {
+            state.expression += key;
+          }
+          state.newNumber = false;
+          state.lastCharIsOp = false;
+          state.justEvaluated = false;
+          state.result = state.expression;
+          updateDisplay();
+          return;
+        }
+
+        // === Decimal ===
+        if (key === '.') {
+          const segments = state.expression.split(/[+\-×÷*/^()]/);
+          const currentSegment = segments[segments.length - 1] || '';
+          if (currentSegment.includes('.')) return;
+          state.expression += '.';
+          state.newNumber = false;
+          state.lastCharIsOp = false;
+          state.justEvaluated = false;
+          state.result = state.expression;
+          updateDisplay();
+          return;
+        }
+
+        // === Operators ===
+        if (['+', '−', '×', '÷', '^'].includes(key)) {
+          if (state.lastCharIsOp) {
+            state.expression = state.expression.slice(0, -1) + key;
+          } else if (state.justEvaluated) {
+            state.expression = state.result + ' ' + key + ' ';
+            state.justEvaluated = false;
+          } else {
+            state.expression += key;
+          }
+          state.newNumber = true;
+          state.lastCharIsOp = true;
+          state.justEvaluated = false;
+          try {
+            const expr = state.expression;
+            const { result, error } = MathEngine.evaluate(expr);
+            if (!error && isFinite(result)) {
+              state.result = MathEngine.formatNumber(result);
+            } else {
+              state.result = state.expression;
+            }
+          } catch {
+            state.result = state.expression;
+          }
+          updateDisplay();
+          return;
+        }
+
+        // === Percent ===
+        if (key === '%') {
+          state.expression += '/100';
+          state.newNumber = false;
+          state.lastCharIsOp = false;
+          state.justEvaluated = false;
+          state.result = state.expression;
+          updateDisplay();
+          return;
+        }
+
+        // === Toggle sign ===
+        if (key === '±') {
+          if (state.expression.length === 0 || state.expression === '0') {
+            state.expression = '-';
+          } else if (state.expression.startsWith('-')) {
+            state.expression = state.expression.slice(1);
+          } else {
+            state.expression = '-' + state.expression;
+          }
+          state.result = state.expression;
+          updateDisplay();
+          return;
+        }
+
+        // === Parentheses ===
+        if (key === '(') {
+          state.expression += '(';
+          state.parenCount++;
+          state.newNumber = true;
+          state.lastCharIsOp = true;
+          state.justEvaluated = false;
+          state.result = state.expression;
+          updateDisplay();
+          return;
+        }
+
+        if (key === ')') {
+          if (state.parenCount > 0) {
+            state.expression += ')';
+            state.parenCount--;
+            state.newNumber = false;
+            state.lastCharIsOp = false;
+            state.justEvaluated = false;
+            state.result = state.expression;
+            updateDisplay();
+          }
+          return;
+        }
+
+        // === Constants π and e ===
+        if (key === 'π') {
+          if (!state.newNumber && state.expression.length > 0 && /[\d.)e]/.test(state.expression.slice(-1))) {
+            state.expression += '*π';
+          } else {
+            state.expression += 'π';
+          }
+          state.newNumber = false;
+          state.lastCharIsOp = false;
+          state.justEvaluated = false;
+          state.result = state.expression;
+          updateDisplay();
+          return;
+        }
+
+        if (key === 'e') {
+          if (!state.newNumber && state.expression.length > 0 && /[\d.)π]/.test(state.expression.slice(-1))) {
+            state.expression += '*e';
+          } else {
+            state.expression += 'e';
+          }
+          state.newNumber = false;
+          state.lastCharIsOp = false;
+          state.justEvaluated = false;
+          state.result = state.expression;
+          updateDisplay();
+          return;
+        }
+
+        // === Functions ===
+        const funcMap = {
+          'sin': state.secondMode ? 'asin(' : 'sin(',
+          'cos': state.secondMode ? 'acos(' : 'cos(',
+          'tan': state.secondMode ? 'atan(' : 'tan(',
+          'log': 'log(',
+          'ln': 'ln(',
+          '√': 'sqrt(',
+          'x²': '^2',
+          'xʸ': '^',
+          '!': '!',
+          'EE': 'e',
+        };
+
+        if (funcMap[key]) {
+          const insert = funcMap[key];
+          if (insert.endsWith('(') && state.expression.length > 0 && /[\d.)πe!]/.test(state.expression.slice(-1))) {
+            state.expression += '*' + insert;
+          } else {
+            state.expression += insert;
+          }
+          if (insert.endsWith('(')) {
+            state.parenCount++;
+            state.newNumber = true;
+            state.lastCharIsOp = true;
+          } else if (insert === '!') {
+            state.newNumber = false;
+            state.lastCharIsOp = false;
+            try {
+              const { result, error } = MathEngine.evaluate(state.expression);
+              if (!error && isFinite(result)) {
+                state.result = MathEngine.formatNumber(result);
+              } else {
+                state.result = state.expression;
+              }
+            } catch {
+              state.result = state.expression;
+            }
+          } else if (insert === '^2' || insert === '^') {
+            state.newNumber = true;
+            state.lastCharIsOp = true;
+          }
+          state.justEvaluated = false;
+          state.result = state.expression;
+          updateDisplay();
+          return;
+        }
+
+        // === 2nd mode toggle ===
+        if (key === '2nd') {
+          state.secondMode = !state.secondMode;
+          updateSecondModeIndicator();
+          Toast.show(state.secondMode ? 'Inverse functions active' : 'Normal functions', 'info');
+          return;
+        }
+
+        // === Angle mode toggle ===
+        if (key === 'DEG' || key === 'RAD') {
+          state.angleMode = state.angleMode === 'deg' ? 'rad' : 'deg';
+          updateAngleModeIndicator();
+          Toast.show('Angle mode: ' + state.angleMode.toUpperCase(), 'info');
+          return;
+        }
+
+        // === Equals ===
+        if (key === '=') {
+          if (state.expression.length === 0) return;
+
+          // Auto-close open parentheses
+          let evalExpr = state.expression;
+          for (let i = 0; i < state.parenCount; i++) {
+            evalExpr += ')';
+          }
+
+          const exprForHistory = evalExpr;
+
+          // Convert deg trig if needed
+          if (state.angleMode === 'deg') {
+            evalExpr = evalExpr.replace(/\b(sin|cos|tan)\b\s*\(/gi, (match, fn) => 'deg2' + fn + '(');
+          }
+
+          const { result, error } = MathEngine.evaluate(evalExpr);
+          if (error) {
+            setError(error);
+            return;
+          }
+
+          const formattedResult = MathEngine.formatNumber(result);
+
+          state.expression = evalExpr + ' =';
+          state.result = formattedResult;
+          state.justEvaluated = true;
+          state.newNumber = true;
+          state.lastCharIsOp = false;
+          state.parenCount = 0;
+          updateDisplay();
+
+          CalcStorage.addHistory(CALC.id, {
+            expression: exprForHistory,
+            result: formattedResult,
+          });
+          loadHistory();
+          return;
+        }
+      }
+
+      // ============================================================
+      // 6. Init Keypad
+      // ============================================================
+
+      const keypad = new CalcVerseKeypad({
+        layout: 'scientific',
+        onKey: handleKey,
+      });
+      keypad.render('#keypad-container');
+
+      // Init modes
+      updateAngleModeIndicator();
+      updateSecondModeIndicator();
+
+      // ============================================================
+      // 7. Keyboard Bridge
+      // ============================================================
+
+      const keyboard = new KeyboardBridge(keypad);
+      keyboard.bind();
+
+      // ============================================================
+      // 8. History
+      // ============================================================
+
+      function loadHistory() {
+        const history = CalcStorage.getHistory(CALC.id);
+        const list = document.getElementById('history-list');
+        if (!list) return;
+        if (history.length === 0) {
+          list.innerHTML = '<div class="px-4 py-6 text-center text-xs text-gray-400">No calculations yet</div>';
+        } else {
+          list.innerHTML = history.map(h => `
+            <div class="calc-history-item">
+              <div class="calc-history-expression">${h.expression}</div>
+              <div class="calc-history-result">${h.result}</div>
+            </div>
+          `).join('');
+        }
+      }
+      loadHistory();
+
+      // ============================================================
+      // 9. Display Actions (History toggle, Copy)
+      // ============================================================
+
+      let historyOpen = false;
+
+      document.getElementById('btn-history')?.addEventListener('click', () => {
+        historyOpen = !historyOpen;
+        const panel = document.getElementById('history-panel');
+        if (panel) {
+          panel.classList.toggle('open', historyOpen);
+          panel.classList.toggle('closed', !historyOpen);
+        }
+      });
+
+      document.getElementById('btn-copy')?.addEventListener('click', async () => {
+        const text = state.result.toString();
+        try {
+          await navigator.clipboard.writeText(text);
+          Toast.show('Copied to clipboard!', 'success');
+        } catch {
+          Toast.show('Failed to copy', 'error');
+        }
+      });
+
+      document.getElementById('btn-clear-history')?.addEventListener('click', () => {
+        const list = document.getElementById('history-list');
+        if (list) {
+          list.innerHTML = '<div class="px-4 py-6 text-center text-xs text-gray-400">No calculations yet</div>';
+        }
+        document.dispatchEvent(new CustomEvent('cv:toast', {
+          detail: { message: 'History cleared', type: 'info' }
+        }));
+      });
+
+      // ============================================================
+      // 10. Favorite Toggle
+      // ============================================================
+
+      const favBtn = document.getElementById('btn-favorite');
+      function updateFavBtn() {
+        const isFav = CalcStorage.isFavorite(CALC.id);
+        favBtn.innerHTML = isFav
+          ? '<span>★</span> <span class="hidden sm:inline">Favorited</span>'
+          : '<span>☆</span> <span class="hidden sm:inline">Favorite</span>';
+        favBtn.classList.toggle('text-primary', isFav);
+      }
+      favBtn?.addEventListener('click', () => {
+        CalcStorage.toggleFavorite(CALC.id);
+        updateFavBtn();
+        Toast.show(
+          CalcStorage.isFavorite(CALC.id) ? 'Added to favorites ⭐' : 'Removed from favorites',
+          CalcStorage.isFavorite(CALC.id) ? 'success' : 'info'
+        );
+      });
+      updateFavBtn();
+      document.addEventListener('cv:favorites-update', updateFavBtn);
+
+      // ============================================================
+      // 11. Share
+      // ============================================================
+
+      document.getElementById('btn-share')?.addEventListener('click', () => {
+        if (navigator.share) {
+          navigator.share({ title: CALC.name, text: CALC.description, url: window.location.href });
+        } else {
+          navigator.clipboard.writeText(window.location.href);
+          Toast.show('Link copied to clipboard!', 'success');
+        }
+      });
+
+      // ============================================================
+      // 12. Formula Modal
+      // ============================================================
+
+      document.getElementById('btn-formula')?.addEventListener('click', () => {
+        Modal.showFormula(CALC.name,
+          'MathEngine uses the shunting-yard algorithm to parse and evaluate mathematical expressions safely without eval(). Supports trig functions, logarithms, exponentiation, factorial, and constants.',
+          CALC.description,
+          {
+            'sin(θ)': 'Sine of θ (DEG or RAD)',
+            'cos(θ)': 'Cosine of θ',
+            'tan(θ)': 'Tangent of θ',
+            'log(x)': 'Base-10 logarithm',
+            'ln(x)': 'Natural logarithm',
+            '√(x)': 'Square root',
+            'x^y': 'x raised to power y',
+            'x!': 'Factorial of x',
+            'π, e': 'Mathematical constants',
+          }
+        );
+      });
+
+      // ============================================================
+      // 13. Memory Controls
+      // ============================================================
+
+      document.getElementById('btn-mc')?.addEventListener('click', () => {
+        state.memory = 0;
+        Toast.show('Memory cleared', 'info');
+      });
+
+      document.getElementById('btn-mr')?.addEventListener('click', () => {
+        state.expression += state.memory.toString();
+        state.newNumber = false;
+        state.lastCharIsOp = false;
+        state.result = state.expression;
+        updateDisplay();
+        Toast.show('Memory recalled: ' + state.memory, 'info');
+      });
+
+      document.getElementById('btn-m-plus')?.addEventListener('click', () => {
+        const val = parseFloat(state.result) || 0;
+        state.memory += val;
+        Toast.show('Added to memory: ' + state.result, 'success');
+      });
+
+      document.getElementById('btn-m-minus')?.addEventListener('click', () => {
+        const val = parseFloat(state.result) || 0;
+        state.memory -= val;
+        Toast.show('Subtracted from memory: ' + state.result, 'info');
+      });
+
+      // ============================================================
+      // 14. Side Panel Constant Buttons
+      // ============================================================
+
+      document.getElementById('btn-insert-pi')?.addEventListener('click', () => handleKey('π'));
+      document.getElementById('btn-insert-e')?.addEventListener('click', () => handleKey('e'));
+
+      // ============================================================
+      // 15. Angle & 2nd Mode Buttons
+      // ============================================================
+
+      document.getElementById('btn-angle-mode')?.addEventListener('click', () => handleKey('DEG'));
+      document.getElementById('btn-second-mode')?.addEventListener('click', () => handleKey('2nd'));
+
+      // ============================================================
+      // 16. Related Calculators
+      // ============================================================
+
+      const relatedList = document.getElementById('related-list');
+      if (CALC.related && CALC.related.length > 0) {
+        relatedList.innerHTML = CALC.related.map(r => `
+          <a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0">
+            <div class="text-xl mb-1">${r.icon || '🔢'}</div>
+            <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4>
+            <p class="text-xs text-gray-400 mt-0.5">${r.category}</p>
+          </a>
+        `).join('');
+      } else {
+        relatedList.innerHTML = '<p class="text-sm text-gray-400 italic">Related calculators coming soon.</p>';
+      }
+
+      // ============================================================
+      // 17. Keyboard Help
+      // ============================================================
+
+      document.getElementById('btn-keyboard-help')?.addEventListener('click', () => {
+        Modal.show({
+          title: '⌨️ Keyboard Shortcuts',
+          content: `
+            <div class="grid grid-cols-2 gap-3">
+              ${[
+                ['0-9', 'Numbers'],
+                ['.', 'Decimal'],
+                ['+', 'Add'],
+                ['-', 'Subtract'],
+                ['*', 'Multiply'],
+                ['/', 'Divide'],
+                ['^', 'Power'],
+                ['Enter / =', 'Calculate'],
+                ['Backspace', 'Delete last char'],
+                ['Escape', 'Clear all'],
+                ['s', 'sin('],
+                ['c', 'cos('],
+                ['t', 'tan('],
+                ['l', 'log('],
+                ['n', 'ln('],
+                ['q', '√('],
+                ['p', 'π'],
+                ['e', 'e (constant)'],
+                ['!', 'Factorial'],
+                ['(', ')', 'Parentheses'],
+                ['F9', 'Toggle ±'],
+                ['%', 'Percent'],
+              ].map(([k, d]) =>
+                `<div class="flex items-center gap-2 text-sm"><kbd class="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 font-mono text-xs">${k}</kbd><span class="text-gray-600 dark:text-gray-400">${d}</span></div>`
+              ).join('')}
+            </div>`
+        });
+      });
+
+      // ============================================================
+      // 18. Mobile Menu
+      // ============================================================
+
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click', () => {
+        const width = window.innerWidth;
+        if (width < 768) {
+          sidebar.show();
+        } else {
+          sidebar.toggle();
+        }
+      });
+
+      // ============================================================
+      // 19. Resize Handler
+      // ============================================================
+
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (window.innerWidth < 1024) sidebar.collapse();
+          else sidebar.expand();
+        }, 150);
+      });
+    });
+  </script>
+</body>
+</html>

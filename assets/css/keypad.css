@@ -1,169 +1,273 @@
-/* ===== CalcVerse Keypad System ===== */
+/* ===== CalcVerse Keypad System — Casio/Phone-Style 3D Keys ===== */
 
-/* Standard keypad grid (4 cols) */
-.keypad-standard {
-  @apply grid grid-cols-4 gap-2;
+/* Shared keypad grid */
+.keypad-standard,
+.keypad-financial {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
 }
 
-/* Scientific extension (5 cols for function row) */
+.keypad-standard { grid-template-columns: repeat(4, 1fr); }
+.keypad-financial { grid-template-columns: repeat(4, 1fr); }
+
+/* Scientific extension — 5-column function row */
 .keypad-sci-ext {
-  @apply grid grid-cols-5 gap-2 mb-2;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  padding: 8px 8px 0 8px;
 }
 
 .keypad-scientific .keypad-standard {
-  @apply mt-2;
+  padding-top: 0;
 }
 
-/* Financial keypad (4 cols, special first row) */
-.keypad-financial {
-  @apply grid grid-cols-4 gap-2;
+/* Keypad container */
+.keypad-container {
+  border-radius: 16px;
+  padding: 4px;
+  background: theme('colors.gray.900');
 }
 
-/* Number pad for form calcs (3 cols) */
-.keypad-numpad {
-  @apply grid grid-cols-3 gap-2;
-  max-width: 200px;
-}
-
-/* Unit converter keypad */
-.keypad-unit {
-  @apply flex items-center gap-2;
-}
-
-/* ===== Key Styles ===== */
-
-.calc-key {
-  @apply h-14 w-full;
-  @apply bg-white dark:bg-raised-dark;
-  @apply border border-gray-200 dark:border-gray-700;
-  @apply rounded-xl font-mono text-lg font-medium;
-  @apply transition-all duration-75;
-  @apply hover:bg-gray-50 dark:hover:bg-gray-800;
-  @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary;
-  @apply active:scale-95;
-  @apply cursor-pointer select-none;
-  @apply text-gray-900 dark:text-gray-100;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-
-.calc-key:active {
-  @apply scale-95;
-  @apply bg-gray-100 dark:bg-gray-700;
-}
-
-/* Operator keys */
-.calc-key-op {
-  @apply bg-primary/10 text-primary font-semibold;
-  @apply hover:bg-primary/20;
-  @apply border-primary/20;
-}
-
-.calc-key-op:active {
-  @apply bg-primary/30;
-}
-
-/* Equals key */
-.calc-key-equals {
-  @apply bg-brand-gradient text-white font-bold;
-  @apply shadow-glow hover:shadow-glow-lg;
-  @apply border-transparent;
-}
-
-.calc-key-equals:active {
-  @apply shadow-glow-lg;
-  @apply scale-95;
-}
-
-/* Clear key */
-.calc-key-clear {
-  @apply bg-red-500/10 text-red-500;
-  @apply hover:bg-red-500/20;
-  @apply border-red-500/20;
-}
-
-.calc-key-clear:active {
-  @apply bg-red-500/30;
-}
-
-/* Function keys (scientific) */
-.calc-key-fn {
-  @apply bg-gray-100 dark:bg-gray-800;
-  @apply text-gray-600 dark:text-gray-400;
-  @apply text-sm;
-  @apply border-gray-200 dark:border-gray-700;
-}
-
-.calc-key-fn:hover {
-  @apply bg-gray-200 dark:bg-gray-700;
-}
-
-.calc-key-fn:active {
-  @apply bg-gray-300 dark:bg-gray-600;
-}
-
-/* Memory keys */
-.calc-key-mem {
-  @apply bg-purple-500/10 text-purple-500;
-  @apply hover:bg-purple-500/20;
-  @apply text-sm;
-}
-
-/* Special large keys (0 key spans 2 cols) */
-.calc-key-wide {
-  @apply col-span-2;
-}
-
-/* Active key highlight (from physical key press) */
-.calc-key.active {
-  @apply scale-95 bg-primary/20 border-primary;
-  transition: none;
-}
-
-/* Key press ripple effect */
-.calc-key::after {
-  content: '';
-  @apply absolute inset-0 rounded-xl;
-  background: radial-gradient(circle, rgba(119, 210, 2, 0.15) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.calc-key:active::after {
-  opacity: 1;
-}
-
-/* Disabled key */
-.calc-key:disabled {
-  @apply opacity-30 cursor-not-allowed;
-  @apply hover:bg-white dark:hover:bg-raised-dark;
-  @apply active:scale-100;
-}
-
-/* Dark mode glass effect for keypad container */
 .dark .keypad-container {
-  background: rgba(26, 28, 28, 0.5);
-  backdrop-filter: blur(4px);
-  @apply rounded-2xl p-3;
+  background: #1a1c1c;
 }
 
-/* Responsive key sizes */
+/* ===== Key Styles — 3D Casio/Phone Style ===== */
+.calc-key {
+  height: 60px;
+  min-width: 0;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  transition: all 0.1s ease;
+  outline: none;
+
+  /* 3D appearance with shadows */
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+
+  /* Default: number key colors */
+  background: theme('colors.gray.100');
+  color: theme('colors.gray.900');
+}
+
+.dark .calc-key {
+  background: #2a2e2e;
+  color: theme('colors.gray.100');
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Active / pressed state — push key "in" */
+.calc-key:active,
+.calc-key.active {
+  transform: translateY(2px);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.dark .calc-key:active,
+.dark .calc-key.active {
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Key Variants ===== */
+
+/* Number keys — light background (dark in dark mode) */
+.calc-key-num {
+  background: theme('colors.white');
+  color: theme('colors.gray.900');
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.dark .calc-key-num {
+  background: #353839;
+  color: theme('colors.gray.100');
+}
+
+.calc-key-num:active,
+.calc-key-num.active {
+  background: theme('colors.gray.200');
+}
+.dark .calc-key-num:active,
+.dark .calc-key-num.active {
+  background: #454849;
+}
+
+/* Operator keys — primary green */
+.calc-key-op {
+  background: theme('colors.primary.DEFAULT');
+  color: white;
+  font-weight: 700;
+  font-size: 1.25rem;
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.dark .calc-key-op {
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.calc-key-op:active,
+.calc-key-op.active {
+  filter: brightness(1.1);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Equals key — primary green, more prominent */
+.calc-key-equals {
+  background: theme('colors.primary.DEFAULT');
+  color: white;
+  font-weight: 800;
+  font-size: 1.375rem;
+  box-shadow:
+    0 4px 0 #4a8500,
+    0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.dark .calc-key-equals {
+  box-shadow:
+    0 4px 0 #4a8500,
+    0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.calc-key-equals:active,
+.calc-key-equals.active {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 #4a8500,
+    0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Clear key — red tint */
+.calc-key-clear {
+  color: #dc2626;
+  font-weight: 700;
+  background: #fef2f2;
+}
+
+.dark .calc-key-clear {
+  background: #3b1a1a;
+  color: #f87171;
+}
+
+.calc-key-clear:active,
+.calc-key-clear.active {
+  background: #fee2e2;
+}
+.dark .calc-key-clear:active,
+.dark .calc-key-clear.active {
+  background: #4a2222;
+}
+
+/* Function keys (scientific) — smaller, muted */
+.calc-key-fn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  height: 48px;
+  background: theme('colors.gray.100');
+  color: theme('colors.gray.600');
+}
+
+.dark .calc-key-fn {
+  background: #353839;
+  color: theme('colors.gray.400');
+}
+
+.calc-key-fn:active,
+.calc-key-fn.active {
+  background: theme('colors.gray.200');
+}
+.dark .calc-key-fn:active,
+.dark .calc-key-fn.active {
+  background: #454849;
+}
+
+/* Special wide key (0 key spans 2 cols) */
+.calc-key-wide {
+  grid-column: span 2;
+}
+
+/* ===== Hover effects (non-touch) ===== */
+@media (hover: hover) {
+  .calc-key:hover {
+    filter: brightness(0.97);
+  }
+  .dark .calc-key:hover {
+    filter: brightness(1.1);
+  }
+  .calc-key-op:hover {
+    filter: brightness(1.08);
+  }
+  .calc-key-equals:hover {
+    filter: brightness(1.08);
+  }
+  .calc-key-clear:hover {
+    background: #fee2e2;
+  }
+  .dark .calc-key-clear:hover {
+    background: #4a2222;
+  }
+}
+
+/* ===== Disabled state ===== */
+.calc-key:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ===== Responsive sizing ===== */
 @media (max-width: 480px) {
+  .keypad-standard,
+  .keypad-financial {
+    gap: 4px;
+    padding: 6px;
+  }
+  .keypad-sci-ext {
+    gap: 4px;
+    padding: 6px 6px 0 6px;
+  }
   .calc-key {
-    @apply h-12 text-base;
+    height: 52px;
+    border-radius: 10px;
+    font-size: 1rem;
   }
-
   .calc-key-fn {
-    @apply text-xs;
+    height: 42px;
+    font-size: 0.65rem;
   }
-
-  .keypad-standard {
-    @apply gap-1.5;
+  .calc-key-equals {
+    font-size: 1.25rem;
   }
 }
 
 @media (min-width: 481px) and (max-width: 768px) {
   .calc-key {
-    @apply h-13;
+    height: 56px;
+  }
+  .calc-key-fn {
+    height: 44px;
   }
 }

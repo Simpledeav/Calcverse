@@ -3,7 +3,7 @@ Matrix Router — Matrix operations (add, multiply, inverse, determinant, eigenv
 """
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 import numpy as np
 
 router = APIRouter()
@@ -111,8 +111,17 @@ def matrix_eigenvalues(data: MatrixInput):
             raise ValueError("Matrix must be square")
         eigenvalues, eigenvectors = np.linalg.eig(a)
         return {
-            "eigenvalues": [complex(round(float(v.real), 4), round(float(v.imag), 4)) for v in eigenvalues],
-            "eigenvectors": [[complex(round(float(v.real), 4), round(float(v.imag), 4)) for v in row] for row in eigenvectors.tolist()],
+            "eigenvalues": [
+                {"real": round(float(v.real), 4), "imag": round(float(v.imag), 4)}
+                for v in eigenvalues
+            ],
+            "eigenvectors": [
+                [
+                    {"real": round(float(v.real), 4), "imag": round(float(v.imag), 4)}
+                    for v in row
+                ]
+                for row in eigenvectors.tolist()
+            ],
             "shape": list(a.shape),
         }
     except Exception as e:

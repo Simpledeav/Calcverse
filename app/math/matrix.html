@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matrix Calculator — CalcVerse</title>
+  <meta name="description" content="Perform matrix operations on 2x2 and 3x3 matrices: add, subtract, multiply, transpose, determinant, and inverse." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.matrix-grid{display:grid;gap:4px;font-family:'JetBrains Mono',monospace}.matrix-grid-2{grid-template-columns:repeat(2,1fr)}.matrix-grid-3{grid-template-columns:repeat(3,1fr)}.matrix-cell{width:100%;padding:8px 4px;text-align:center;border-radius:8px;border:1px solid theme('colors.gray.200');background:theme('colors.white');font-family:'JetBrains Mono',monospace;font-size:1rem;font-weight:500;transition:all .15s}.dark .matrix-cell{background:theme('colors.raised-dark');border-color:theme('colors.gray.700');color:theme('colors.gray.100')}.matrix-cell:focus{border-color:theme('colors.primary.DEFAULT');outline:none;box-shadow:0 0 0 2px theme('colors.primary.DEFAULT')/30}.mtab{padding:8px 16px;border-radius:9999px;font-size:13px;font-weight:500;transition:all .15s;background:theme('colors.gray.100');color:theme('colors.gray.600');white-space:nowrap}.dark .mtab{background:theme('colors.gray.800');color:theme('colors.gray.400')}.mtab.active{background:theme('colors.primary.DEFAULT');color:white}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Mathematics</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Matrix Calculator</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Mathematics</span>
+          <h1 class="calc-title">Matrix Calculator</h1>
+          <p class="calc-description" id="calc-desc">Add, subtract, multiply, transpose, find determinants and inverses for 2x2 and 3x3 matrices.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="math-matrix"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <!-- Size + Operation selectors -->
+          <div class="flex flex-wrap gap-3 mb-4">
+            <div class="flex gap-2 items-center"><span class="text-xs font-medium text-gray-500">Size:</span>
+              <button class="mtab active" data-size="2">2×2</button>
+              <button class="mtab" data-size="3">3×3</button>
+            </div>
+            <div class="flex gap-2 items-center"><span class="text-xs font-medium text-gray-500">Op:</span>
+              <select class="input-field text-sm py-1.5" id="mat-op"><option value="add">A + B</option><option value="sub">A − B</option><option value="mul">A × B</option><option value="det">det(A)</option><option value="inv">A⁻¹</option><option value="trans">Aᵀ</option></select>
+            </div>
+          </div>
+          <!-- Matrix Inputs -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4" id="matrix-inputs">
+            <div><div class="flex items-center gap-2 mb-2"><span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Matrix A</span><button class="text-xs text-gray-400 hover:text-primary" id="btn-random-a">🎲 Random</button></div><div id="mat-a" class="matrix-grid matrix-grid-2"></div></div>
+            <div id="mat-b-col"><div class="flex items-center gap-2 mb-2"><span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Matrix B</span><button class="text-xs text-gray-400 hover:text-primary" id="btn-random-b">🎲 Random</button></div><div id="mat-b" class="matrix-grid matrix-grid-2"></div></div>
+          </div>
+          <button class="btn-primary w-full" id="btn-mat-calc">Calculate</button>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Result</h3>
+          <div id="mat-result"><p class="text-sm text-gray-400 italic">Enter matrices and click Calculate.</p></div>
+          <div id="mat-steps" class="mt-4"></div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content"><p class="text-gray-500 dark:text-gray-400">Standard linear algebra operations implemented in JavaScript. Determinants use the Laplace expansion. Inverses use the adjugate matrix formula.</p></div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'math-matrix',name:'Matrix Calculator',category:'Mathematics',categoryPath:'/app/dashboard.html',description:'2x2 & 3x3 matrix operations: add, subtract, multiply, determinant, inverse, transpose.',icon:'⊞',related:[{id:'math-basic',name:'Basic',icon:'🔢',category:'Mathematics',path:'/app/math/basic.html'},{id:'math-scientific',name:'Scientific',icon:'∑',category:'Mathematics',path:'/app/math/scientific.html'},{id:'math-statistics',name:'Statistics',icon:'📊',category:'Mathematics',path:'/app/math/statistics.html'},{id:'math-algebra',name:'Algebra',icon:'x²',category:'Mathematics',path:'/app/math/algebra.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'Standard linear algebra operations.',CALC.description,{'det(A)':'Determinant','A⁻¹':'Inverse via adjugate','Aᵀ':'Transpose'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Tab between matrix cells. Enter to calculate.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      let currentSize=2;let showB=true;
+      const sizeBtns=document.querySelectorAll('[data-size]');
+      sizeBtns.forEach(btn=>{btn.addEventListener('click',()=>{sizeBtns.forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentSize=parseInt(btn.dataset.size);renderMatrices();})});
+
+      function renderMatrices(){
+        const n=currentSize;const isSingleOp=['det','inv','trans'].includes(document.getElementById('mat-op').value);
+        document.getElementById('mat-b-col').style.display=isSingleOp?'none':'block';
+        showB=!isSingleOp;
+        ['mat-a','mat-b'].forEach((id,i)=>{
+          const el=document.getElementById(id);if(!showB&&i===1)return;
+          el.className=`matrix-grid matrix-grid-${n}`;
+          let html='';const vals=getMatrixValues(id);for(let r=0;r<n;r++){for(let c=0;c<n;c++){const vi=vals&&vals[r]!==undefined?vals[r][c]:0;html+=`<input type="number" class="matrix-cell" id="${id}-${r}-${c}" value="${vi}" step="any" />`}}el.innerHTML=html;
+        });
+      }
+
+      function getMatrixValues(id){
+        const n=currentSize;const m=[];for(let r=0;r<n;r++){const row=[];for(let c=0;c<n;c++){const inp=document.getElementById(`${id}-${r}-${c}`);row.push(inp?parseFloat(inp.value)||0:0)}m.push(row)}return m;
+      }
+
+      function setMatrixValues(id,m){
+        const n=m.length;for(let r=0;r<n;r++)for(let c=0;c<n;c++){const inp=document.getElementById(`${id}-${r}-${c}`);if(inp)inp.value=MathEngine.formatNumber(parseFloat(m[r][c].toFixed(6)))}}
+
+      function fmtMat(m){const n=m.length;let html='<div class="matrix-grid '+`matrix-grid-${n}`+'">';for(let r=0;r<n;r++)for(let c=0;c<n;c++)html+=`<div class="matrix-cell !bg-primary/5 !border-primary/20 font-semibold">${MathEngine.formatNumber(parseFloat(m[r][c].toFixed(6)))}</div>`;return html+'</div>'}
+
+      // Matrix engine
+      function matAdd(a,b){const n=a.length;return a.map((r,i)=>r.map((v,j)=>v+b[i][j]))}
+      function matSub(a,b){return a.map((r,i)=>r.map((v,j)=>v-b[i][j]))}
+      function matMul(a,b){const n=a.length;const r=Array.from({length:n},()=>Array(n).fill(0));for(let i=0;i<n;i++)for(let j=0;j<n;j++)for(let k=0;k<n;k++)r[i][j]+=a[i][k]*b[k][j];return r}
+      function matTrans(a){const n=a.length;return a.map((_,i)=>a.map((_,j)=>a[j][i]))}
+      function det2(a){return a[0][0]*a[1][1]-a[0][1]*a[1][0]}
+      function det3(a){
+        const [a0,a1,a2]=[a[0][0],a[0][1],a[0][2]],[b0,b1,b2]=[a[1][0],a[1][1],a[1][2]],[c0,c1,c2]=[a[2][0],a[2][1],a[2][2]];
+        return a0*(b1*c2-b2*c1)-a1*(b0*c2-b2*c0)+a2*(b0*c1-b1*c0);
+      }
+      function matDet(a){const n=a.length;if(n===2)return det2(a);if(n===3)return det3(a);return 0}
+      function matInv(a){
+        const n=a.length;const d=matDet(a);if(d===0)return null;
+        if(n===2){
+          const f=1/d;return[[f*a[1][1],-f*a[0][1]],[-f*a[1][0],f*a[0][0]]];
+        }
+        if(n===3){
+          const t=(m,i,j)=>m[(i+1)%3][(j+1)%3]*m[(i+2)%3][(j+2)%3]-m[(i+1)%3][(j+2)%3]*m[(i+2)%3][(j+1)%3];
+          const c=a.map((r,i)=>r.map((_,j)=>((i+j)%2?-1:1)*t(a,i,j)));
+          return matTrans(c).map(r=>r.map(v=>v/d));
+        }
+        return null;
+      }
+
+      function randomMatrix(n){return Array.from({length:n},()=>Array.from({length:n},()=>Math.round((Math.random()*10-5)*10)/10))}
+
+      document.getElementById('btn-random-a').addEventListener('click',()=>{
+        const vals=getMatrixValues('mat-a');if(vals.length===0)return;renderMatrices();const r=randomMatrix(currentSize);setMatrixValues('mat-a',r);
+      });
+      document.getElementById('btn-random-b').addEventListener('click',()=>{
+        if(!showB)return;renderMatrices();const r=randomMatrix(currentSize);setMatrixValues('mat-b',r);
+      });
+
+      document.getElementById('mat-op').addEventListener('change',renderMatrices);
+      document.getElementById('btn-mat-calc').addEventListener('click',()=>{
+        renderMatrices();const n=currentSize;const op=document.getElementById('mat-op').value;
+        const a=getMatrixValues('mat-a');const b=showB?getMatrixValues('mat-b'):null;
+        const resEl=document.getElementById('mat-result');const stepsEl=document.getElementById('mat-steps');
+        let result;let stepHtml='';
+        try{
+          switch(op){
+            case'add':result=matAdd(a,b);stepHtml='<div class="text-xs text-gray-400 mb-2">Element-wise addition: C[i][j] = A[i][j] + B[i][j]</div>';break;
+            case'sub':result=matSub(a,b);stepHtml='<div class="text-xs text-gray-400 mb-2">Element-wise subtraction: C[i][j] = A[i][j] − B[i][j]</div>';break;
+            case'mul':result=matMul(a,b);stepHtml='<div class="text-xs text-gray-400 mb-2">Matrix multiplication: C[i][j] = Σ A[i][k] × B[k][j]</div>';break;
+            case'trans':result=matTrans(a);stepHtml='<div class="text-xs text-gray-400 mb-2">Transpose: AT[i][j] = A[j][i]</div>';break;
+            case'det':{const d=matDet(a);resEl.innerHTML=`<div class="solution-box"><span class="text-sm text-gray-400">det(A)</span><div class="text-3xl font-bold font-mono text-primary mt-1">${MathEngine.formatNumber(d)}</div></div>`;stepsEl.innerHTML='';CalcStorage.addHistory(CALC.id,{expression:`det(${n}×${n} matrix)`,result:MathEngine.formatNumber(d)});return;}
+            case'inv':{
+              const d=matDet(a);if(d===0){resEl.innerHTML='<div class="text-sm text-red-500 p-4 rounded-lg bg-red-50 dark:bg-red-900/20">Matrix is singular (determinant = 0). No inverse exists.</div>';stepsEl.innerHTML='';return}
+              result=matInv(a);stepHtml=`<div class="text-xs text-gray-400 mb-2">Inverse: A⁻¹ = adj(A) / det(A). det(A) = ${MathEngine.formatNumber(d)}</div>`;break;
+            }
+          }
+          resEl.innerHTML=`<div class="solution-box"><span class="text-sm text-gray-400">Result</span>${fmtMat(result)}</div>`;
+          stepsEl.innerHTML=stepHtml;
+          CalcStorage.addHistory(CALC.id,{expression:`${op}(${n}×${n})`,result:`${n}×${n} matrix`});
+        }catch(e){resEl.innerHTML=`<div class="text-sm text-red-500">${e.message}</div>`;stepsEl.innerHTML='';}
+      });
+
+      renderMatrices();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

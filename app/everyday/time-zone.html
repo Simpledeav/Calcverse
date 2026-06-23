@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Zone Converter — CalcVerse</title>
+  <meta name="description" content="Convert between time zones around the world." />
+  <meta name="theme-color" content="#77d202" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" as="style" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.clock-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; border: 1px solid; background: var(--bg-base); margin-bottom: 6px; cursor: pointer; transition: all 0.15s; }
+    .dark .clock-row { background: #000; border-color: #2a2e2e; }
+    .clock-row:hover { border-color: #77d202; background: rgba(119,210,2,0.05); }
+    .clock-row.active { border-color: #77d202; background: rgba(119,210,2,0.08); }
+    .clock-row .tz-label { font-size: 0.8rem; font-weight: 600; min-width: 100px; color: var(--text-primary); }
+    .clock-row .tz-time { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: 700; color: #77d202; min-width: 80px; }
+    .clock-row .tz-offset { font-size: 0.7rem; color: #8e9aab; min-width: 80px; }
+    .clock-row .tz-date { font-size: 0.7rem; color: #8e9aab; }</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-between px-6 h-16">
+        <div class="flex items-center gap-3">
+          <nav class="breadcrumb text-sm text-gray-400" aria-label="Breadcrumb">
+            <a href="/app/dashboard.html" class="hover:text-primary transition-colors">Dashboard</a><span class="mx-1.5">/</span>
+            <a href="/app/dashboard.html" class="hover:text-primary transition-colors">Everyday</a><span class="mx-1.5">/</span>
+            <span class="text-gray-600 dark:text-gray-300 font-medium">Time Zone Converter</span>
+          </nav>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-icon" id="theme-toggle-page" aria-label="Toggle theme">
+            <span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    <div class="p-6">
+      <div class="calc-header flex flex-wrap items-start justify-between gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-semibold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">Everyday</span>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">🌍 Time Zone Converter</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Convert times across time zones worldwide.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-favorite" data-calc-id="day-timezone">☆ Favorite</button>
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-share">Share</button>
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-formula">Formula ƒ</button>
+        </div>
+      </div>
+      <div class="calc-body max-w-xl">
+        <div class="everyday-card">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+            <div>
+              <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Date</label>
+              <input type="date" id="src-date" class="everyday-input" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Time</label>
+              <input type="time" id="src-time" class="everyday-input" value="12:00" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Source Time Zone (click to select)</label>
+            <select id="src-tz" class="everyday-select mb-5"></select>
+          </div>
+
+          <!-- Target timezone selector -->
+          <div class="flex items-center gap-2 mb-4">
+            <label class="text-xs font-semibold uppercase tracking-wider text-gray-400 shrink-0">Show Zones:</label>
+            <select id="tz-filter" class="everyday-select text-xs py-1.5">
+              <option value="all">All</option>
+              <option value="americas">Americas</option>
+              <option value="europe">Europe & Africa</option>
+              <option value="asia">Asia & Pacific</option>
+            </select>
+          </div>
+
+          <div id="clock-list" class="max-h-[400px] overflow-y-auto"></div>
+        </div>
+        <details class="calc-formula-box mt-6">
+          <summary class="cursor-pointer text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">How it works</summary>
+          <div class="mt-3 text-sm text-gray-500 dark:text-gray-400"><p>Each time zone has a fixed UTC offset. To convert, take the source time, adjust to UTC, then apply the target offset.</p><p class="mt-1 text-xs text-gray-400">DST is approximated — this tool does not track DST transition dates.</p></div>
+        </details>
+      </div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script src="/assets/js/engines/date-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tzData = DateEngine.TIMEZONES;
+      const srcTz = document.getElementById('src-tz');
+      const srcDate = document.getElementById('src-date');
+      const srcTime = document.getElementById('src-time');
+      const tzFilter = document.getElementById('tz-filter');
+      const clockList = document.getElementById('clock-list');
+
+      // Populate source TZ
+      tzData.forEach(tz => {
+        srcTz.innerHTML += `<option value="${tz.offset}" data-id="${tz.id}">${tz.label} — ${tz.name}</option>`;
+      });
+
+      // Set default date/time
+      const now = new Date();
+      srcDate.value = now.toISOString().split('T')[0];
+      srcTime.value = now.toTimeString().slice(0, 5);
+
+      function getFilter(tz) {
+        const off = tz.offset;
+        if (off >= -10 && off <= -4) return 'americas';
+        if (off >= -1 && off <= 3) return 'europe';
+        if (off >= 4 && off <= 12) return 'asia';
+        return 'all';
+      }
+
+      function convertAll() {
+        const srcOffset = parseFloat(srcTz.value);
+        const dateStr = srcDate.value;
+        const timeStr = srcTime.value;
+        if (!dateStr || !timeStr) return;
+
+        const [h, m] = timeStr.split(':').map(Number);
+        const srcDt = new Date(dateStr + 'T' + timeStr + ':00');
+
+        // Get current filter
+        const filter = tzFilter.value;
+
+        let html = '';
+        tzData.forEach(tz => {
+          if (filter !== 'all' && getFilter(tz) !== filter) return;
+          const result = DateEngine.convertTimezone(srcDt, srcOffset, tz.offset);
+          const isActive = Math.abs(tz.offset - srcOffset) < 0.01;
+          const dayStr = result.time.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+          html += `<div class="clock-row ${isActive ? 'active' : ''}" data-offset="${tz.offset}">
+            <span class="tz-label">${tz.id}</span>
+            <span class="tz-time">${result.formatted}</span>
+            <span class="tz-offset">${tz.label}</span>
+            <span class="tz-date">${dayStr}</span>
+          </div>`;
+        });
+        clockList.innerHTML = html;
+
+        // Click to set as source
+        document.querySelectorAll('.clock-row').forEach(row => {
+          row.addEventListener('click', function() {
+            const off = parseFloat(this.dataset.offset);
+            const match = [...srcTz.options].find(o => parseFloat(o.value) === off);
+            if (match) { srcTz.value = match.value; convertAll(); }
+          });
+        });
+
+      }
+
+      function saveHistory() {
+        CalcStorage.addHistory('day-timezone', {
+          expression: srcTime.value + ' (' + srcTz.options[srcTz.selectedIndex]?.text.split(' — ')[0] + ')',
+          result: 'Converted ' + tzData.length + ' zones',
+          timestamp: Date.now()
+        });
+      }
+
+      srcDate.addEventListener('change', function() { convertAll(); saveHistory(); });
+      srcTime.addEventListener('change', function() { convertAll(); saveHistory(); });
+      srcTz.addEventListener('change', function() { convertAll(); saveHistory(); });
+      tzFilter.addEventListener('change', function() { convertAll(); saveHistory(); });
+
+      // Live ticker — update display only, don't save history
+      setInterval(() => {
+        const now = new Date();
+        srcTime.value = now.toTimeString().slice(0, 5);
+        convertAll();
+      }, 60000);
+
+      // Favorite
+      document.getElementById('btn-favorite')?.addEventListener('click', function() {
+        const isFav = CalcStorage.toggleFavorite(this.dataset.calcId);
+        this.textContent = isFav ? '★ Favorited' : '☆ Favorite';
+        this.classList.toggle('text-primary', isFav);
+        Toast.show(isFav ? 'Added to favorites' : 'Removed from favorites', isFav ? 'success' : 'info');
+      });
+      if (CalcStorage.isFavorite('day-timezone')) { document.getElementById('btn-favorite').textContent = '★ Favorited'; document.getElementById('btn-favorite').classList.add('text-primary'); }
+
+      document.getElementById('btn-share')?.addEventListener('click', function() {
+        Modal.show({ title: 'Share', content: '<p class="text-sm text-gray-500">Share the current time zone view via screenshot.</p>' });
+      });
+
+      document.getElementById('btn-formula')?.addEventListener('click', function() {
+        Modal.show({ title: 'Time Zone Calculation', content: '<div class="text-sm text-gray-500 dark:text-gray-400"><p><strong>Target Time</strong> = Source Time + (Target Offset − Source Offset)</p><p class="mt-2 text-xs text-gray-400">Offsets are relative to UTC. Click any time zone row to set it as the new source.</p></div>' });
+      });
+
+      document.getElementById('theme-toggle-page')?.addEventListener('click', () => themeEngine.toggle());
+      const sidebar = new CalcVerseSidebar('#sidebar-container', { collapsed: window.innerWidth < 1024 });
+      window.calcSidebar = sidebar;
+      CalcStorage.recordVisit('day-timezone', 'Time Zone Converter');
+      convertAll();
+    });
+  </script>
+</body>
+</html>

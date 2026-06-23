@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unit Converter — CalcVerse</title>
+  <meta name="description" content="Universal unit converter: length, mass, temperature, area, volume, speed, pressure, energy, power, storage, angle, and fuel economy." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.uc-cat-btn{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;transition:all .1s;background:theme('colors.gray.100');color:theme('colors.gray.600');white-space:nowrap}.dark .uc-cat-btn{background:theme('colors.gray.800');color:theme('colors.gray.400')}.uc-cat-btn.active{background:theme('colors.primary.DEFAULT');color:white}.uc-result{font-size:1.75rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:theme('colors.primary.DEFAULT')}.uc-sym{font-size:0.875rem;color:theme('colors.gray.400')}.swap-btn{padding:8px;border-radius:9999px;background:theme('colors.gray.100');cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}.dark .swap-btn{background:theme('colors.gray.800')}.swap-btn:hover{background:theme('colors.primary.DEFAULT');color:white}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Engineering</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Unit Converter</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Engineering</span>
+          <h1 class="calc-title">Universal Unit Converter</h1>
+          <p class="calc-description" id="calc-desc">Convert between units of length, mass, temperature, area, volume, speed, pressure, energy, power, storage, angle, and fuel economy.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="eng-unit"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <!-- Category tabs -->
+          <div class="flex gap-1 overflow-x-auto pb-2 scrollbar-none mb-4 flex-wrap" id="uc-categories"></div>
+          <!-- Converter -->
+          <div class="grid grid-cols-[1fr_auto_1fr] gap-3 items-end mb-4">
+            <div class="input-group"><label class="input-label" for="uc-from-val">From</label><input type="number" class="input-field" id="uc-from-val" value="1" step="any" /><select class="input-field mt-1" id="uc-from-unit"></select></div>
+            <div class="swap-btn" id="uc-swap" title="Swap units">⇄</div>
+            <div class="input-group"><label class="input-label">To</label><div class="input-field" id="uc-to-val" style="cursor:default;background:theme('colors.gray.50');height:42px;display:flex;align-items:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.25rem">—</div><select class="input-field mt-1" id="uc-to-unit"></select></div>
+          </div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Conversion Table</h3>
+          <div class="max-h-64 overflow-y-auto scrollbar-thin space-y-1" id="uc-table"></div>
+          <div id="calc-results" class="mt-4"></div>
+          <div class="p-3 rounded-lg bg-primary/10 mt-3"><p class="text-xs text-gray-500">💡 Type a value and select units. Click ⇄ to swap. All 12 categories support live conversion.</p></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content"><p class="text-gray-500 dark:text-gray-400">Uses multiplicative conversion factors to a base unit. Temperature uses offset formulas. Fuel economy uses reciprocal formulas.</p></div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/unit-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'eng-unit',name:'Unit Converter',category:'Engineering',categoryPath:'/app/dashboard.html',description:'Universal unit converter across 12 categories.',icon:'📐',related:[{id:'eng-resistor',name:'Resistor Code',icon:'🎨',category:'Engineering',path:'/app/engineering/resistor.html'},{id:'eng-binary',name:'Binary',icon:'01',category:'Engineering',path:'/app/engineering/binary.html'},{id:'eng-datastorage',name:'Data Storage',icon:'💾',category:'Engineering',path:'/app/engineering/data-storage.html'},{id:'eng-bandwidth',name:'Bandwidth',icon:'📡',category:'Engineering',path:'/app/engineering/bandwidth.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'Converts between units using standard conversion factors.',CALC.description,{'Length':'meters','Mass':'grams','Temp':'Kelvin','Storage':'bits'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Type to convert live. Tab between fields. Click ⇄ to swap from/to units.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      let currentCategory='length';
+      const catLabels={'length':'📏 Length','mass':'⚖️ Mass','temperature':'🌡️ Temperature','area':'📐 Area','volume':'🧪 Volume','speed':'🚀 Speed','pressure':'💨 Pressure','energy':'⚡ Energy','power':'🔌 Power','storage':'💾 Storage','angle':'📐 Angle','fuel_economy':'⛽ Fuel'};
+
+      // Render category tabs
+      const catContainer=document.getElementById('uc-categories');
+      UnitEngine.getCategories().forEach(cat=>{
+        const btn=document.createElement('span');btn.className=`uc-cat-btn${cat===currentCategory?' active':''}`;btn.textContent=catLabels[cat]||cat.replace(/_/g,' ');
+        btn.addEventListener('click',()=>{document.querySelectorAll('.uc-cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentCategory=cat;populateUnits();convert()});
+        catContainer.appendChild(btn);
+      });
+
+      function populateUnits(){
+        const units=UnitEngine.getCategoryUnits(currentCategory);
+        const fromSel=document.getElementById('uc-from-unit');const toSel=document.getElementById('uc-to-unit');
+        fromSel.innerHTML=units.map(u=>`<option value="${u.id}">${u.symbol} — ${u.name}</option>`).join('');
+        toSel.innerHTML=units.map(u=>`<option value="${u.id}">${u.symbol} — ${u.name}</option>`).join('');
+        // Set sensible defaults
+        if(currentCategory==='length'){fromSel.value='meter';toSel.value='foot'}
+        else if(currentCategory==='temperature'){fromSel.value='celsius';toSel.value='fahrenheit'}
+        else if(currentCategory==='storage'){fromSel.value='gigabyte';toSel.value='gibibyte'}
+        else if(currentCategory==='speed'){fromSel.value='kmph';toSel.value='mph'}
+        else {toSel.value=units.length>1?units[1].id:units[0].id}
+      }
+
+      function convert(){
+        const val=parseFloat(document.getElementById('uc-from-val').value);
+        const from=document.getElementById('uc-from-unit').value;
+        const to=document.getElementById('uc-to-unit').value;
+        const el=document.getElementById('uc-to-val');const tbl=document.getElementById('uc-table');
+        if(isNaN(val)){el.textContent='—';tbl.innerHTML='';return}
+        try{
+          const result=UnitEngine.convert(val,from,to,currentCategory);
+          const fmt=UnitEngine.formatValue(result);
+          const fromUnit=UnitEngine.CATEGORIES[currentCategory].units[from];
+          const toUnit=UnitEngine.CATEGORIES[currentCategory].units[to];
+          el.innerHTML=`${fmt}`;
+
+          // Conversion table
+          const units=UnitEngine.getCategoryUnits(currentCategory);
+          const baseVal=UnitEngine.convert(val,from,currentCategory==='temperature'?'celsius':Object.keys(UnitEngine.CATEGORIES[currentCategory].units)[0],currentCategory);
+          tbl.innerHTML=units.slice(0,20).map(u=>{
+            const converted=UnitEngine.convert(val,from,u.id,currentCategory);
+            return `<div class="flex justify-between p-1.5 rounded text-xs ${u.id===to?'bg-primary/10 font-semibold':''} ${u.id===from?'bg-gray-100 dark:bg-black/30':''}"><span>${u.symbol} ${u.name}</span><span class="font-mono">${UnitEngine.formatValue(converted,4)}</span></div>`;
+          }).join('');
+          CalcStorage.addHistory(CALC.id,{expression:`${UnitEngine.formatValue(val)} ${fromUnit.symbol} → ${toUnit.symbol}`,result:`${fmt}`});
+        }catch(e){el.textContent='Error';}
+      }
+
+      document.getElementById('uc-from-val').addEventListener('input',convert);
+      document.getElementById('uc-from-unit').addEventListener('change',convert);
+      document.getElementById('uc-to-unit').addEventListener('change',convert);
+
+      document.getElementById('uc-swap').addEventListener('click',()=>{
+        const fromSel=document.getElementById('uc-from-unit');const toSel=document.getElementById('uc-to-unit');
+        const tmp=fromSel.value;fromSel.value=toSel.value;toSel.value=tmp;
+        convert();
+      });
+
+      populateUnits();convert();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

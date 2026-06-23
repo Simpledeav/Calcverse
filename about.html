@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About — CalcVerse</title>
-  <meta name="description" content="About CalcVerse — the all-in-one calculator platform." />
+  <meta name="description" content="About CalcVerse — the all-in-one calculator platform with 64 tools across 7 categories." />
   <script>
     (function() {
       const theme = localStorage.getItem('cv-theme') ||
@@ -22,37 +22,98 @@
     <span class="theme-toggle-icon hidden dark:inline">☀️</span>
   </button>
 
-  <div class="max-w-3xl mx-auto px-6 py-20">
+  <div class="max-w-4xl mx-auto px-6 py-20">
     <a href="/" class="text-sm text-gray-400 hover:text-primary transition-colors mb-8 inline-block">← Back to Home</a>
-    
-    <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">About CalcVerse</h1>
-    <p class="text-xl text-gray-500 dark:text-gray-400 mb-12">A precision-first, dark-capable calculator ecosystem built for humans who calculate.</p>
 
-    <div class="grid grid-cols-3 gap-6 mb-12">
-      <div class="stat-card"><div class="stat-value">64</div><div class="stat-label">Calculators</div></div>
-      <div class="stat-card"><div class="stat-value">7</div><div class="stat-label">Categories</div></div>
-      <div class="stat-card"><div class="stat-value">62</div><div class="stat-label">Live Tools</div></div>
+    <div class="text-center mb-16">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider mb-4">About</div>
+      <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-4">About CalcVerse</h1>
+      <p class="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">A precision-first, dark-capable calculator ecosystem built for humans who calculate.</p>
     </div>
 
-    <div class="space-y-8">
-      <section>
-        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Our Mission</h2>
-        <p class="text-gray-600 dark:text-gray-400 leading-relaxed">To provide every calculation a person might need — from basic arithmetic to complex financial projections — all from a single, beautifully designed interface that works everywhere.</p>
+    <!-- Animated Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-16">
+      <div class="stat-card group">
+        <div class="stat-value group-hover:scale-110 transition-transform origin-center" id="stat-calcs">0</div>
+        <div class="stat-label">Calculators</div>
+      </div>
+      <div class="stat-card group">
+        <div class="stat-value group-hover:scale-110 transition-transform origin-center" id="stat-cats">0</div>
+        <div class="stat-label">Categories</div>
+      </div>
+      <div class="stat-card group">
+        <div class="stat-value group-hover:scale-110 transition-transform origin-center" id="stat-live">0</div>
+        <div class="stat-label">Live Tools</div>
+      </div>
+      <div class="stat-card group">
+        <div class="stat-value text-primary group-hover:scale-110 transition-transform origin-center">∞</div>
+        <div class="stat-label">Possibilities</div>
+      </div>
+    </div>
+
+    <div class="space-y-12">
+      <!-- Mission -->
+      <section class="card p-8">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <span class="text-primary">◆</span> Our Mission
+        </h2>
+        <p class="text-gray-600 dark:text-gray-400 leading-relaxed text-lg">To provide every calculation a person might need — from basic arithmetic to complex financial projections — all from a single, beautifully designed interface that works everywhere, on every device, in both light and dark mode.</p>
       </section>
 
-      <section>
-        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Technology Stack</h2>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="card p-4"><span class="font-semibold text-primary">HTML5</span><p class="text-sm text-gray-400 mt-1">Semantic markup, accessibility</p></div>
-          <div class="card p-4"><span class="font-semibold text-primary">Tailwind CSS</span><p class="text-sm text-gray-400 mt-1">Utility-first styling</p></div>
-          <div class="card p-4"><span class="font-semibold text-primary">Vanilla JS (ES6+)</span><p class="text-sm text-gray-400 mt-1">No frameworks, maximum performance</p></div>
-          <div class="card p-4"><span class="font-semibold text-primary">Python FastAPI</span><p class="text-sm text-gray-400 mt-1">Complex computation engine</p></div>
+      <!-- Tech Stack -->
+      <section class="card p-8">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <span class="text-primary">◆</span> Technology Stack
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-100 dark:border-gray-800">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              <span class="font-semibold text-gray-900 dark:text-gray-100">HTML5</span>
+            </div>
+            <p class="text-sm text-gray-400 ml-4">Semantic markup, accessibility-first</p>
+          </div>
+          <div class="p-4 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-100 dark:border-gray-800">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              <span class="font-semibold text-gray-900 dark:text-gray-100">Tailwind CSS v3</span>
+            </div>
+            <p class="text-sm text-gray-400 ml-4">Utility-first, design system tokens</p>
+          </div>
+          <div class="p-4 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-100 dark:border-gray-800">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              <span class="font-semibold text-gray-900 dark:text-gray-100">Vanilla JS (ES6+)</span>
+            </div>
+            <p class="text-sm text-gray-400 ml-4">Zero frameworks, maximum performance</p>
+          </div>
+          <div class="p-4 rounded-xl bg-gray-50 dark:bg-black/30 border border-gray-100 dark:border-gray-800">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2 h-2 rounded-full bg-primary"></span>
+              <span class="font-semibold text-gray-900 dark:text-gray-100">Python FastAPI</span>
+            </div>
+            <p class="text-sm text-gray-400 ml-4">NumPy/SciPy complex engine backend</p>
+          </div>
         </div>
       </section>
 
-      <section>
-        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-3">Open Source</h2>
-        <p class="text-gray-600 dark:text-gray-400 leading-relaxed">CalcVerse is built with transparency and community in mind. Contributions, feedback, and feature requests are always welcome.</p>
+      <!-- Contact Form -->
+      <section class="card p-8">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <span class="text-primary">◆</span> Get in Touch
+        </h2>
+        <p class="text-gray-500 dark:text-gray-400 mb-6">Have a suggestion, found a bug, or want to contribute? We'd love to hear from you.</p>
+        <form class="space-y-4 max-w-lg" onsubmit="event.preventDefault();this.querySelector('button').textContent='✓ Message sent!';this.querySelector('button').classList.add('!bg-primary');setTimeout(()=>this.querySelector('button').textContent='Send Message →',3000)">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input type="text" placeholder="Your name" class="input-field" required />
+            <input type="email" placeholder="Your email" class="input-field" required />
+          </div>
+          <input type="text" placeholder="Subject" class="input-field" />
+          <textarea placeholder="Your message" class="input-field min-h-[120px]" rows="4" required></textarea>
+          <button type="submit" class="btn-primary group">
+            Send Message <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
+          </button>
+        </form>
       </section>
     </div>
   </div>
@@ -60,6 +121,38 @@
   <script src="/assets/js/core/theme.js"></script>
   <script>
     document.getElementById('theme-toggle')?.addEventListener('click', () => themeEngine.toggle());
+
+    // Animated count-up for stats
+    function animateCountUp(el, target, duration = 1500) {
+      const start = performance.now();
+      const startVal = 0;
+
+      function update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(startVal + (target - startVal) * eased);
+        el.textContent = current;
+        if (progress < 1) requestAnimationFrame(update);
+        else el.textContent = target;
+      }
+      requestAnimationFrame(update);
+    }
+
+    // Intersection observer to trigger animations on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateCountUp(document.getElementById('stat-calcs'), 64);
+          animateCountUp(document.getElementById('stat-cats'), 7);
+          animateCountUp(document.getElementById('stat-live'), 62);
+          observer.disconnect();
+        }
+      });
+    }, { threshold: 0.3 });
+
+    observer.observe(document.querySelector('.stat-card'));
   </script>
 </body>
 </html>

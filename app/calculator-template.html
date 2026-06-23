@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculator — CalcVerse</title>
+  <meta name="description" content="CalcVerse Calculator" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/keypad.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <div id="sidebar-container"></div>
+
+  <!-- Mobile toggle -->
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Main -->
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <!-- Top Bar -->
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/>
+          </svg>
+        </button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme">
+          <span class="dark:hidden">🌙</span>
+          <span class="hidden dark:inline">☀️</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Calculator Content -->
+    <div class="calc-page" id="calc-app">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" id="calc-breadcrumb">
+        <a href="/app/dashboard.html">Dashboard</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="/app/dashboard.html" id="breadcrumb-category">Category</a>
+        <span class="breadcrumb-separator">/</span>
+        <span id="breadcrumb-name">Calculator Name</span>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge" id="calc-badge">Category</span>
+          <h1 class="calc-title" id="calc-title">Calculator Name</h1>
+          <p class="calc-description" id="calc-desc">Calculator description goes here.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="" aria-label="Toggle favorite">
+            <span>☆</span> <span class="hidden sm:inline">Favorite</span>
+          </button>
+          <button class="btn-ghost" id="btn-share" aria-label="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            <span class="hidden sm:inline">Share</span>
+          </button>
+          <button class="btn-ghost" id="btn-formula" aria-label="Formula">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <span class="hidden sm:inline">Formula</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Calculator Body -->
+      <div class="calc-body" id="calc-body">
+        <!-- LEFT COLUMN: Display + Keypad -->
+        <div class="calc-display-panel" id="calc-left">
+          <div id="display-container">
+            <!-- CalcVerseDisplay mounts here -->
+          </div>
+          <div id="keypad-container" class="mt-4">
+            <!-- CalcVerseKeypad mounts here -->
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Additional controls or results -->
+        <div class="calc-form-box" id="calc-right">
+          <div id="calc-controls">
+            <p class="text-sm text-gray-400 text-center py-8">Calculator controls will appear here.</p>
+          </div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+
+      <!-- Formula Reference -->
+      <details class="calc-formula-box" id="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content">
+          <p class="text-gray-500 dark:text-gray-400">Formula reference will appear here.</p>
+        </div>
+      </details>
+
+      <!-- Related Calculators -->
+      <div class="related-calcs" id="related-calcs">
+        <h3>Related Calculators</h3>
+        <div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list">
+          <!-- Related calculator cards rendered by JS -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/keypad.js"></script>
+  <script src="/assets/js/components/display.js"></script>
+  <script src="/assets/js/core/keyboard.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // === Init Sidebar ===
+      const sidebar = new CalcVerseSidebar('#sidebar-container', {
+        collapsed: window.innerWidth < 1024
+      });
+      window.calcSidebar = sidebar;
+
+      // === Init Theme ===
+      window.themeEngine = themeEngine;
+      document.getElementById('theme-toggle-calc')?.addEventListener('click', () => themeEngine.toggle());
+
+      // === Calculator Configuration (override per page) ===
+      const CALC_CONFIG = {
+        id: 'calc-template',
+        name: 'Calculator Name',
+        category: 'Category',
+        categoryPath: '/app/dashboard.html',
+        description: 'Description here.',
+        icon: '🔢',
+        layout: 'standard',
+        formula: 'Formula will appear here.',
+        related: [],
+      };
+
+      // Apply config
+      document.getElementById('calc-badge').textContent = CALC_CONFIG.category;
+      document.getElementById('calc-title').textContent = CALC_CONFIG.name;
+      document.getElementById('calc-desc').textContent = CALC_CONFIG.description;
+      document.getElementById('breadcrumb-category').textContent = CALC_CONFIG.category;
+      document.getElementById('breadcrumb-category').href = CALC_CONFIG.categoryPath;
+      document.getElementById('breadcrumb-name').textContent = CALC_CONFIG.name;
+      document.getElementById('btn-favorite').dataset.calcId = CALC_CONFIG.id;
+      document.title = CALC_CONFIG.name + ' — CalcVerse';
+      document.querySelector('meta[name="description"]').content = CALC_CONFIG.description;
+      // Sidebar active
+      sidebar.setActive(CALC_CONFIG.id);
+      // Record visit
+      CalcStorage.recordVisit(CALC_CONFIG.id, CALC_CONFIG.name);
+
+      // === Favorite toggle ===
+      const favBtn = document.getElementById('btn-favorite');
+      function updateFavBtn() {
+        const isFav = CalcStorage.isFavorite(CALC_CONFIG.id);
+        favBtn.innerHTML = isFav ? '<span>★</span> <span class="hidden sm:inline">Favorited</span>' : '<span>☆</span> <span class="hidden sm:inline">Favorite</span>';
+        favBtn.classList.toggle('text-primary', isFav);
+      }
+      favBtn?.addEventListener('click', () => {
+        CalcStorage.toggleFavorite(CALC_CONFIG.id);
+        updateFavBtn();
+      });
+      updateFavBtn();
+      document.addEventListener('cv:favorites-update', updateFavBtn);
+
+      // === Share button ===
+      document.getElementById('btn-share')?.addEventListener('click', () => {
+        if (navigator.share) {
+          navigator.share({ title: CALC_CONFIG.name, text: CALC_CONFIG.description, url: window.location.href });
+        } else {
+          navigator.clipboard.writeText(window.location.href);
+          Toast.show('Link copied to clipboard!', 'success');
+        }
+      });
+
+      // === Formula modal ===
+      document.getElementById('btn-formula')?.addEventListener('click', () => {
+        Modal.showFormula(CALC_CONFIG.name, CALC_CONFIG.formula, CALC_CONFIG.description, {});
+      });
+
+      // === Related calculators ===
+      const relatedList = document.getElementById('related-list');
+      if (CALC_CONFIG.related && CALC_CONFIG.related.length > 0) {
+        relatedList.innerHTML = CALC_CONFIG.related.map(r => `
+          <a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0">
+            <div class="text-xl mb-1">${r.icon || '🔢'}</div>
+            <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4>
+            <p class="text-xs text-gray-400 mt-0.5">${r.category}</p>
+          </a>
+        `).join('');
+      } else {
+        relatedList.innerHTML = '<p class="text-sm text-gray-400 italic">Related calculators coming soon.</p>';
+      }
+
+      // === Keyboard help ===
+      document.getElementById('btn-keyboard-help')?.addEventListener('click', () => {
+        Modal.show({
+          title: '⌨️ Keyboard Shortcuts',
+          content: `
+            <div class="grid grid-cols-2 gap-3">
+              ${[['0-9','Numbers'],['.','Decimal'],['+ - * /','Operators'],['Enter','Calculate'],
+                 ['Backspace','Delete'],['Escape','Clear'],['Shift+↑↓','History nav']].map(([k,d]) =>
+                `<div class="flex items-center gap-2 text-sm"><kbd class="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 font-mono text-xs">${k}</kbd><span class="text-gray-600 dark:text-gray-400">${d}</span></div>`
+              ).join('')}
+            </div>`
+        });
+      });
+
+      // === Mobile menu ===
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click', () => sidebar.toggle());
+
+      // === Resize handler ===
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (window.innerWidth < 1024) sidebar.collapse();
+          else sidebar.expand();
+        }, 150);
+      });
+    });
+  </script>
+</body>
+</html>

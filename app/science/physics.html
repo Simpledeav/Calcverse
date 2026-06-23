@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Physics Calculator — CalcVerse</title>
+  <meta name="description" content="Solve physics formulas: kinematics, Newton's laws, energy, and work. Auto-solves for any unknown variable." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.formula-card{padding:16px;border-radius:12px;background:linear-gradient(135deg,theme('colors.primary.DEFAULT')/8,theme('colors.black')/5);border:1px solid theme('colors.primary.DEFAULT')/20}.dark .formula-card{background:linear-gradient(135deg,theme('colors.primary.DEFAULT')/6,theme('colors.black')/15)}.formula-display{font-size:1.25rem;font-weight:600;font-family:'JetBrains Mono',monospace;text-align:center;padding:12px;border-radius:8px;background:theme('colors.gray.50');border:1px solid theme('colors.gray.200)}.dark .formula-display{background:theme('colors.black')/30;border-color:theme('colors.gray.700')}.section-tab{padding:8px 18px;border-radius:9999px;font-size:13px;font-weight:500;transition:all .15s;background:theme('colors.gray.100');color:theme('colors.gray.600')}.dark .section-tab{background:theme('colors.gray.800');color:theme('colors.gray.400')}.section-tab.active{background:theme('colors.primary.DEFAULT');color:white}.phys-result{font-size:1.75rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:theme('colors.primary.DEFAULT')}.var-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:theme('colors.gray.400')}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Science</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Physics Calculator</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Science</span>
+          <h1 class="calc-title">Physics Formula Calculator</h1>
+          <p class="calc-description" id="calc-desc">Solve kinematics, Newton's laws, and energy/work formulas. Enter known values and auto-solve for the unknown.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="sci-physics"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <!-- Section Tabs -->
+          <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none mb-6" id="section-tabs">
+            <button class="section-tab active" data-section="kinematics">Kinematics</button>
+            <button class="section-tab" data-section="newton">Newton's Laws</button>
+            <button class="section-tab" data-section="energy">Energy & Work</button>
+          </div>
+          <!-- ========== KINEMATICS ========== -->
+          <div id="section-kinematics" class="phys-section">
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none mb-4" id="kinematics-tabs">
+              <button class="formula-btn active" data-formula="v=u+at">v = u + at</button>
+              <button class="formula-btn" data-formula="s=ut+½at²">s = ut + ½at²</button>
+              <button class="formula-btn" data-formula="v²=u²+2as">v² = u² + 2as</button>
+            </div>
+            <div id="kinematics-vuat" class="kin-formula">
+              <div class="formula-display mb-4">v = u + a · t</div>
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="input-group"><label class="input-label">u (initial velocity, m/s)</label><input type="number" class="input-field" data-kin-var="u" value="0" step="any" /></div>
+                <div class="input-group"><label class="input-label">a (acceleration, m/s²)</label><input type="number" class="input-field" data-kin-var="a" value="9.8" step="any" /></div>
+                <div class="input-group"><label class="input-label">t (time, s)</label><input type="number" class="input-field" data-kin-var="t" value="3" step="any" /></div>
+                <div class="input-group"><label class="input-label">v (final velocity, m/s)</label><input type="number" class="input-field" data-kin-var="v" value="" step="any" placeholder="leave blank to solve" /></div>
+              </div>
+              <button class="btn-primary w-full btn-solve-kin">Solve</button>
+              <div class="kin-result mt-4"></div>
+            </div>
+            <div id="kinematics-sut½at²" class="kin-formula hidden">
+              <div class="formula-display mb-4">s = u·t + ½ · a · t²</div>
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="input-group"><label class="input-label">u (initial velocity, m/s)</label><input type="number" class="input-field" data-kin2-var="u" value="0" step="any" /></div>
+                <div class="input-group"><label class="input-label">t (time, s)</label><input type="number" class="input-field" data-kin2-var="t" value="3" step="any" /></div>
+                <div class="input-group"><label class="input-label">a (acceleration, m/s²)</label><input type="number" class="input-field" data-kin2-var="a" value="9.8" step="any" /></div>
+                <div class="input-group"><label class="input-label">s (displacement, m)</label><input type="number" class="input-field" data-kin2-var="s" value="" step="any" placeholder="leave blank to solve" /></div>
+              </div>
+              <button class="btn-primary w-full btn-solve-kin2">Solve</button>
+              <div class="kin2-result mt-4"></div>
+            </div>
+            <div id="kinematics-v²=u²+2as" class="kin-formula hidden">
+              <div class="formula-display mb-4">v² = u² + 2 · a · s</div>
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="input-group"><label class="input-label">u (initial velocity, m/s)</label><input type="number" class="input-field" data-kin3-var="u" value="0" step="any" /></div>
+                <div class="input-group"><label class="input-label">a (acceleration, m/s²)</label><input type="number" class="input-field" data-kin3-var="a" value="9.8" step="any" /></div>
+                <div class="input-group"><label class="input-label">s (displacement, m)</label><input type="number" class="input-field" data-kin3-var="s" value="10" step="any" /></div>
+                <div class="input-group"><label class="input-label">v (final velocity, m/s)</label><input type="number" class="input-field" data-kin3-var="v" value="" step="any" placeholder="leave blank to solve" /></div>
+              </div>
+              <button class="btn-primary w-full btn-solve-kin3">Solve</button>
+              <div class="kin3-result mt-4"></div>
+            </div>
+          </div>
+          <!-- ========== NEWTON'S LAWS ========== -->
+          <div id="section-newton" class="phys-section hidden">
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none mb-4" id="newton-tabs">
+              <button class="formula-btn active" data-formula="F=ma">F = ma</button>
+              <button class="formula-btn" data-formula="W=mg">W = mg</button>
+            </div>
+            <div id="newton-F=ma" class="newton-formula">
+              <div class="formula-display mb-4">F = m · a</div>
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="input-group"><label class="input-label">m (mass, kg)</label><input type="number" class="input-field" data-newt1-var="m" value="10" step="any" /></div>
+                <div class="input-group"><label class="input-label">a (acceleration, m/s²)</label><input type="number" class="input-field" data-newt1-var="a" value="5" step="any" /></div>
+                <div class="input-group"><label class="input-label">F (force, N)</label><input type="number" class="input-field" data-newt1-var="F" value="" step="any" placeholder="leave blank to solve" /></div>
+              </div>
+              <button class="btn-primary w-full btn-solve-newt1">Solve</button>
+              <div class="newt1-result mt-4"></div>
+            </div>
+            <div id="newton-W=mg" class="newton-formula hidden">
+              <div class="formula-display mb-4">W = m · g</div>
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="input-group"><label class="input-label">m (mass, kg)</label><input type="number" class="input-field" data-newt2-var="m" value="70" step="any" /></div>
+                <div class="input-group"><label class="input-label">g (gravity, m/s²)</label><input type="number" class="input-field" data-newt2-var="g" value="9.8" step="any" /></div>
+                <div class="input-group"><label class="input-label">W (weight, N)</label><input type="number" class="input-field" data-newt2-var="W" value="" step="any" placeholder="leave blank to solve" /></div>
+              </div>
+              <button class="btn-primary w-full btn-solve-newt2">Solve</button>
+              <div class="newt2-result mt-4"></div>
+            </div>
+          </div>
+          <!-- ========== ENERGY & WORK ========== -->
+          <div id="section-energy" class="phys-section hidden">
+            <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none mb-4" id="energy-tabs">
+              <button class="formula-btn active" data-formula="KE=½mv²">KE = ½mv²</button>
+              <button class="formula-btn" data-formula="PE=mgh">PE = mgh</button>
+              <button class="formula-btn" data-formula="W=Fd">W = F · d</button>
+            </div>
+            <div id="energy-KE=½mv²" class="energy-formula">
+              <div class="formula-display mb-4">KE = ½ · m · v²</div>
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="input-group"><label class="input-label">m (mass, kg)</label><input type="number" class="input-field" data-ke-var="m" value="2" step="any" /></div>
+                <div class="input-group"><label class="input-label">v (velocity, m/s)</label><input type="number" class="input-field" data-ke-var="v" value="5" step="any" /></div>
+                <div class="input-group"><label class="input-label">KE (kinetic energy, J)</label><input type="number" class="input-field" data-ke-var="KE" value="" step="any" placeholder="leave blank to solve" /></div>
+              </div>
+              <button class="btn-primary w-full btn-solve-ke">Solve</button>
+              <div class="ke-result mt-4"></div>
+            </div>
+            <div id="energy-PE=mgh" class="energy-formula hidden">
+              <div class="formula-display mb-4">PE = m · g · h</div>
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="input-group"><label class="input-label">m (mass, kg)</label><input type="number" class="input-field" data-pe-var="m" value="5" step="any" /></div>
+                <div class="input-group"><label class="input-label">g (gravity, m/s²)</label><input type="number" class="input-field" data-pe-var="g" value="9.8" step="any" /></div>
+                <div class="input-group"><label class="input-label">h (height, m)</label><input type="number" class="input-field" data-pe-var="h" value="10" step="any" /></div>
+                <div class="input-group"><label class="input-label">PE (potential energy, J)</label><input type="number" class="input-field" data-pe-var="PE" value="" step="any" placeholder="leave blank to solve" /></div>
+              </div>
+              <button class="btn-primary w-full btn-solve-pe">Solve</button>
+              <div class="pe-result mt-4"></div>
+            </div>
+            <div id="energy-W=Fd" class="energy-formula hidden">
+              <div class="formula-display mb-4">W = F · d</div>
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="input-group"><label class="input-label">F (force, N)</label><input type="number" class="input-field" data-work-var="F" value="50" step="any" /></div>
+                <div class="input-group"><label class="input-label">d (distance, m)</label><input type="number" class="input-field" data-work-var="d" value="10" step="any" /></div>
+                <div class="input-group"><label class="input-label">W (work, J)</label><input type="number" class="input-field" data-work-var="W" value="" step="any" placeholder="leave blank to solve" /></div>
+              </div>
+              <button class="btn-primary w-full btn-solve-work">Solve</button>
+              <div class="work-result mt-4"></div>
+            </div>
+          </div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Solution</h3>
+          <div id="solution-display"><p class="text-sm text-gray-400 italic">Select a formula and enter known values, then click Solve.</p></div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content">
+          <p class="text-gray-500 dark:text-gray-400 mb-2"><b>Kinematics:</b> Standard SUVAT equations for constant acceleration.</p>
+          <p class="text-gray-500 dark:text-gray-400 mb-2"><b>Newton's Laws:</b> F = ma (net force). W = mg (weight). g = 9.81 m/s² on Earth.</p>
+          <p class="text-gray-500 dark:text-gray-400"><b>Energy/Work:</b> KE = ½mv² (kinetic). PE = mgh (gravitational potential). W = Fd (work). Units: Joules.</p>
+        </div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'sci-physics',name:'Physics Calculator',category:'Science',categoryPath:'/app/dashboard.html',description:'Solve kinematics, Newton\'s laws, and energy/work physics formulas.',icon:'⚛️',related:[{id:'sci-force',name:'Force',icon:'💪',category:'Science',path:'/app/science/force.html'},{id:'sci-energy',name:'Energy',icon:'⚡',category:'Science',path:'/app/science/energy.html'},{id:'sci-pressure',name:'Gas Laws',icon:'🌡️',category:'Science',path:'/app/science/pressure.html'},{id:'sci-ohm',name:"Ohm's Law",icon:'⚡',category:'Science',path:'/app/science/ohm-law.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'Physics formulas based on standard classical mechanics equations.',CALC.description,{'v=u+at':'Final velocity','s=ut+½at²':'Displacement','F=ma':'Newton\'s Second Law','KE=½mv²':'Kinetic Energy','PE=mgh':'Potential Energy'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Tab between inputs. Enter to solve. Arrow keys adjust values.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      // Section tab switching
+      document.querySelectorAll('#section-tabs .section-tab').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          document.querySelectorAll('#section-tabs .section-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+          document.querySelectorAll('.phys-section').forEach(p=>p.classList.add('hidden'));
+          document.getElementById('section-'+btn.dataset.section).classList.remove('hidden');
+          document.getElementById('solution-display').innerHTML='<p class="text-sm text-gray-400 italic">Select a formula and enter known values, then click Solve.</p>';
+        });
+      });
+
+      function fmt(n){return MathEngine.formatNumber(n)}
+      function showSol(el,val,unit,detail){
+        el.innerHTML=`<div class="formula-card"><div class="phys-result">${val} ${unit}</div>${detail?`<div class="text-sm text-gray-500 dark:text-gray-400 mt-1">${detail}</div>`:''}</div>`;
+      }
+
+      // Helper: solve for unknown in a formula
+      // Find the input with empty value — that's the unknown
+      function getUnknown(prefix){
+        const inputs=document.querySelectorAll(`[data-${prefix}-var]`);
+        for(const inp of inputs){
+          if(inp.value.trim()==='')return inp.dataset[prefix+'Var'];
+        }
+        return null;
+      }
+      function getValues(prefix){
+        const map={};
+        document.querySelectorAll(`[data-${prefix}-var]`).forEach(inp=>{const v=parseFloat(inp.value);if(!isNaN(v))map[inp.dataset[prefix+'Var']]=v});
+        return map;
+      }
+
+      // --- Kinematics: v=u+at ---
+      document.querySelector('.btn-solve-kin')?.addEventListener('click',()=>{
+        const v=getValues('kin');const unknown=getUnknown('kin');const el=document.querySelector('.kin-result');
+        if(!unknown){showSol(el,'All values filled','','Enter values for all but one variable to solve.');return}
+        if(Object.keys(v).length<3){showSol(el,'Need','','Enter at least 3 values, leave one blank to solve.');return}
+        let result;
+        if(unknown==='v')result=v.u+v.a*v.t;
+        else if(unknown==='u')result=v.v-v.a*v.t;
+        else if(unknown==='a')result=(v.v-v.u)/v.t;
+        else if(unknown==='t')result=(v.v-v.u)/v.a;
+        else{showSol(el,'Unknown var','','');return}
+        const labels={v:'final velocity',u:'initial velocity',a:'acceleration',t:'time'};
+        const units={v:'m/s',u:'m/s',a:'m/s²',t:'s'};
+        showSol(el,fmt(result),units[unknown]||'',`${labels[unknown]||unknown} solved from v = u + at`);
+        document.getElementById('solution-display').innerHTML=`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">Formula</div><div class="text-sm font-mono font-semibold mt-1">v = u + at</div><div class="text-xs text-gray-400 mt-2">Given: u=${fmt(v.u)} m/s, a=${fmt(v.a)} m/s², t=${fmt(v.t)} s</div><div class="text-xs text-gray-400 mt-1">${unknown.toUpperCase()} = ${fmt(result)} ${units[unknown]||''}</div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`v=u+at: u=${fmt(v.u)}, a=${fmt(v.a)}, t=${fmt(v.t)}`,result:`${unknown}=${fmt(result)} ${units[unknown]||''}`});
+      });
+
+      // --- Kinematics: s=ut+½at² ---
+      document.querySelector('.btn-solve-kin2')?.addEventListener('click',()=>{
+        const v=getValues('kin2');const unknown=getUnknown('kin2');const el=document.querySelector('.kin2-result');
+        if(!unknown){showSol(el,'All values filled','','');return}
+        if(Object.keys(v).length<3){showSol(el,'Need more values','','');return}
+        let result;
+        if(unknown==='s')result=v.u*v.t+0.5*v.a*v.t*v.t;
+        else if(unknown==='u')result=(v.s-0.5*v.a*v.t*v.t)/v.t;
+        else if(unknown==='t'){
+          // s = ut + ½at² → ½at² + ut - s = 0 → solve quadratic
+          const a=0.5*v.a,b=v.u,c=-v.s;const disc=b*b-4*a*c;
+          if(disc<0||a===0){showSol(el,'No real solution','','Discriminant negative or a=0');return}
+          const t1=(-b+Math.sqrt(disc))/(2*a);const t2=(-b-Math.sqrt(disc))/(2*a);
+          result=t1>=0?t1:t2;
+        }
+        else if(unknown==='a')result=2*(v.s-v.u*v.t)/(v.t*v.t);
+        else{showSol(el,'Unknown','','');return}
+        const labels={s:'displacement',u:'initial velocity',t:'time',a:'acceleration'};
+        const units={s:'m',u:'m/s',t:'s',a:'m/s²'};
+        showSol(el,fmt(result),units[unknown]||'',`${labels[unknown]||unknown} solved from s = ut + ½at²`);
+        document.getElementById('solution-display').innerHTML=`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">Formula</div><div class="text-sm font-mono font-semibold mt-1">s = ut + ½at²</div><div class="text-xs text-gray-400 mt-1">${unknown.toUpperCase()} = ${fmt(result)} ${units[unknown]||''}</div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`s=ut+½at²: u=${fmt(v.u)}, a=${fmt(v.a)}, t=${fmt(v.t)}`,result:`${unknown}=${fmt(result)} ${units[unknown]||''}`});
+      });
+
+      // --- Kinematics: v²=u²+2as ---
+      document.querySelector('.btn-solve-kin3')?.addEventListener('click',()=>{
+        const v=getValues('kin3');const unknown=getUnknown('kin3');const el=document.querySelector('.kin3-result');
+        if(!unknown){showSol(el,'All values filled','','');return}
+        if(Object.keys(v).length<3){showSol(el,'Need more values','','');return}
+        let result;
+        if(unknown==='v')result=Math.sqrt(v.u*v.u+2*v.a*v.s);
+        else if(unknown==='u')result=Math.sqrt(v.v*v.v-2*v.a*v.s);
+        else if(unknown==='a')result=(v.v*v.v-v.u*v.u)/(2*v.s);
+        else if(unknown==='s')result=(v.v*v.v-v.u*v.u)/(2*v.a);
+        else{showSol(el,'Unknown','','');return}
+        const labels={v:'final velocity',u:'initial velocity',a:'acceleration',s:'displacement'};
+        const units={v:'m/s',u:'m/s',a:'m/s²',s:'m'};
+        showSol(el,fmt(result),units[unknown]||'',`${labels[unknown]||unknown} solved from v² = u² + 2as`);
+        document.getElementById('solution-display').innerHTML=`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">Formula</div><div class="text-sm font-mono font-semibold mt-1">v² = u² + 2as</div><div class="text-xs text-gray-400 mt-1">${unknown.toUpperCase()} = ${fmt(result)} ${units[unknown]||''}</div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`v²=u²+2as: u=${fmt(v.u)}, a=${fmt(v.a)}, s=${fmt(v.s)}`,result:`${unknown}=${fmt(result)} ${units[unknown]||''}`});
+      });
+
+      // --- Kinematics formula tab switching ---
+      document.querySelectorAll('#kinematics-tabs .formula-btn').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          document.querySelectorAll('#kinematics-tabs .formula-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+          document.querySelectorAll('#section-kinematics .kin-formula').forEach(p=>p.classList.add('hidden'));
+          document.getElementById('kinematics-'+btn.dataset.formula.replace('=','=').replace('²','²')).classList.remove('hidden');
+        });
+      });
+
+      // --- Newton F=ma ---
+      document.querySelector('.btn-solve-newt1')?.addEventListener('click',()=>{
+        const v=getValues('newt1');const unknown=getUnknown('newt1');const el=document.querySelector('.newt1-result');
+        if(!unknown){showSol(el,'All values filled','','');return}
+        if(Object.keys(v).length<2){showSol(el,'Need 2 values','','');return}
+        let result;
+        if(unknown==='F')result=v.m*v.a;else if(unknown==='m')result=v.F/v.a;else if(unknown==='a')result=v.F/v.m;
+        const units={F:'N',m:'kg',a:'m/s²'};
+        showSol(el,fmt(result),units[unknown]||'',`${unknown} solved from F = ma`);
+        document.getElementById('solution-display').innerHTML=`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">Formula</div><div class="text-sm font-mono font-semibold mt-1">F = ma</div><div class="text-xs text-gray-400 mt-1">${unknown.toUpperCase()} = ${fmt(result)} ${units[unknown]||''}</div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`F=ma: m=${fmt(v.m)}, a=${fmt(v.a)}`,result:`${unknown}=${fmt(result)}${units[unknown]||''}`});
+      });
+
+      // --- Newton W=mg ---
+      document.querySelector('.btn-solve-newt2')?.addEventListener('click',()=>{
+        const v=getValues('newt2');const unknown=getUnknown('newt2');const el=document.querySelector('.newt2-result');
+        if(!unknown){showSol(el,'All values filled','','');return}
+        if(Object.keys(v).length<2){showSol(el,'Need 2 values','','');return}
+        let result;
+        if(unknown==='W')result=v.m*v.g;else if(unknown==='m')result=v.W/v.g;else if(unknown==='g')result=v.W/v.m;
+        const units={W:'N',m:'kg',g:'m/s²'};
+        showSol(el,fmt(result),units[unknown]||'',`${unknown} solved from W = mg`);
+        document.getElementById('solution-display').innerHTML=`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">Formula</div><div class="text-sm font-mono font-semibold mt-1">W = mg</div><div class="text-xs text-gray-400 mt-1">${unknown.toUpperCase()} = ${fmt(result)} ${units[unknown]||''}</div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`W=mg: m=${fmt(v.m)}, g=${fmt(v.g)}`,result:`${unknown}=${fmt(result)}${units[unknown]||''}`});
+      });
+
+      // --- Newton formula tab switching ---
+      document.querySelectorAll('#newton-tabs .formula-btn').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          document.querySelectorAll('#newton-tabs .formula-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+          document.querySelectorAll('#section-newton .newton-formula').forEach(p=>p.classList.add('hidden'));
+          document.getElementById('newton-'+btn.dataset.formula).classList.remove('hidden');
+        });
+      });
+
+      // --- Energy: KE = ½mv² ---
+      document.querySelector('.btn-solve-ke')?.addEventListener('click',()=>{
+        const v=getValues('ke');const unknown=getUnknown('ke');const el=document.querySelector('.ke-result');
+        if(!unknown){showSol(el,'All values filled','','');return}
+        if(Object.keys(v).length<2){showSol(el,'Need 2 values','','');return}
+        let result;
+        if(unknown==='KE')result=0.5*v.m*v.v*v.v;else if(unknown==='m')result=2*v.KE/(v.v*v.v);else if(unknown==='v')result=Math.sqrt(2*v.KE/v.m);
+        const units={KE:'J',m:'kg',v:'m/s'};
+        showSol(el,fmt(result),units[unknown]||'',`${unknown} solved from KE = ½mv²`);
+        document.getElementById('solution-display').innerHTML=`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">Formula</div><div class="text-sm font-mono font-semibold mt-1">KE = ½mv²</div><div class="text-xs text-gray-400 mt-1">${unknown.toUpperCase()} = ${fmt(result)} ${units[unknown]||''}</div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`KE=½mv²: m=${fmt(v.m)}, v=${fmt(v.v)}`,result:`${unknown}=${fmt(result)}${units[unknown]||''}`});
+      });
+
+      // --- Energy: PE = mgh ---
+      document.querySelector('.btn-solve-pe')?.addEventListener('click',()=>{
+        const v=getValues('pe');const unknown=getUnknown('pe');const el=document.querySelector('.pe-result');
+        if(!unknown){showSol(el,'All values filled','','');return}
+        if(Object.keys(v).length<3){showSol(el,'Need 3 values','','');return}
+        let result;
+        if(unknown==='PE')result=v.m*v.g*v.h;else if(unknown==='m')result=v.PE/(v.g*v.h);else if(unknown==='g')result=v.PE/(v.m*v.h);else if(unknown==='h')result=v.PE/(v.m*v.g);
+        const units={PE:'J',m:'kg',g:'m/s²',h:'m'};
+        showSol(el,fmt(result),units[unknown]||'',`${unknown} solved from PE = mgh`);
+        document.getElementById('solution-display').innerHTML=`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">Formula</div><div class="text-sm font-mono font-semibold mt-1">PE = mgh</div><div class="text-xs text-gray-400 mt-1">${unknown.toUpperCase()} = ${fmt(result)} ${units[unknown]||''}</div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`PE=mgh: m=${fmt(v.m)}, g=${fmt(v.g)}, h=${fmt(v.h)}`,result:`${unknown}=${fmt(result)}${units[unknown]||''}`});
+      });
+
+      // --- Energy: W = Fd ---
+      document.querySelector('.btn-solve-work')?.addEventListener('click',()=>{
+        const v=getValues('work');const unknown=getUnknown('work');const el=document.querySelector('.work-result');
+        if(!unknown){showSol(el,'All values filled','','');return}
+        if(Object.keys(v).length<2){showSol(el,'Need 2 values','','');return}
+        let result;
+        if(unknown==='W')result=v.F*v.d;else if(unknown==='F')result=v.W/v.d;else if(unknown==='d')result=v.W/v.F;
+        const units={W:'J',F:'N',d:'m'};
+        showSol(el,fmt(result),units[unknown]||'',`${unknown} solved from W = Fd`);
+        document.getElementById('solution-display').innerHTML=`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">Formula</div><div class="text-sm font-mono font-semibold mt-1">W = F · d</div><div class="text-xs text-gray-400 mt-1">${unknown.toUpperCase()} = ${fmt(result)} ${units[unknown]||''}</div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`W=Fd: F=${fmt(v.F)}, d=${fmt(v.d)}`,result:`${unknown}=${fmt(result)}${units[unknown]||''}`});
+      });
+
+      // --- Energy formula tab switching ---
+      document.querySelectorAll('#energy-tabs .formula-btn').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          document.querySelectorAll('#energy-tabs .formula-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+          document.querySelectorAll('#section-energy .energy-formula').forEach(p=>p.classList.add('hidden'));
+          document.getElementById('energy-'+btn.dataset.formula).classList.remove('hidden');
+        });
+      });
+
+      // Default solve
+      document.querySelector('.btn-solve-kin')?.click();
+
+      // Related
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

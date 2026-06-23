@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Budget — Coming Soon · CalcVerse</title>
+  <meta name="description" content="CalcVerse Smart Budget — AI-powered budget planning, coming soon." />
+  <meta name="theme-color" content="#77d202" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" as="style" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>
+    .budget-card {
+      background: var(--bg-surface);
+      border: 2px solid rgba(119, 210, 2, 0.2);
+      border-radius: 20px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    .dark .budget-card { background: #0f1010; border-color: rgba(119, 210, 2, 0.2); }
+    .budget-card:hover { border-color: rgba(119, 210, 2, 0.4); }
+    .budget-bar { height: 10px; border-radius: 9999px; background: #2a2e2e; overflow: hidden; }
+    .budget-bar-fill { height: 100%; border-radius: 9999px; transition: width 1s ease-out; }
+    .budget-bar-fill.housing { background: #77d202; width: 35%; }
+    .budget-bar-fill.food { background: #f5a623; width: 25%; }
+    .budget-bar-fill.transport { background: #3182ce; width: 15%; }
+    .budget-bar-fill.utilities { background: #e53e3e; width: 10%; }
+    .budget-bar-fill.savings { background: #38a169; width: 15%; }
+    .budget-demo { padding: 20px; border-radius: 14px; background: rgba(119,210,2,0.03); border: 1px solid rgba(119,210,2,0.1); }
+    .budget-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid; }
+    .dark .budget-row { border-color: #1a1c1c; }
+    .budget-row:last-child { border-bottom: none; }
+    .budget-row .category { font-size: 0.85rem; font-weight: 500; color: var(--text-primary); }
+    .budget-row .amount { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 600; }
+    .budget-row .amount.housing { color: #77d202; }
+    .budget-row .amount.food { color: #f5a623; }
+    .budget-row .amount.transport { color: #3182ce; }
+    .budget-row .amount.utilities { color: #e53e3e; }
+    .budget-row .amount.savings { color: #38a169; }
+    .scenario-card {
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid;
+      background: var(--bg-base);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dark .scenario-card { background: #000; border-color: #2a2e2e; }
+    .scenario-card:hover { border-color: #77d202; background: rgba(119,210,2,0.03); }
+    .scenario-card .icon { font-size: 1.5rem; }
+    .scenario-card h4 { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+    .scenario-card p { font-size: 0.75rem; color: #8e9aab; }
+  </style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-between px-6 h-16">
+        <nav class="breadcrumb text-sm text-gray-400" aria-label="Breadcrumb">
+          <a href="/app/dashboard.html" class="hover:text-primary transition-colors">Dashboard</a>
+          <span class="mx-1.5">/</span>
+          <span class="text-gray-600 dark:text-gray-300 font-medium">Smart Budget</span>
+        </nav>
+        <div class="flex items-center gap-2">
+          <button class="btn-icon" id="theme-toggle-page" aria-label="Toggle theme">
+            <span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    <div class="p-6 flex items-center justify-center min-h-[calc(100vh-80px)]">
+      <div class="w-full max-w-2xl">
+        <div class="budget-card">
+          <div class="text-center mb-8 relative z-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-semibold mb-4">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+              Coming Soon
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">Smart Budget</h1>
+            <p class="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
+              AI-powered budget planning that analyzes your spending and suggests smart savings.
+            </p>
+          </div>
+
+          <!-- Budget breakdown demo -->
+          <div class="budget-demo mb-6 z-10 relative">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Sample Budget Breakdown</span>
+              <span class="text-xs text-gray-500">Monthly Income: $5,400</span>
+            </div>
+            <div class="budget-row"><span class="category">🏠 Housing</span><span class="amount housing">$1,890</span></div>
+            <div class="budget-row"><span class="category">🍔 Food & Dining</span><span class="amount food">$1,350</span></div>
+            <div class="budget-row"><span class="category">🚗 Transportation</span><span class="amount transport">$810</span></div>
+            <div class="budget-row"><span class="category">💡 Utilities</span><span class="amount utilities">$540</span></div>
+            <div class="budget-row"><span class="category">💰 Savings</span><span class="amount savings">$810</span></div>
+            <div class="mt-3 space-y-1">
+              <div class="budget-bar"><div class="budget-bar-fill housing"></div></div>
+              <div class="budget-bar"><div class="budget-bar-fill food"></div></div>
+              <div class="budget-bar"><div class="budget-bar-fill transport"></div></div>
+              <div class="budget-bar"><div class="budget-bar-fill utilities"></div></div>
+              <div class="budget-bar"><div class="budget-bar-fill savings"></div></div>
+            </div>
+          </div>
+
+          <!-- Scenario cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 z-10 relative">
+            <div class="scenario-card" data-scenario="save">
+              <span class="icon mb-2 block">🎯</span>
+              <h4>Save for a Goal</h4>
+              <p>"I want to save $10,000 for a down payment in 2 years"</p>
+            </div>
+            <div class="scenario-card" data-scenario="debt">
+              <span class="icon mb-2 block">📉</span>
+              <h4>Debt Payoff Plan</h4>
+              <p>"Help me pay off $15,000 in credit card debt faster"</p>
+            </div>
+            <div class="scenario-card" data-scenario="retire">
+              <span class="icon mb-2 block">👴</span>
+              <h4>Retirement Check</h4>
+              <p>"Am I saving enough for retirement at 65?"</p>
+            </div>
+            <div class="scenario-card" data-scenario="cut">
+              <span class="icon mb-2 block">✂️</span>
+              <h4>Cut Expenses</h4>
+              <p>"Where can I cut $300 from my monthly spending?"</p>
+            </div>
+          </div>
+
+          <!-- AI insight demo -->
+          <div class="p-4 rounded-xl bg-primary/5 border border-primary/10 z-10 relative" id="insight-area">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+              <span class="text-xs font-semibold text-primary uppercase tracking-wider">AI Insight</span>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400" id="insight-text">
+              Click a scenario above to see how AI-powered budget analysis works.<span class="cursor" style="display:inline-block;width:2px;height:1.1em;background:#77d202;animation:blink 1s step-end infinite;vertical-align:text-bottom;margin-left:2px;"></span>
+            </p>
+          </div>
+
+          <!-- Notify CTA -->
+          <div class="mt-6 text-center z-10 relative">
+            <p class="text-xs text-gray-500 mb-3">Be the first to know when Smart Budget launches.</p>
+            <div class="flex gap-2 max-w-sm mx-auto">
+              <input type="email" placeholder="your@email.com" class="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border-0 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" id="notify-email" aria-label="Email for AI waitlist" />
+              <button class="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:shadow-glow transition-shadow" id="btn-notify">Notify Me</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = new CalcVerseSidebar('#sidebar-container', { collapsed: window.innerWidth < 1024 });
+      window.calcSidebar = sidebar;
+      document.getElementById('theme-toggle-page')?.addEventListener('click', () => themeEngine.toggle());
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click', () => { window.innerWidth < 768 ? sidebar.show() : sidebar.toggle(); });
+
+      const insights = {
+        save: '📊 To save $10,000 in 2 years, you need to set aside <strong>$417/month</strong>. Based on your current spending, reducing dining out by 30% and subscription services by 50% would free up $380/month — almost there!',
+        debt: '📉 Paying off $15,000 at 22% APR: at minimum payments ($300/mo) it would take <strong>87 months</strong> with $13,420 in interest. Increase to $500/mo: only <strong>38 months</strong> with $4,712 in interest. Save $8,708!',
+        retire: '👴 Based on your current savings rate ($810/mo) and a 7% annual return, you\'re on track for <strong>$1.2M at age 65</strong>. Increasing monthly savings to $1,000 would boost that to $1.5M. Good job!',
+        cut: '✂️ Analysis found <strong>$420 in potential savings</strong>: Cancel unused subscriptions ($45/mo), reduce dining out ($120/mo), switch phone plan ($30/mo), lower utility usage ($25/mo), refinance auto loan ($200/mo).'
+      };
+
+      document.querySelectorAll('.scenario-card').forEach(card => {
+        card.addEventListener('click', function() {
+          const scenario = this.dataset.scenario;
+          const text = document.getElementById('insight-text');
+          text.innerHTML = insights[scenario] + '<span class="cursor" style="display:inline-block;width:2px;height:1.1em;background:#77d202;animation:blink 1s step-end infinite;vertical-align:text-bottom;margin-left:2px;"></span>';
+          Toast.show('✨ AI insight generated for ' + this.querySelector('h4').textContent, 'success');
+          CalcStorage.addHistory('ai-budget', { expression: 'Budget scenario: ' + scenario, result: 'AI insight preview', timestamp: Date.now() });
+        });
+      });
+
+      document.getElementById('btn-notify')?.addEventListener('click', function() {
+        const email = document.getElementById('notify-email').value.trim();
+        if (email && email.includes('@')) {
+          Toast.show('📩 Thanks! We\'ll notify you when Smart Budget launches.', 'success');
+          document.getElementById('notify-email').value = '';
+        } else {
+          Toast.show('Please enter a valid email address', 'error');
+        }
+      });
+
+      CalcStorage.recordVisit('ai-budget', 'Smart Budget');
+    });
+  </script>
+</body>
+</html>

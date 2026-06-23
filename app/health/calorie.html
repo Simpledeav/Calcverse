@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calorie Burn Calculator — CalcVerse</title>
+  <meta name="description" content="Calculate calories burned during exercise. Browse 20+ activities with MET values and see your total energy expenditure." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.cal-result{font-size:2.5rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:theme('colors.primary.DEFAULT')}.activity-option{padding:8px 12px;border-radius:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .1s;border:1px solid transparent}.activity-option:hover{border-color:theme('colors.primary.DEFAULT')/30;background:theme('colors.primary.DEFAULT')/5}.activity-option.selected{border-color:theme('colors.primary.DEFAULT');background:theme('colors.primary.DEFAULT')/10}.activity-option .met{font-size:11px;font-family:'JetBrains Mono',monospace;color:theme('colors.gray.400')}.food-equiv{padding:8px 12px;border-radius:8px;background:theme('colors.gray.50');border:1px solid theme('colors.gray.200');display:flex;align-items:center;gap:8px}.dark .food-equiv{background:theme('colors.black')/30;border-color:theme('colors.gray.700')}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Health</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Calorie Burn Calculator</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Health</span>
+          <h1 class="calc-title">Calorie Burn Estimator</h1>
+          <p class="calc-description" id="calc-desc">Estimate calories burned during exercise. Choose from 20+ activities and adjust duration and weight.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="health-calorie"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="input-group"><label class="input-label" for="cal-weight">Weight (kg)</label><input type="number" class="input-field" id="cal-weight" value="70" step="0.1" /></div>
+            <div class="input-group"><label class="input-label" for="cal-duration">Duration (min)</label><input type="number" class="input-field" id="cal-duration" value="30" min="1" /></div>
+          </div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Activity</div>
+          <input type="text" class="w-full mb-2 pt-search" id="cal-search" placeholder="🔍 Search activities..." />
+          <div class="max-h-48 overflow-y-auto space-y-1 mb-4 scrollbar-thin" id="cal-activities"></div>
+          <button class="btn-primary w-full" id="btn-calc-cal">Calculate Burn</button>
+          <div id="cal-result" class="mt-4"></div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Food Equivalent</h3>
+          <div id="cal-food-equiv"><p class="text-sm text-gray-400 italic">Select an activity and duration to see the food equivalent of calories burned.</p></div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content"><p class="text-gray-500 dark:text-gray-400">Calories burned = MET × weight(kg) × duration(hours). MET values from the Compendium of Physical Activities.</p></div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script src="/assets/js/engines/health-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'health-calorie',name:'Calorie Burn Calculator',category:'Health',categoryPath:'/app/dashboard.html',description:'Estimate calories burned during exercise.',icon:'🏃',related:[{id:'health-bmi',name:'BMI',icon:'⚖️',category:'Health',path:'/app/health/bmi.html'},{id:'health-tdee',name:'TDEE',icon:'⚡',category:'Health',path:'/app/health/tdee.html'},{id:'health-water',name:'Water',icon:'💧',category:'Health',path:'/app/health/water-intake.html'},{id:'health-heartrate',name:'Heart Rate',icon:'💓',category:'Health',path:'/app/health/heart-rate.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'Calories = MET × weight × hours',CALC.description,{'MET':'Metabolic Equivalent of Task','Formula':'MET × weight(kg) × hours'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Type to filter activities. Click to select. Enter to calculate.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      const activityLabels={'running':'🏃 Running','jogging':'🏃 Jogging','walking':'🚶 Walking','cycling':'🚴 Cycling','swimming':'🏊 Swimming','hiking':'🥾 Hiking','yoga':'🧘 Yoga','weightlifting':'🏋️ Weightlifting','hiit':'💥 HIIT','dancing':'💃 Dancing','jump_rope':'🪢 Jump Rope','rowing':'🚣 Rowing','elliptical':'🏃 Elliptical','stair_climbing':'🪜 Stair Climbing','pilates':'🤸 Pilates','boxing':'🥊 Boxing','soccer':'⚽ Soccer','basketball':'🏀 Basketball','tennis':'🎾 Tennis','golf':'⛳ Golf'};
+      const actList=document.getElementById('cal-activities');let selectedAct='running';
+
+      function renderActivities(filter){
+        actList.innerHTML=Object.entries(activityLabels).filter(([k,v])=>!filter||v.toLowerCase().includes(filter)||k.includes(filter)).map(([k,v])=>`<div class="activity-option${k===selectedAct?' selected':''}" data-key="${k}"><span>${v}</span><span class="met">MET ${HealthEngine.MET_VALUES[k]}</span></div>`).join('');
+        actList.querySelectorAll('.activity-option').forEach(el=>{el.addEventListener('click',()=>{actList.querySelectorAll('.activity-option').forEach(a=>a.classList.remove('selected'));el.classList.add('selected');selectedAct=el.dataset.key;calcCal()})});
+      }
+
+      renderActivities();
+      document.getElementById('cal-search').addEventListener('input',function(){renderActivities(this.value.toLowerCase().trim())});
+
+      function fmt(n){return MathEngine.formatNumber(n)}
+
+      function calcCal(){
+        const w=parseFloat(document.getElementById('cal-weight').value);const d=parseFloat(document.getElementById('cal-duration').value);
+        const el=document.getElementById('cal-result');const fe=document.getElementById('cal-food-equiv');
+        if(isNaN(w)||isNaN(d)||w<=0||d<=0){el.innerHTML='<p class="text-sm text-red-500">Enter valid values.</p>';return}
+        const met=HealthEngine.MET_VALUES[selectedAct]||5;
+        const cal=HealthEngine.caloriesBurned(met,w,d);
+        const label=activityLabels[selectedAct]||selectedAct;
+        el.innerHTML=`<div class="solution-box text-center"><div class="cal-result">${fmt(cal)}</div><div class="text-sm text-gray-400">kcal burned</div><div class="text-xs text-gray-400 mt-1">${label} · ${d} min · ${w} kg · MET ${met}</div></div>`;
+        // Food equivalents
+        const foods=[{name:'🍌 Banana',cal:105},{name:'🥚 Egg',cal:70},{name:'🍞 Bread slice',cal:75},{name:'🍎 Apple',cal:95},{name:'🥛 Milk glass',cal:120},{name:'🍗 Chicken breast',cal:280}];
+        const equiv=foods.filter(f=>f.cal<=cal).slice(0,3).map(f=>`<div class="food-equiv"><span>${f.name}</span><span class="font-mono text-xs text-gray-400">≈ ${Math.round(cal/f.cal)}</span></div>`).join('');
+        fe.innerHTML=equiv||'<p class="text-sm text-gray-400 italic">That\'s less than a single egg!</p>';
+        CalcStorage.addHistory(CALC.id,{expression:`${label}: ${d}min @ ${w}kg`,result:`${fmt(cal)} kcal`});
+      }
+
+      document.getElementById('btn-calc-cal').addEventListener('click',calcCal);
+      calcCal();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

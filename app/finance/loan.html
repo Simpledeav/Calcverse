@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loan / EMI Calculator — CalcVerse</title>
+  <meta name="description" content="Calculate monthly loan payments, total interest, and see the full amortization schedule with principal vs interest breakdown." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.payment-card{padding:20px;border-radius:16px;background:linear-gradient(135deg,theme('colors.primary.DEFAULT')/10,theme('colors.black')/5);border:1px solid theme('colors.primary.DEFAULT')/30}.dark .payment-card{background:linear-gradient(135deg,theme('colors.primary.DEFAULT')/8,theme('colors.black')/20);border-color:theme('colors.primary.DEFAULT')/20}.payment-amount{font-size:2.5rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:theme('colors.primary.DEFAULT');line-height:1.1}.breakdown-bar{height:24px;border-radius:9999px;overflow:hidden;display:flex;background:theme('colors.gray.200')}.dark .breakdown-bar{background:theme('colors.gray.700')}.breakdown-bar .principal-part{background:theme('colors.primary.DEFAULT');transition:width .5s ease}.breakdown-bar .interest-part{background:#ef4444;transition:width .5s ease}.amort-row{display:grid;grid-template-columns:60px 1fr 1fr 1fr;gap:8px;padding:6px 8px;border-radius:6px;font-size:13px;font-family:'JetBrains Mono',monospace}.amort-row:nth-child(even){background:theme('colors.gray.50')}.dark .amort-row:nth-child(even){background:rgba(0,0,0,.2)}.amort-header{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:theme('colors.gray.400');padding:6px 8px}.sum-label{font-size:13px;color:theme('colors.gray.500')}.dark .sum-label{color:theme('colors.gray.400')}.sum-value{font-size:1.25rem;font-weight:700;font-family:'JetBrains Mono',monospace}.toggle-btn{padding:6px 14px;border-radius:9999px;font-size:12px;font-weight:500;transition:all .15s;background:theme('colors.gray.100');color:theme('colors.gray.600')}.dark .toggle-btn{background:theme('colors.gray.800');color:theme('colors.gray.400')}.toggle-btn.active{background:theme('colors.primary.DEFAULT');color:white}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Finance</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Loan / EMI Calculator</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Finance</span>
+          <h1 class="calc-title">Loan / EMI Calculator</h1>
+          <p class="calc-description" id="calc-desc">Calculate your monthly loan payments, total interest payable, and view the full amortization schedule.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="fin-loan"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div class="input-group"><label class="input-label" for="loan-amount">Loan Amount ($)</label><input type="number" class="input-field font-mono" id="loan-amount" value="250000" step="1000" min="0" /></div>
+            <div class="input-group"><label class="input-label" for="loan-rate">Annual Interest Rate (%)</label><input type="number" class="input-field font-mono" id="loan-rate" value="6.5" step="0.1" min="0" max="30" /></div>
+            <div class="input-group"><label class="input-label">Loan Term</label>
+              <div class="flex gap-2">
+                <input type="number" class="input-field font-mono" id="loan-term" value="30" min="1" max="50" />
+                <select class="input-field w-24" id="loan-term-unit"><option value="years" selected>Years</option><option value="months">Months</option></select>
+              </div>
+            </div>
+            <div class="input-group"><label class="input-label" for="loan-start">Start Date</label><input type="date" class="input-field" id="loan-start" /></div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn-primary flex-1" id="btn-calc-loan">Calculate</button>
+            <button class="btn-ghost" id="btn-examples">📊 Examples</button>
+          </div>
+          <!-- Quick Result Preview -->
+          <div id="loan-preview" class="mt-4"></div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Monthly Payment</h3>
+          <div id="payment-display"><p class="text-sm text-gray-400 italic">Enter loan details and click Calculate.</p></div>
+          <div id="breakdown-display" class="mt-4"></div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <!-- Amortization Schedule -->
+      <div class="card p-4 mt-6" id="amort-section" style="display:none">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Amortization Schedule</h3>
+          <div class="flex gap-2">
+            <button class="toggle-btn active" id="btn-amort-yearly">Yearly</button>
+            <button class="toggle-btn" id="btn-amort-monthly">Monthly</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto" id="amort-table-wrap">
+          <div id="amort-table" class="min-w-[400px]"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content">
+          <p class="text-gray-500 dark:text-gray-400"><b>EMI Formula:</b> EMI = P × [r(1+r)ⁿ] / [(1+r)ⁿ − 1]</p>
+          <p class="text-xs text-gray-400 mt-1">Where P = principal, r = monthly interest rate (annual/12), n = number of months. Total interest = (EMI × n) − P.</p>
+        </div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/finance-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'fin-loan',name:'Loan / EMI Calculator',category:'Finance',categoryPath:'/app/dashboard.html',description:'Calculate monthly loan payments, total interest, and view the amortization schedule.',icon:'💰',related:[{id:'fin-mortgage',name:'Mortgage',icon:'🏠',category:'Finance',path:'/app/finance/mortgage.html'},{id:'fin-compound',name:'Compound Interest',icon:'📈',category:'Finance',path:'/app/finance/compound-interest.html'},{id:'fin-simple',name:'Simple Interest',icon:'💵',category:'Finance',path:'/app/finance/simple-interest.html'},{id:'fin-savings',name:'Savings Goal',icon:'🎯',category:'Finance',path:'/app/finance/savings-goal.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'EMI = P × [r(1+r)ⁿ] / [(1+r)ⁿ − 1]',CALC.description,{'P':'Principal loan amount','r':'Monthly interest rate','n':'Number of months'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Tab between inputs. Enter to calculate. Use arrow keys to adjust values.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      // Set default start date
+      document.getElementById('loan-start').valueAsDate=new Date();
+
+      let showYearly=true;
+
+      function fmt$(n){return FinanceEngine.formatCurrency(n)}
+      function fmtPct(n){return FinanceEngine.formatPercent(n,2)}
+
+      const examples=[
+        {amount:250000,rate:6.5,term:30,unit:'years',label:'$250K @ 6.5% / 30yr'},
+        {amount:50000,rate:4.5,term:5,unit:'years',label:'$50K auto @ 4.5% / 5yr'},
+        {amount:15000,rate:8,term:3,unit:'years',label:'$15K personal @ 8% / 3yr'},
+        {amount:350000,rate:7.2,term:15,unit:'years',label:'$350K jumbo @ 7.2% / 15yr'},
+        {amount:10000,rate:0,term:12,unit:'months',label:'$10K @ 0% / 12mo'},
+      ];let ei=0;
+
+      function calculate(){
+        const principal=parseFloat(document.getElementById('loan-amount').value);
+        const rate=parseFloat(document.getElementById('loan-rate').value);
+        let term=parseFloat(document.getElementById('loan-term').value);
+        const unit=document.getElementById('loan-term-unit').value;
+        const startDate=document.getElementById('loan-start').value;
+
+        if(isNaN(principal)||isNaN(rate)||isNaN(term)||principal<=0||rate<0||term<=0){
+          document.getElementById('payment-display').innerHTML='<p class="text-sm text-red-500">Please enter valid positive numbers.</p>';
+          document.getElementById('amort-section').style.display='none';
+          return;
+        }
+
+        const termMonths=unit==='years'?Math.round(term*12):Math.round(term);
+        const emi=FinanceEngine.emi(principal,rate,termMonths);
+        const totalPayable=emi*termMonths;
+        const totalInterest=totalPayable-principal;
+        const principalPct=(principal/totalPayable)*100;
+        const interestPct=(totalInterest/totalPayable)*100;
+
+        // Payment display
+        document.getElementById('payment-display').innerHTML=`
+          <div class="payment-card">
+            <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Monthly Payment (EMI)</div>
+            <div class="payment-amount">${fmt$(emi)}</div>
+            <div class="grid grid-cols-3 gap-3 mt-4 text-center">
+              <div><div class="sum-label">Total Payable</div><div class="sum-value text-gray-900 dark:text-gray-100">${fmt$(totalPayable)}</div></div>
+              <div><div class="sum-label">Total Interest</div><div class="sum-value text-red-500">${fmt$(totalInterest)}</div></div>
+              <div><div class="sum-label">Principal</div><div class="sum-value text-primary">${fmt$(principal)}</div></div>
+            </div>
+            <div class="mt-4"><div class="flex justify-between text-xs text-gray-400 mb-1"><span>Principal: ${principalPct.toFixed(1)}%</span><span>Interest: ${interestPct.toFixed(1)}%</span></div>
+            <div class="breakdown-bar"><div class="principal-part" style="width:${principalPct}%"></div><div class="interest-part" style="width:${interestPct}%"></div></div></div>
+          </div>
+        `;
+
+        // Breakdown summary in right panel
+        document.getElementById('breakdown-display').innerHTML=`
+          <div class="space-y-2">
+            <div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><span class="sum-label">Monthly Payment</span><div class="sum-value text-primary mt-1">${fmt$(emi)}</div></div>
+            <div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><span class="sum-label">Total Interest Paid</span><div class="sum-value text-red-500 mt-1">${fmt$(totalInterest)}</div></div>
+            <div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><span class="sum-label">Total Cost of Loan</span><div class="sum-value text-gray-900 dark:text-gray-100 mt-1">${fmt$(totalPayable)}</div></div>
+            <div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><span class="sum-label">Interest / Principal Ratio</span><div class="sum-value text-gray-900 dark:text-gray-100 mt-1">${(totalInterest/principal*100).toFixed(1)}%</div></div>
+            <div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><span class="sum-label">Payoff Date</span><div class="sum-value text-gray-900 dark:text-gray-100 mt-1">${startDate?new Date(new Date(startDate).setMonth(new Date(startDate).getMonth()+termMonths)).toLocaleDateString('en-US',{month:'short',year:'numeric',day:'numeric'}):'—'}</div></div>
+          </div>
+        `;
+
+        // Amortization schedule
+        const schedule=FinanceEngine.amortizationSchedule(principal,rate,termMonths);
+        renderAmortTable(schedule);
+        document.getElementById('amort-section').style.display='block';
+
+        CalcStorage.addHistory(CALC.id,{expression:`${fmt$(principal)} @ ${rate}% / ${unit==='years'?term+'yr':term+'mo'}`,result:`EMI: ${fmt$(emi)}`});
+      }
+
+      function renderAmortTable(schedule){
+        const table=document.getElementById('amort-table');
+        if(showYearly){
+          // Aggregate yearly
+          const yearly=[];
+          let currentYear=1;let yearRows=[];let yearPrincipal=0;let yearInterest=0;let yearPayment=0;
+          schedule.forEach(row=>{
+            const year=Math.ceil(row.month/12);
+            if(year!==currentYear&&yearRows.length>0){
+              yearly.push({year:currentYear,payment:yearPayment,principal:yearPrincipal,interest:yearInterest,balance:yearRows[yearRows.length-1].balance});
+              yearRows=[];yearPrincipal=0;yearInterest=0;yearPayment=0;currentYear=year;
+            }
+            yearRows.push(row);yearPrincipal+=row.principal;yearInterest+=row.interest;yearPayment+=row.payment;
+          });
+          if(yearRows.length>0)yearly.push({year:currentYear,payment:yearPayment,principal:yearPrincipal,interest:yearInterest,balance:yearRows[yearRows.length-1].balance});
+          table.innerHTML=`<div class="amort-header grid grid-cols-4 gap-2">${['Year','Payment','Principal','Interest'].map(h=>`<div>${h}</div>`).join('')}</div>${yearly.map(r=>`<div class="amort-row grid-cols-4"><div class="text-gray-400">${r.year}</div><div>${fmt$(r.payment)}</div><div class="text-primary">${fmt$(r.principal)}</div><div class="text-red-500">${fmt$(r.interest)}</div></div>`).join('')}`;
+        } else {
+          table.innerHTML=`<div class="amort-header grid-cols-4">${['Month','Payment','Principal','Interest'].map(h=>`<div>${h}</div>`).join('')}</div>${schedule.map(r=>`<div class="amort-row grid-cols-4"><div class="text-gray-400">${r.month}</div><div>${fmt$(r.payment)}</div><div class="text-primary">${fmt$(r.principal)}</div><div class="text-red-500">${fmt$(r.interest)}</div></div>`).join('')}`;
+        }
+      }
+
+      document.getElementById('btn-calc-loan').addEventListener('click',calculate);
+      document.getElementById('btn-amort-yearly').addEventListener('click',()=>{showYearly=true;document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));document.getElementById('btn-amort-yearly').classList.add('active');calculate()});
+      document.getElementById('btn-amort-monthly').addEventListener('click',()=>{showYearly=false;document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));document.getElementById('btn-amort-monthly').classList.add('active');calculate()});
+
+      document.getElementById('btn-examples').addEventListener('click',()=>{
+        const ex=examples[ei%examples.length];ei++;
+        document.getElementById('loan-amount').value=ex.amount;
+        document.getElementById('loan-rate').value=ex.rate;
+        document.getElementById('loan-term').value=ex.term;
+        document.getElementById('loan-term-unit').value=ex.unit;
+        calculate();Toast.show('Loaded: '+ex.label,'info');
+      });
+
+      calculate();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

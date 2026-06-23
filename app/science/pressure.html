@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gas Laws Calculator — CalcVerse</title>
+  <meta name="description" content="Solve gas law problems: Boyle's Law, Charles's Law, Combined Gas Law, and the Ideal Gas Law (PV = nRT)." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.gas-tab{padding:8px 16px;border-radius:9999px;font-size:13px;font-weight:500;transition:all .15s;background:theme('colors.gray.100');color:theme('colors.gray.600')}.dark .gas-tab{background:theme('colors.gray.800');color:theme('colors.gray.400')}.gas-tab.active{background:theme('colors.primary.DEFAULT');color:white}.gas-formula{font-size:1.25rem;font-weight:600;font-family:'JetBrains Mono',monospace;text-align:center;padding:14px;border-radius:10px;background:theme('colors.gray.50');border:1px solid theme('colors.gray.200');margin-bottom:16px}.dark .gas-formula{background:theme('colors.black')/30;border-color:theme('colors.gray.700')}.gas-result{font-size:1.75rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:theme('colors.primary.DEFAULT')}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Science</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Gas Laws Calculator</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Science</span>
+          <h1 class="calc-title">Gas Laws Calculator</h1>
+          <p class="calc-description" id="calc-desc">Solve gas law problems: Boyle's Law, Charles's Law, pressure-temperature relationship, combined gas law, and ideal gas law.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="sci-pressure"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none mb-6" id="gas-tabs">
+            <button class="gas-tab active" data-gas="boyle">Boyle's Law</button>
+            <button class="gas-tab" data-gas="charles">Charles's Law</button>
+            <button class="gas-tab" data-gas="combined">Combined</button>
+            <button class="gas-tab" data-gas="ideal">Ideal Gas</button>
+          </div>
+          <!-- Boyle's Law: P₁V₁ = P₂V₂ -->
+          <div id="gas-boyle" class="gas-mode">
+            <div class="gas-formula">P₁ · V₁ = P₂ · V₂</div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="input-group"><label class="input-label">P₁ (initial pressure, atm)</label><input type="number" class="input-field" data-boyle="P1" value="2" step="any" /></div>
+              <div class="input-group"><label class="input-label">V₁ (initial volume, L)</label><input type="number" class="input-field" data-boyle="V1" value="5" step="any" /></div>
+              <div class="input-group"><label class="input-label">P₂ (final pressure, atm)</label><input type="number" class="input-field" data-boyle="P2" value="" step="any" placeholder="blank to solve" /></div>
+              <div class="input-group"><label class="input-label">V₂ (final volume, L)</label><input type="number" class="input-field" data-boyle="V2" value="2.5" step="any" /></div>
+            </div>
+            <button class="btn-primary w-full btn-solve-boyle">Solve</button>
+            <div class="boyle-result mt-4"></div>
+          </div>
+          <!-- Charles's Law: V₁/T₁ = V₂/T₂ -->
+          <div id="gas-charles" class="gas-mode hidden">
+            <div class="gas-formula">V₁ / T₁ = V₂ / T₂</div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="input-group"><label class="input-label">V₁ (initial volume, L)</label><input type="number" class="input-field" data-charles="V1" value="3" step="any" /></div>
+              <div class="input-group"><label class="input-label">T₁ (initial temp., K)</label><input type="number" class="input-field" data-charles="T1" value="300" step="any" /></div>
+              <div class="input-group"><label class="input-label">V₂ (final volume, L)</label><input type="number" class="input-field" data-charles="V2" value="" step="any" placeholder="blank to solve" /></div>
+              <div class="input-group"><label class="input-label">T₂ (final temp., K)</label><input type="number" class="input-field" data-charles="T2" value="400" step="any" /></div>
+            </div>
+            <button class="btn-primary w-full btn-solve-charles">Solve</button>
+            <div class="charles-result mt-4"></div>
+          </div>
+          <!-- Combined Gas Law: P₁V₁/T₁ = P₂V₂/T₂ -->
+          <div id="gas-combined" class="gas-mode hidden">
+            <div class="gas-formula">P₁ · V₁ / T₁ = P₂ · V₂ / T₂</div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="input-group"><label class="input-label">P₁ (atm)</label><input type="number" class="input-field" data-comb="P1" value="1" step="any" /></div>
+              <div class="input-group"><label class="input-label">V₁ (L)</label><input type="number" class="input-field" data-comb="V1" value="10" step="any" /></div>
+              <div class="input-group"><label class="input-label">T₁ (K)</label><input type="number" class="input-field" data-comb="T1" value="273" step="any" /></div>
+              <div class="input-group"><label class="input-label">P₂ (atm)</label><input type="number" class="input-field" data-comb="P2" value="2" step="any" /></div>
+              <div class="input-group"><label class="input-label">V₂ (L)</label><input type="number" class="input-field" data-comb="V2" value="" step="any" placeholder="blank to solve" /></div>
+              <div class="input-group"><label class="input-label">T₂ (K)</label><input type="number" class="input-field" data-comb="T2" value="373" step="any" /></div>
+            </div>
+            <button class="btn-primary w-full btn-solve-combined">Solve</button>
+            <div class="combined-result mt-4"></div>
+          </div>
+          <!-- Ideal Gas: PV = nRT -->
+          <div id="gas-ideal" class="gas-mode hidden">
+            <div class="gas-formula">P · V = n · R · T</div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="input-group"><label class="input-label">P (pressure, atm)</label><input type="number" class="input-field" data-ideal="P" value="1" step="any" /></div>
+              <div class="input-group"><label class="input-label">V (volume, L)</label><input type="number" class="input-field" data-ideal="V" value="24.5" step="any" /></div>
+              <div class="input-group"><label class="input-label">n (moles, mol)</label><input type="number" class="input-field" data-ideal="n" value="1" step="any" /></div>
+              <div class="input-group"><label class="input-label">T (temp., K)</label><input type="number" class="input-field" data-ideal="T" value="" step="any" placeholder="blank to solve" /></div>
+            </div>
+            <button class="btn-primary w-full btn-solve-ideal">Solve</button>
+            <div class="ideal-result mt-4"></div>
+          </div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Solution</h3>
+          <div id="gas-solution"><p class="text-sm text-gray-400 italic">Enter values, leave one blank to solve.</p></div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content">
+          <p class="text-gray-500 dark:text-gray-400 mb-2"><b>Boyle's Law:</b> P₁V₁ = P₂V₂ (constant T). <b>Charles's Law:</b> V₁/T₁ = V₂/T₂ (constant P).</p>
+          <p class="text-gray-500 dark:text-gray-400 mb-2"><b>Combined Gas Law:</b> P₁V₁/T₁ = P₂V₂/T₂.</p>
+          <p class="text-gray-500 dark:text-gray-400"><b>Ideal Gas Law:</b> PV = nRT. R = 0.08206 L·atm·mol⁻¹·K⁻¹.</p>
+        </div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'sci-pressure',name:'Gas Laws Calculator',category:'Science',categoryPath:'/app/dashboard.html',description:'Solve Boyle, Charles, combined, and ideal gas law problems.',icon:'🌡️',related:[{id:'sci-chemistry',name:'Chemistry',icon:'🧪',category:'Science',path:'/app/science/chemistry.html'},{id:'sci-physics',name:'Physics',icon:'⚛️',category:'Science',path:'/app/science/physics.html'},{id:'sci-energy',name:'Energy',icon:'⚡',category:'Science',path:'/app/science/energy.html'},{id:'sci-wavelength',name:'Wavelength',icon:'〰️',category:'Science',path:'/app/science/wavelength.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'Gas law equations for ideal gases.',CALC.description,{'P₁V₁=P₂V₂':'Boyle\'s Law','V₁/T₁=V₂/T₂':'Charles\'s Law','PV=nRT':'Ideal Gas Law'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Tab between inputs. Enter to calculate.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+      document.querySelectorAll('#gas-tabs .gas-tab').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#gas-tabs .gas-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.gas-mode').forEach(p=>p.classList.add('hidden'));document.getElementById('gas-'+btn.dataset.gas).classList.remove('hidden')})});
+
+      function fmt(n){return MathEngine.formatNumber(n)}
+      function getVals(prefix){const map={};document.querySelectorAll(`[data-${prefix}]`).forEach(inp=>{const v=parseFloat(inp.value);if(!isNaN(v))map[inp.dataset[prefix]]=v});return map}
+      function showGas(el,val,unit,detail){el.innerHTML=`<div class="formula-card"><div class="gas-result">${val} ${unit}</div>${detail?`<div class="text-sm text-gray-500 dark:text-gray-400 mt-1">${detail}</div>`:''}</div>`;}
+      function showSol(text){document.getElementById('gas-solution').innerHTML=text}
+
+      // Boyle
+      document.querySelector('.btn-solve-boyle')?.addEventListener('click',()=>{
+        const v=getVals('boyle');const el=document.querySelector('.boyle-result');
+        const blanks=['P1','V1','P2','V2'].filter(k=>v[k]===undefined);
+        if(blanks.length!==1){showGas(el,'Wrong blanks','','Leave exactly one blank');return}
+        const b=blanks[0];let val;
+        if(b==='P2')val=v.P1*v.V1/v.V2;else if(b==='V2')val=v.P1*v.V1/v.P2;else if(b==='P1')val=v.P2*v.V2/v.V1;else val=v.P2*v.V2/v.P1;
+        showGas(el,fmt(val),b.startsWith('P')?'atm':'L',`${b} = ${fmt(val)}`);
+        showSol(`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">Boyle's Law: P₁V₁ = P₂V₂</div><div class="text-sm mt-1">${b} = ${fmt(val)} ${b.startsWith('P')?'atm':'L'}</div></div>`);
+        CalcStorage.addHistory(CALC.id,{expression:`Boyle: P₁=${fmt(v.P1)}, V₁=${fmt(v.V1)}`,result:`${b}=${fmt(val)}`});
+      });
+
+      // Charles
+      document.querySelector('.btn-solve-charles')?.addEventListener('click',()=>{
+        const v=getVals('charles');const el=document.querySelector('.charles-result');
+        const blanks=['V1','T1','V2','T2'].filter(k=>v[k]===undefined);
+        if(blanks.length!==1){showGas(el,'Wrong blanks','','Leave exactly one blank');return}
+        const b=blanks[0];let val;
+        if(b==='V2')val=v.V1*v.T2/v.T1;else if(b==='T2')val=v.V2*v.T1/v.V1;else if(b==='V1')val=v.V2*v.T1/v.T2;else val=v.V1*v.T2/v.V2;
+        showGas(el,fmt(val),b.startsWith('V')?'L':'K',`${b} = ${fmt(val)}`);
+        showSol(`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">Charles's Law: V₁/T₁ = V₂/T₂</div><div class="text-sm mt-1">${b} = ${fmt(val)} ${b.startsWith('V')?'L':'K'}</div></div>`);
+        CalcStorage.addHistory(CALC.id,{expression:`Charles: V₁=${fmt(v.V1)}, T₁=${fmt(v.T1)}`,result:`${b}=${fmt(val)}`});
+      });
+
+      // Combined
+      document.querySelector('.btn-solve-combined')?.addEventListener('click',()=>{
+        const v=getVals('comb');const el=document.querySelector('.combined-result');
+        const blanks=['P1','V1','T1','P2','V2','T2'].filter(k=>v[k]===undefined);
+        if(blanks.length!==1){showGas(el,'Wrong blanks','','Leave exactly one blank');return}
+        const b=blanks[0];const lhs=v.P1*v.V1/v.T1;let val;
+        if(b==='P2')val=lhs*v.T2/v.V2;else if(b==='V2')val=lhs*v.T2/v.P2;else if(b==='T2')val=v.P2*v.V2/lhs;
+        else if(b==='P1')val=v.P2*v.V2*v.T1/(v.V1*v.T2);else if(b==='V1')val=v.P2*v.V2*v.T1/(v.P1*v.T2);else val=v.P1*v.V1*v.T2/(v.P2*v.V2);
+        showGas(el,fmt(val),'',`${b} = ${fmt(val)}`);
+        showSol(`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">Combined Gas Law: P₁V₁/T₁ = P₂V₂/T₂</div><div class="text-sm mt-1">${b} = ${fmt(val)}</div></div>`);
+        CalcStorage.addHistory(CALC.id,{expression:`Combined: P₁=${fmt(v.P1)}, V₁=${fmt(v.V1)}, T₁=${fmt(v.T1)}`,result:`${b}=${fmt(val)}`});
+      });
+
+      // Ideal
+      document.querySelector('.btn-solve-ideal')?.addEventListener('click',()=>{
+        const v=getVals('ideal');const el=document.querySelector('.ideal-result');const R=0.08206;
+        const blanks=['P','V','n','T'].filter(k=>v[k]===undefined);
+        if(blanks.length!==1){showGas(el,'Wrong blanks','','Leave exactly one blank');return}
+        const b=blanks[0];let val,unit;
+        if(b==='T'){val=v.P*v.V/(v.n*R);unit='K'}else if(b==='P'){val=v.n*R*v.T/v.V;unit='atm'}else if(b==='V'){val=v.n*R*v.T/v.P;unit='L'}else{val=v.P*v.V/(R*v.T);unit='mol'}
+        showGas(el,fmt(val),unit,`${b} = ${fmt(val)} ${unit}`);
+        showSol(`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">PV = nRT (R = 0.08206)</div><div class="text-sm mt-1">${b} = ${fmt(val)} ${unit}</div></div>`);
+        CalcStorage.addHistory(CALC.id,{expression:`PV=nRT: P=${fmt(v.P)}, V=${fmt(v.V)}, n=${fmt(v.n)}`,result:`${b}=${fmt(val)}${unit}`});
+      });
+
+      document.querySelector('.btn-solve-boyle')?.click();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

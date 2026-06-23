@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voltage Divider — CalcVerse</title>
+  <meta name="description" content="Calculate output voltage from a voltage divider circuit. Enter Vin, R1, R2 to find Vout." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.vd-result{font-size:2.5rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:theme('colors.primary.DEFAULT')}.sch-svg{display:block;margin:0 auto;max-width:260px}.vd-detail{display:flex;justify-content:space-between;padding:10px 14px;border-radius:8px;background:theme('colors.gray.50')}.dark .vd-detail{background:theme('colors.black')/30}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Engineering</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Voltage Divider</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Engineering</span>
+          <h1 class="calc-title">Voltage Divider Calculator</h1>
+          <p class="calc-description" id="calc-desc">Calculate the output voltage of a voltage divider circuit. Enter Vin, R1, and R2 to find Vout.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="eng-voltage"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <!-- SVG Schematic -->
+          <svg class="sch-svg" viewBox="0 0 200 200" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="100" y1="10" x2="100" y2="40" stroke="#77d202"/><text x="105" y="25" font-size="10" fill="#77d202">Vin</text>
+            <line x1="100" y1="40" x2="100" y2="70" stroke="#999"/>
+            <rect x="85" y="70" width="30" height="30" rx="4" stroke="#ef4444" fill="#ef444410"/><text x="88" y="88" font-size="9" fill="#ef4444">R₁</text>
+            <line x1="100" y1="100" x2="100" y2="120" stroke="#999"/>
+            <circle cx="100" cy="120" r="4" fill="#77d202" stroke="#77d202"/><text x="105" y="124" font-size="9" fill="#77d202">Vout</text>
+            <line x1="100" y1="124" x2="100" y2="140" stroke="#999"/>
+            <rect x="85" y="140" width="30" height="30" rx="4" stroke="#3b82f6" fill="#3b82f610"/><text x="88" y="158" font-size="9" fill="#3b82f6">R₂</text>
+            <line x1="100" y1="170" x2="100" y2="190" stroke="#999"/>
+            <line x1="80" y1="190" x2="120" y2="190" stroke="#666"/><line x1="80" y1="196" x2="120" y2="196" stroke="#666"/>
+          </svg>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="input-group"><label class="input-label" for="vd-vin">Vin (V)</label><input type="number" class="input-field" id="vd-vin" value="5" step="any" /></div>
+            <div class="input-group"><label class="input-label" for="vd-r1">R₁ (Ω)</label><input type="number" class="input-field" id="vd-r1" value="10000" step="any" /></div>
+            <div class="input-group"><label class="input-label" for="vd-r2">R₂ (Ω)</label><input type="number" class="input-field" id="vd-r2" value="10000" step="any" /></div>
+            <div class="input-group"><label class="input-label" for="vd-vout">Vout (V)</label><input type="number" class="input-field" id="vd-vout" value="" step="any" placeholder="Leave blank to solve" /></div>
+          </div>
+          <button class="btn-primary w-full" id="btn-calc-vd">Calculate</button>
+          <div id="vd-result" class="mt-4"></div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Circuit Details</h3>
+          <div id="vd-details"><p class="text-sm text-gray-400 italic">Enter values and click Calculate.</p></div>
+          <div id="calc-results" class="mt-4"></div>
+          <div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30 mt-3"><div class="text-xs font-semibold">Formula</div><div class="text-sm font-mono mt-1">Vout = Vin × R₂ / (R₁ + R₂)</div></div>
+          <div class="flex gap-2 mt-2">
+            <button class="btn-ghost text-xs flex-1" id="btn-vd-presets">📊 Presets</button>
+          </div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content"><p class="text-gray-500 dark:text-gray-400">Vout = Vin × R₂ / (R₁ + R₂). The voltage divider divides input voltage proportionally to the resistor ratio. Known as a potential divider.</p></div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'eng-voltage',name:'Voltage Divider Calculator',category:'Engineering',categoryPath:'/app/dashboard.html',description:'Calculate voltage divider output.',icon:'⚡',related:[{id:'eng-resistor',name:'Resistor Code',icon:'🎨',category:'Engineering',path:'/app/engineering/resistor.html'},{id:'sci-ohm',name:"Ohm's Law",icon:'⚡',category:'Science',path:'/app/science/ohm-law.html'},{id:'eng-binary',name:'Binary',icon:'01',category:'Engineering',path:'/app/engineering/binary.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'Vout = Vin × R₂ / (R₁ + R₂)',CALC.description,{'Vin':'Input Voltage','Vout':'Output Voltage','R₁':'Top resistor','R₂':'Bottom resistor'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Tab between inputs. Enter to calculate. Leave Vout blank to solve.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      function fmt(n){return MathEngine.formatNumber(n)}
+
+      const presets=[
+        {vin:5,r1:10000,r2:10000,label:'5V with 2×10kΩ (1/2 Vout)'},
+        {vin:12,r1:100000,r2:10000,label:'12V sensor divider'},
+        {vin:3.3,r1:1000,r2:2200,label:'3.3V logic divider'},
+        {vin:9,r1:4700,r2:10000,label:'9V to 6.1V output'},
+        {vin:5,r1:220,r2:1000,label:'5V LED circuit (R₂=1k)'},
+      ];let pi=0;
+
+      function calcVD(){
+        const vin=parseFloat(document.getElementById('vd-vin').value);const r1=parseFloat(document.getElementById('vd-r1').value);
+        const r2=parseFloat(document.getElementById('vd-r2').value);const vout=parseFloat(document.getElementById('vd-vout').value);
+        const el=document.getElementById('vd-result');const dt=document.getElementById('vd-details');
+        const blankVout=isNaN(vout);
+        if(isNaN(vin)||isNaN(r1)||isNaN(r2)||vin<=0||r1<=0||r2<=0){el.innerHTML='<p class="text-sm text-red-500">Enter positive values for Vin, R₁, R₂.</p>';return}
+        const voutCalc=vin*r2/(r1+r2);
+        const current=vin/(r1+r2);
+        const p1=current*current*r1;const p2=current*current*r2;
+        el.innerHTML=`<div class="solution-box text-center"><div class="vd-result">${fmt(voutCalc)} V</div><div class="text-sm text-gray-400 mt-1">Vout = ${fmt(vin)} × ${fmt(r2)} / (${fmt(r1)} + ${fmt(r2)})</div></div>`;
+        dt.innerHTML=`<div class="space-y-2">${[['Ratio R₂/(R₁+R₂)',`${(r2/(r1+r2)*100).toFixed(1)}%`],['Current',`${fmt(current*1000)} mA`],['Power R₁',`${fmt(p1*1000)} mW`],['Power R₂',`${fmt(p2*1000)} mW`],['Total Power',`${fmt((p1+p2)*1000)} mW`]].map(([k,v])=>`<div class="vd-detail"><span class="text-xs text-gray-400">${k}</span><span class="font-mono text-sm font-semibold">${v}</span></div>`).join('')}</div>`;
+        if(!blankVout){const err=Math.abs(vout-voutCalc)/voutCalc*100;dt.innerHTML+=`<div class="vd-detail mt-2"><span class="text-xs text-gray-400">Error (entered vs calc)</span><span class="font-mono text-sm font-semibold ${err<1?'text-primary':'text-red-500'}">${err.toFixed(2)}%</span></div>`}
+        CalcStorage.addHistory(CALC.id,{expression:`Vin=${fmt(vin)}V, R₁=${fmt(r1)}Ω, R₂=${fmt(r2)}Ω`,result:`Vout=${fmt(voutCalc)}V`});
+      }
+
+      document.getElementById('btn-calc-vd').addEventListener('click',calcVD);
+      document.getElementById('btn-vd-presets').addEventListener('click',()=>{
+        const ex=presets[pi%presets.length];pi++;
+        document.getElementById('vd-vin').value=ex.vin;document.getElementById('vd-r1').value=ex.r1;document.getElementById('vd-r2').value=ex.r2;document.getElementById('vd-vout').value='';
+        calcVD();Toast.show('Loaded: '+ex.label,'info');
+      });
+
+      calcVD();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

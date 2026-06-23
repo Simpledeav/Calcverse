@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ohm's Law Calculator — CalcVerse</title>
+  <meta name="description" content="Calculate voltage, current, resistance, and power using Ohm's Law. Enter any two values to solve for the others." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.ohm-triangle{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;border-radius:16px;background:linear-gradient(135deg,theme('colors.primary.DEFAULT')/8,theme('colors.black')/5);border:1px solid theme('colors.primary.DEFAULT')/20;margin-bottom:16px}.dark .ohm-triangle{background:linear-gradient(135deg,theme('colors.primary.DEFAULT')/6,theme('colors.black')/15)}.ohm-triangle .top{font-size:2rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:theme('colors.primary.DEFAULT')}.ohm-triangle .bottom{display:flex;gap:32px;font-size:1.5rem;font-weight:700;font-family:'JetBrains Mono',monospace}.ohm-triangle .bottom .current{color:#3b82f6}.ohm-triangle .bottom .resistance{color:#ef4444}.ohm-divider{width:60px;height:2px;background:theme('colors.gray.300')}.dark .ohm-divider{background:theme('colors.gray.600')}.ohm-result{font-size:1.75rem;font-weight:700;font-family:'JetBrains Mono',monospace}.voltage{color:theme('colors.primary.DEFAULT')}.current{color:#3b82f6}.resistance{color:#ef4444}.power{color:#a855f7}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Science</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Ohm's Law Calculator</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Science</span>
+          <h1 class="calc-title">Ohm's Law Calculator</h1>
+          <p class="calc-description" id="calc-desc">Calculate voltage (V), current (I), resistance (R), and power (P). Enter any two values to solve for the rest.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="sci-ohm"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <div class="ohm-triangle">
+            <div class="top">V</div>
+            <div class="ohm-divider my-2"></div>
+            <div class="bottom"><span class="current">I</span> <span class="resistance">R</span></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="input-group"><label class="input-label" for="ohm-v">Voltage (V, volts)</label><input type="number" class="input-field" id="ohm-v" value="12" step="any" /></div>
+            <div class="input-group"><label class="input-label" for="ohm-i">Current (I, amps)</label><input type="number" class="input-field" id="ohm-i" value="" step="any" placeholder="leave blank to solve" /></div>
+            <div class="input-group"><label class="input-label" for="ohm-r">Resistance (R, ohms)</label><input type="number" class="input-field" id="ohm-r" value="" step="any" placeholder="leave blank to solve" /></div>
+            <div class="input-group"><label class="input-label" for="ohm-p">Power (P, watts)</label><input type="number" class="input-field" id="ohm-p" value="" step="any" placeholder="leave blank to solve" /></div>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn-primary flex-1" id="btn-calc-ohm">Calculate</button>
+            <button class="btn-ghost" id="btn-ohm-presets">⚡ Presets</button>
+          </div>
+          <div id="ohm-result" class="mt-4"></div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Results Summary</h3>
+          <div id="ohm-summary"><p class="text-sm text-gray-400 italic">Enter any two values (V, I, R) and click Calculate.</p></div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content">
+          <p class="text-gray-500 dark:text-gray-400 mb-2"><b>Ohm's Law:</b> V = I × R, I = V / R, R = V / I</p>
+          <p class="text-gray-500 dark:text-gray-400"><b>Power:</b> P = V × I = I² × R = V² / R</p>
+        </div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'sci-ohm',name:"Ohm's Law Calculator",category:'Science',categoryPath:'/app/dashboard.html',description:"Calculate voltage, current, resistance, and power using Ohm's Law.",icon:'⚡',related:[{id:'sci-physics',name:'Physics',icon:'⚛️',category:'Science',path:'/app/science/physics.html'},{id:'sci-energy',name:'Energy',icon:'⚡',category:'Science',path:'/app/science/energy.html'},{id:'sci-force',name:'Force',icon:'💪',category:'Science',path:'/app/science/force.html'},{id:'eng-resistor',name:'Resistor Code',icon:'🔴',category:'Engineering',path:'/app/engineering/resistor.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'Ohm\'s Law: V = I × R',CALC.description,{'V=I×R':'Ohm\'s Law','P=V×I':'Power Law'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Tab between inputs. Enter to calculate.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      function fmt(n){return MathEngine.formatNumber(n)}
+
+      const presets=[
+        {v:12,i:null,r:24,p:null,label:'12V / 24Ω LED circuit'},
+        {v:120,i:null,r:10,p:null,label:'120V / 10Ω heater'},
+        {v:5,i:0.5,r:null,p:null,label:'5V / 0.5A USB device'},
+        {v:230,i:null,r:46,p:null,label:'230V / 46Ω appliance'},
+        {v:9,i:null,r:null,p:0.5,label:'9V / 0.5W battery'},
+        {v:null,i:10,r:1.5,p:null,label:'10A / 1.5Ω cable'},
+      ];let pi=0;
+
+      function calcOhm(){
+        const V=parseFloat(document.getElementById('ohm-v').value);const I=parseFloat(document.getElementById('ohm-i').value);
+        const R=parseFloat(document.getElementById('ohm-r').value);const P=parseFloat(document.getElementById('ohm-p').value);
+        const el=document.getElementById('ohm-result');const sum=document.getElementById('ohm-summary');
+
+        const knownV=!isNaN(V),knownI=!isNaN(I),knownR=!isNaN(R),knownP=!isNaN(P);
+        const knownCount=[knownV,knownI,knownR].filter(x=>x).length;
+
+        if(knownCount<2){el.innerHTML='<p class="text-sm text-red-500">Enter at least 2 of V, I, R.</p>';sum.innerHTML='<p class="text-sm text-red-400">Need 2 values</p>';return}
+
+        let v=null,i=null,r=null,p=null;
+        if(knownV&&knownI){v=V;i=I;r=V/I;p=V*I}
+        else if(knownV&&knownR){v=V;r=R;i=V/R;p=V*V/R}
+        else if(knownI&&knownR){i=I;r=R;v=I*R;p=I*I*R}
+        else if(knownP&&knownV&&knownI){v=V;i=I;r=V/I;p=P}
+        else if(knownP&&knownV){v=V;p=P;i=P/V;r=V/(P/V)}
+        else if(knownP&&knownI){i=I;p=P;v=P/I;r=(P/I)/I}
+        else if(knownP&&knownR){r=R;p=P;i=Math.sqrt(P/R);v=Math.sqrt(P*R)}
+        else{el.innerHTML='<p class="text-sm text-red-500">Not enough information to solve.</p>';return}
+
+        el.innerHTML=`<div class="grid grid-cols-2 gap-3">${[[v,'Voltage (V)','V','voltage'],[i,'Current (I)','A','current'],[r,'Resistance (R)','Ω','resistance'],[p,'Power (P)','W','power']].map(([val,label,unit,cls])=>`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">${label}</div><div class="text-xl font-bold font-mono ${cls}">${fmt(val)} ${unit}</div></div>`).join('')}</div>`;
+        sum.innerHTML=`<div class="solution-box"><div class="text-sm">${fmt(v)} V = ${fmt(i)} A × ${fmt(r)} Ω</div><div class="text-sm text-gray-500 mt-1">Power: ${fmt(p)} W</div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`V=${fmt(v)}, I=${fmt(i)}, R=${fmt(r)}`,result:`P=${fmt(p)}W`});
+      }
+
+      document.getElementById('btn-calc-ohm').addEventListener('click',calcOhm);
+
+      document.getElementById('btn-ohm-presets').addEventListener('click',()=>{
+        const ex=presets[pi%presets.length];pi++;
+        document.getElementById('ohm-v').value=ex.v!==null?ex.v:'';
+        document.getElementById('ohm-i').value=ex.i!==null?ex.i:'';
+        document.getElementById('ohm-r').value=ex.r!==null?ex.r:'';
+        document.getElementById('ohm-p').value=ex.p!==null?ex.p:'';
+        calcOhm();Toast.show('Loaded: '+ex.label,'info');
+      });
+
+      calcOhm();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

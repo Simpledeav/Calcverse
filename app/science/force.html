@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Force Calculator — CalcVerse</title>
+  <meta name="description" content="Calculate force, mass, and acceleration using Newton's Second Law. Solve for any variable with F = ma and F = mg." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.force-formula{font-size:1.5rem;font-weight:700;font-family:'JetBrains Mono',monospace;text-align:center;padding:16px;border-radius:12px;background:linear-gradient(135deg,theme('colors.primary.DEFAULT')/8,theme('colors.black')/5);border:1px solid theme('colors.primary.DEFAULT')/20;margin-bottom:16px}.dark .force-formula{background:linear-gradient(135deg,theme('colors.primary.DEFAULT')/6,theme('colors.black')/15)}.frc-result{font-size:1.75rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:theme('colors.primary.DEFAULT')}.gravity-selector{display:flex;gap:8px;margin-top:4px}.grav-btn{padding:4px 12px;border-radius:9999px;font-size:11px;font-weight:500;background:theme('colors.gray.100');color:theme('colors.gray.500');cursor:pointer;transition:all .15s}.dark .grav-btn{background:theme('colors.gray.800');color:theme('colors.gray.400')}.grav-btn.active{background:theme('colors.primary.DEFAULT');color:white}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Science</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Force Calculator</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Science</span>
+          <h1 class="calc-title">Force Calculator</h1>
+          <p class="calc-description" id="calc-desc">Calculate force, mass, or acceleration using Newton's Second Law (F = ma) and solve weight (W = mg).</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="sci-force"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none mb-6" id="force-tabs">
+            <button class="chem-tab active" data-force-mode="fma">F = ma</button>
+            <button class="chem-tab" data-force-mode="wmg">W = mg (Weight)</button>
+          </div>
+          <!-- F = ma -->
+          <div id="force-fma" class="force-mode">
+            <div class="force-formula">F = m · a</div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="input-group"><label class="input-label" for="fma-m">Mass (m, kg)</label><input type="number" class="input-field" id="fma-m" value="10" step="any" /></div>
+              <div class="input-group"><label class="input-label" for="fma-a">Acceleration (a, m/s²)</label><input type="number" class="input-field" id="fma-a" value="5" step="any" /></div>
+              <div class="input-group"><label class="input-label" for="fma-f">Force (F, N)</label><input type="number" class="input-field" id="fma-f" value="" step="any" placeholder="leave blank to solve" /></div>
+            </div>
+            <button class="btn-primary w-full" id="btn-solve-fma">Solve</button>
+            <div id="fma-result" class="mt-4"></div>
+          </div>
+          <!-- W = mg -->
+          <div id="force-wmg" class="force-mode hidden">
+            <div class="force-formula">W = m · g</div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="input-group"><label class="input-label" for="wmg-m">Mass (m, kg)</label><input type="number" class="input-field" id="wmg-m" value="70" step="any" /></div>
+              <div class="input-group"><label class="input-label" for="wmg-g">Gravity (g, m/s²)</label><input type="number" class="input-field" id="wmg-g" value="9.8" step="any" />
+                <div class="gravity-selector"><span class="grav-btn active" data-g="9.8">Earth</span><span class="grav-btn" data-g="1.62">Moon</span><span class="grav-btn" data-g="3.72">Mars</span><span class="grav-btn" data-g="24.79">Jupiter</span><span class="grav-btn" data-g="0">Space</span></div>
+              </div>
+              <div class="input-group"><label class="input-label" for="wmg-w">Weight (W, N)</label><input type="number" class="input-field" id="wmg-w" value="" step="any" placeholder="leave blank to solve" /></div>
+            </div>
+            <button class="btn-primary w-full" id="btn-solve-wmg">Solve</button>
+            <div class="flex gap-2 mt-2">
+              <button class="btn-ghost text-xs flex-1" id="btn-wmg-examples">📊 Examples</button>
+            </div>
+            <div id="wmg-result" class="mt-4"></div>
+          </div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Solution</h3>
+          <div id="force-solution"><p class="text-sm text-gray-400 italic">Enter known values, leave one blank to solve.</p></div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content">
+          <p class="text-gray-500 dark:text-gray-400 mb-2"><b>Newton's Second Law:</b> F = ma. Force (N) = mass (kg) × acceleration (m/s²).</p>
+          <p class="text-gray-500 dark:text-gray-400"><b>Weight:</b> W = mg. Standard Earth gravity g = 9.81 m/s². Select Moon/Mars/Jupiter for other values.</p>
+        </div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'sci-force',name:'Force Calculator',category:'Science',categoryPath:'/app/dashboard.html',description:"Calculate force, mass, and acceleration using Newton's Second Law.",icon:'💪',related:[{id:'sci-physics',name:'Physics',icon:'⚛️',category:'Science',path:'/app/science/physics.html'},{id:'sci-ohm',name:"Ohm's Law",icon:'⚡',category:'Science',path:'/app/science/ohm-law.html'},{id:'sci-energy',name:'Energy',icon:'⚡',category:'Science',path:'/app/science/energy.html'},{id:'sci-pressure',name:'Gas Laws',icon:'🌡️',category:'Science',path:'/app/science/pressure.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,"Newton's Second Law: F = ma",CALC.description,{'F=ma':'Net force','W=mg':'Weight'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Tab between inputs. Enter to calculate.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+      document.querySelectorAll('#force-tabs .chem-tab').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#force-tabs .chem-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.force-mode').forEach(p=>p.classList.add('hidden'));document.getElementById('force-'+btn.dataset.forceMode).classList.remove('hidden')})});
+
+      function fmt(n){return MathEngine.formatNumber(n)}
+      function showForce(el,val,unit,detail){el.innerHTML=`<div class="formula-card"><div class="frc-result">${val} ${unit}</div>${detail?`<div class="text-sm text-gray-500 dark:text-gray-400 mt-1">${detail}</div>`:''}</div>`;}
+
+      function solveFMA(){
+        const m=parseFloat(document.getElementById('fma-m').value);const a=parseFloat(document.getElementById('fma-a').value);const F=parseFloat(document.getElementById('fma-f').value);
+        const el=document.getElementById('fma-result');const sol=document.getElementById('force-solution');
+        const blankM=isNaN(m),blankA=isNaN(a),blankF=isNaN(F);const blanks=[blankM,blankA,blankF].filter(x=>x).length;
+        if(blanks!==1){el.innerHTML='<p class="text-sm text-red-500">Leave exactly one field blank to solve.</p>';return}
+        let val,unit,label;
+        if(blankF){val=m*a;unit='N';label='Force'}else if(blankM){val=F/a;unit='kg';label='Mass'}else{val=F/m;unit='m/s²';label='Acceleration'}
+        showForce(el,fmt(val),unit,`${label} solved from F = ma`);
+        sol.innerHTML=`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">F = ma</div><div class="text-sm mt-1">${label}: ${fmt(val)} ${unit}</div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`F=ma: m=${fmt(m)}, a=${fmt(a)}, F=${fmt(F)}`,result:`${label}=${fmt(val)}${unit}`});
+      }
+
+      function solveWMG(){
+        const m=parseFloat(document.getElementById('wmg-m').value);const g=parseFloat(document.getElementById('wmg-g').value);const W=parseFloat(document.getElementById('wmg-w').value);
+        const el=document.getElementById('wmg-result');const sol=document.getElementById('force-solution');
+        const blankM=isNaN(m),blankG=isNaN(g),blankW=isNaN(W);const blanks=[blankM,blankG,blankW].filter(x=>x).length;
+        if(blanks!==1){el.innerHTML='<p class="text-sm text-red-500">Leave exactly one field blank to solve.</p>';return}
+        let val,unit,label;
+        if(blankW){val=m*g;unit='N';label='Weight'}else if(blankM){val=W/g;unit='kg';label='Mass'}else{val=W/m;unit='m/s²';label='Gravity'}
+        showForce(el,fmt(val),unit,`${label} solved from W = mg`);
+        sol.innerHTML=`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">W = mg</div><div class="text-sm mt-1">${label}: ${fmt(val)} ${unit}</div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`W=mg: m=${fmt(m)}, g=${fmt(g)}`,result:`${label}=${fmt(val)}${unit}`});
+      }
+
+      document.getElementById('btn-solve-fma').addEventListener('click',solveFMA);
+      document.getElementById('btn-solve-wmg').addEventListener('click',solveWMG);
+
+      // Gravity presets
+      document.querySelectorAll('.grav-btn').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          document.querySelectorAll('.grav-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+          document.getElementById('wmg-g').value=btn.dataset.g;
+        });
+      });
+
+      // Weight examples
+      const weightExamples=[{m:70,g:9.8,w:null},{m:70,g:1.62,w:null},{m:5,g:9.8,w:null},{m:1000,g:9.8,w:null},{m:150,g:3.72,w:null}];let wei=0;
+      document.getElementById('btn-wmg-examples')?.addEventListener('click',()=>{
+        const ex=weightExamples[wei%weightExamples.length];wei++;
+        document.getElementById('wmg-m').value=ex.m;document.getElementById('wmg-g').value=ex.g;document.getElementById('wmg-w').value='';
+        document.querySelectorAll('.grav-btn').forEach(b=>{b.classList.toggle('active',parseFloat(b.dataset.g)===ex.g)});
+        solveWMG();const planets={9.8:'Earth',1.62:'Moon',3.72:'Mars'};Toast.show(`${ex.m}kg on ${planets[ex.g]||'custom'}','info`);
+      });
+
+      solveFMA();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

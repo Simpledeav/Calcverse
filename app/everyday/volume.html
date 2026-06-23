@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volume Converter — CalcVerse</title>
+  <meta name="description" content="Convert between metric, imperial, and US volume units." />
+  <meta name="theme-color" content="#77d202" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" as="style" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.conv-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; }
+    @media (max-width: 640px) { .conv-grid { grid-template-columns: 1fr; } }
+    
+    
+    
+    
+    
+    
+     }</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-between px-6 h-16">
+        <div class="flex items-center gap-3">
+          <nav class="breadcrumb text-sm text-gray-400" aria-label="Breadcrumb">
+            <a href="/app/dashboard.html" class="hover:text-primary transition-colors">Dashboard</a><span class="mx-1.5">/</span>
+            <a href="/app/dashboard.html" class="hover:text-primary transition-colors">Everyday</a><span class="mx-1.5">/</span>
+            <span class="text-gray-600 dark:text-gray-300 font-medium">Volume Converter</span>
+          </nav>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-icon" id="theme-toggle-page" aria-label="Toggle theme">
+            <span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    <div class="p-6">
+      <div class="calc-header flex flex-wrap items-start justify-between gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-semibold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">Everyday</span>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">🧪 Volume Converter</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Convert between metric, imperial, and US volume units instantly.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-favorite" data-calc-id="day-volume">☆ Favorite</button>
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-share">Share</button>
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-formula">Formula ƒ</button>
+        </div>
+      </div>
+      <div class="calc-body max-w-2xl">
+        <div class="everyday-card">
+          <div class="conv-grid">
+            <div>
+              <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">From</label>
+              <select id="from-unit" class="everyday-select mb-2"></select>
+              <input type="number" id="from-value" class="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-0 font-mono text-lg text-right focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="0" autofocus />
+            </div>
+            <div class="flex justify-center">
+              <button id="swap-btn" class="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors text-primary" aria-label="Swap units">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16l-4-4 4-4"/><path d="M17 8l4 4-4 4"/><path d="M3 12h18"/></svg>
+              </button>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">To</label>
+              <select id="to-unit" class="everyday-select mb-2"></select>
+              <input type="text" id="to-value" class="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-0 font-mono text-lg text-right font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/50" readonly />
+            </div>
+          </div>
+          <div class="everyday-ref-grid" id="quick-refs"></div>
+        </div>
+        <details class="calc-formula-box mt-6">
+          <summary class="cursor-pointer text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">How it works</summary>
+          <div class="mt-3 text-sm text-gray-500 dark:text-gray-400"><p>All volume conversions use the <strong>liter</strong> as the base unit.</p><p class="mt-1 text-xs text-gray-400">e.g., 1 mL = 0.001 L, 1 cup = 0.236588 L, 1 gal = 3.78541 L</p></div>
+        </details>
+      </div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script src="/assets/js/engines/unit-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const units = UnitEngine.getCategoryUnits('volume');
+      const fromSel = document.getElementById('from-unit');
+      const toSel = document.getElementById('to-unit');
+      const fromVal = document.getElementById('from-value');
+      const toVal = document.getElementById('to-value');
+      const swapBtn = document.getElementById('swap-btn');
+      const quickRefs = document.getElementById('quick-refs');
+
+      units.forEach(u => {
+        fromSel.innerHTML += `<option value="${u.id}" ${u.id === 'liter' ? 'selected' : ''}>${u.symbol} — ${u.name}</option>`;
+        toSel.innerHTML += `<option value="${u.id}" ${u.id === 'gallon_us' ? 'selected' : ''}>${u.symbol} — ${u.name}</option>`;
+      });
+
+      function convert() {
+        const val = parseFloat(fromVal.value);
+        if (isNaN(val)) { toVal.value = ''; return; }
+        const result = UnitEngine.convert(val, fromSel.value, toSel.value, 'volume');
+        toVal.value = UnitEngine.formatValue(result, 4) + ' ' + (toSel.options[toSel.selectedIndex]?.text.split(' — ')[0] || '');
+        renderQuickRefs(val);
+        CalcStorage.addHistory('day-volume', {
+          expression: val + ' ' + (fromSel.options[fromSel.selectedIndex]?.text.split(' — ')[0] || '') + ' → ' + UnitEngine.formatValue(result, 4) + ' ' + (toSel.options[toSel.selectedIndex]?.text.split(' — ')[0] || ''),
+          result: UnitEngine.formatValue(result, 4), timestamp: Date.now()
+        });
+      }
+
+      function renderQuickRefs(baseVal) {
+        const pairs = [['liter','gallon_us'],['milliliter','fluid_ounce_us'],['cup_us','milliliter'],['gallon_us','liter'],['quart_us','liter'],['cubic_foot','liter']];
+        quickRefs.innerHTML = pairs.map(([from, to]) => {
+          const v = UnitEngine.convert(baseVal, from, to, 'volume');
+          const fsym = units.find(u => u.id === from)?.symbol || from;
+          const tsym = units.find(u => u.id === to)?.symbol || to;
+          return `<div class="everyday-ref-item" data-from="${from}" data-to="${to}"><span class="label">${fsym} → ${tsym}</span><span class="value">${UnitEngine.formatValue(v, 4)}</span></div>`;
+        }).join('');
+        document.querySelectorAll('.everyday-ref-item').forEach(el => {
+          el.addEventListener('click', function() { fromSel.value = this.dataset.from; toSel.value = this.dataset.to; convert(); });
+        });
+      }
+
+      fromVal.addEventListener('input', convert);
+      fromSel.addEventListener('change', convert);
+      toSel.addEventListener('change', convert);
+      swapBtn.addEventListener('click', function() { const tmp = fromSel.value; fromSel.value = toSel.value; toSel.value = tmp; convert(); });
+
+      document.getElementById('btn-favorite')?.addEventListener('click', function() {
+        const isFav = CalcStorage.toggleFavorite(this.dataset.calcId);
+        this.textContent = isFav ? '★ Favorited' : '☆ Favorite';
+        this.classList.toggle('text-primary', isFav);
+        Toast.show(isFav ? 'Added to favorites' : 'Removed from favorites', isFav ? 'success' : 'info');
+      });
+      if (CalcStorage.isFavorite('day-volume')) { document.getElementById('btn-favorite').textContent = '★ Favorited'; document.getElementById('btn-favorite').classList.add('text-primary'); }
+
+      document.getElementById('btn-share')?.addEventListener('click', function() {
+        Modal.show({ title: 'Share Result', content: '<p class="text-sm text-gray-500 mb-3">Copy the result below:</p><div class="flex gap-2"><input type="text" class="flex-1 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border-0 text-sm" value="' + toVal.value + '" readonly id="share-text"/><button class="btn-primary px-4 py-2 rounded-lg text-sm" onclick="navigator.clipboard.writeText(document.getElementById(\'share-text\').value).then(()=>{Modal.close();Toast.show(\'Copied!\',\'success\');})">Copy</button></div>' });
+      });
+
+      document.getElementById('btn-formula')?.addEventListener('click', function() {
+        Modal.show({ title: 'Volume Conversion', content: '<div class="text-sm text-gray-500 dark:text-gray-400"><p>All volume conversions use the <strong>liter</strong> as the base unit.</p><ul class="mt-2 space-y-1 list-disc pl-4">' + units.map(u => '<li><strong>' + u.symbol + '</strong> — ' + u.name + ': 1 ' + u.symbol + ' = ' + (UnitEngine.CATEGORIES.volume.units[u.id]?.factor || 'custom') + ' L</li>').join('') + '</ul></div>' });
+      });
+
+      document.getElementById('theme-toggle-page')?.addEventListener('click', () => themeEngine.toggle());
+      const sidebar = new CalcVerseSidebar('#sidebar-container', { collapsed: window.innerWidth < 1024 });
+      window.calcSidebar = sidebar;
+      CalcStorage.recordVisit('day-volume', 'Volume Converter');
+      convert();
+    });
+  </script>
+</body>
+</html>

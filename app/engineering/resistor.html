@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resistor Color Code — CalcVerse</title>
+  <meta name="description" content="Decode resistor color bands to find resistance and tolerance, or enter a value to see the correct color bands." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.res-band{width:40px;height:60px;border-radius:4px;border:1px solid theme('colors.gray.300');transition:all .15s}.res-band:hover{transform:scale(1.1);z-index:2}.res-body{height:80px;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:6px;background:#f0e6d3;padding:0 20px;max-width:280px;margin:0 auto;position:relative}.dark .res-body{background:#2a241e}.res-body .wire{position:absolute;width:20px;height:8px;background:#c0c0c0;top:50%;transform:translateY(-50%)}.res-body .wire.left{left:-20px;border-radius:4px 0 0 4px}.res-body .wire.right{right:-20px;border-radius:0 4px 4px 0}.color-picker{width:28px;height:28px;border-radius:9999px;border:2px solid transparent;cursor:pointer;transition:all .1s}.color-picker:hover{border-color:theme('colors.gray.400');transform:scale(1.15)}.color-picker.selected{border-color:theme('colors.primary.DEFAULT');box-shadow:0 0 8px rgba(119,210,2,.4)}.res-result{font-size:1.75rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:theme('colors.primary.DEFAULT')}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Engineering</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Resistor Color Code</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Engineering</span>
+          <h1 class="calc-title">Resistor Color Code Calculator</h1>
+          <p class="calc-description" id="calc-desc">Decode 4-band and 5-band resistor color codes. Click the bands to select colors, or enter a resistance value to find matching bands.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="eng-resistor"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <div class="flex gap-2 mb-4">
+            <span class="sex-btn active" data-bands="4">4-Band</span>
+            <span class="sex-btn" data-bands="5">5-Band</span>
+          </div>
+          <!-- Resistor visual -->
+          <div class="res-body" id="res-visual">
+            <div class="wire left"></div>
+            <div class="res-band" id="res-band-0" style="background:#000;cursor:pointer" title="Band 1"></div>
+            <div class="res-band" id="res-band-1" style="background:#000;cursor:pointer" title="Band 2"></div>
+            <div class="res-band" id="res-band-2" style="background:#000;cursor:pointer" title="Band 3"></div>
+            <div class="res-band" id="res-band-4" style="background:gold;cursor:pointer;width:32px" title="Tolerance"></div>
+            <div class="wire right"></div>
+          </div>
+          <div class="text-xs text-gray-400 text-center mt-2">Click each band to select a color</div>
+          <!-- Color picker bands -->
+          <div class="mt-4" id="color-pickers"></div>
+          <button class="btn-primary w-full mt-4" id="btn-reverse-mode">↔ Reverse: Enter Value</button>
+          <div id="res-reverse" class="hidden mt-4">
+            <div class="input-group"><label class="input-label">Resistance Value</label>
+              <div class="flex gap-2"><input type="number" class="input-field" id="res-value" value="4700" step="any" /><select class="input-field w-24" id="res-mult"><option value="1">Ω</option><option value="1000" selected>kΩ</option><option value="1000000">MΩ</option></select></div>
+            </div>
+            <button class="btn-primary w-full mt-2" id="btn-find-bands">Find Bands</button>
+          </div>
+          <div id="res-result" class="mt-4"></div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Color Chart</h3>
+          <div id="color-chart" class="space-y-1 text-sm"></div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content"><p class="text-gray-500 dark:text-gray-400">4-band: (digit ×10 + digit) × multiplier ± tolerance. 5-band: (digit ×100 + digit ×10 + digit) × multiplier ± tolerance.</p></div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'eng-resistor',name:'Resistor Color Code Calculator',category:'Engineering',categoryPath:'/app/dashboard.html',description:'Decode resistor color bands or find bands from a value.',icon:'🎨',related:[{id:'eng-voltage',name:'Voltage Divider',icon:'⚡',category:'Engineering',path:'/app/engineering/voltage-divider.html'},{id:'eng-unit',name:'Unit Converter',icon:'📐',category:'Engineering',path:'/app/engineering/unit-converter.html'},{id:'sci-ohm',name:"Ohm's Law",icon:'⚡',category:'Science',path:'/app/science/ohm-law.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'Resistor = (digit ×10 + digit) × multiplier',CALC.description,{'Black':'0','Brown':'1 ±1%','Red':'2 ±2%','Orange':'3','Yellow':'4','Green':'5 ±0.5%','Blue':'6 ±0.25%','Violet':'7','Gray':'8','White':'9','Gold':'×0.1 ±5%','Silver':'×0.01 ±10%'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Click colored dots to pick band colors. Use reverse mode to find bands from a value.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      let bandCount=4;let reverseMode=false;
+      const colors={black:'#000',brown:'#8B4513',red:'#DC143C',orange:'#FF8C00',yellow:'#FFD700',green:'#228B22',blue:'#0000CD',violet:'#8A2BE2',gray:'#808080',white:'#FFF',gold:'#FFD700',silver:'#C0C0C0'};
+      const colorNames=Object.keys(colors);
+      const digitMap={black:0,brown:1,red:2,orange:3,yellow:4,green:5,blue:6,violet:7,gray:8,white:9};
+      const multMap={black:1,brown:10,red:100,orange:1000,yellow:10000,green:100000,blue:1000000,violet:10000000,gray:100000000,white:1000000000,gold:0.1,silver:0.01};
+      const tolMap={brown:1,red:2,green:0.5,blue:0.25,violet:0.1,gray:0.05,gold:5,silver:10};
+
+      let bandColors=['brown','black','red','gold'];
+
+      document.querySelectorAll('[data-bands]').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('[data-bands]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');bandCount=parseInt(btn.dataset.bands);bandColors=bandCount===4?['brown','black','red','gold']:['brown','black','black','red','gold'];renderBands();renderPickers();calcResistor()})});
+
+      function renderBands(){
+        const vis=document.getElementById('res-visual');
+        const bands=bandCount===4?[0,1,2,4]:[0,1,2,3,4];
+        vis.innerHTML='<div class="wire left"></div>';
+        bands.forEach((bandIdx,i)=>{
+          if(bandIdx===4){
+            vis.innerHTML+=`<div class="res-band" id="res-band-4" style="background:${colors[bandColors[i]]||'gold'};cursor:pointer;width:32px" title="Tolerance"></div>`;
+          }else{
+            vis.innerHTML+=`<div class="res-band" id="res-band-${i}" style="background:${colors[bandColors[i]]||'#000'};cursor:pointer" title="Band ${i+1}"></div>`;
+          }
+        });
+        vis.innerHTML+='<div class="wire right"></div>';
+        vis.querySelectorAll('[id^="res-band-"]').forEach(el=>{el.addEventListener('click',()=>{const idx=Array.from(vis.children).indexOf(el);if(idx>0)showPicker(idx-1)})});
+      }
+
+      let activePickerIdx=0;
+
+      function showPicker(idx){
+        activePickerIdx=idx;
+        renderPickers();
+      }
+
+      function renderPickers(){
+        const container=document.getElementById('color-pickers');
+        const numPickers=bandCount===4?3:4; // digit bands only
+        let html='<div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Select Band Colors</div><div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">';
+        for(let i=0;i<numPickers;i++){
+          const label=bandCount===4?(i===0?'Band 1 (D1)':i===1?'Band 2 (D2)':'Band 3 (×)'):(i===0?'Band 1 (D1)':i===1?'Band 2 (D2)':i===2?'Band 3 (D3)':'Band 4 (×)');
+          const current=bandColors[i]||'black';
+          html+=`<div style="text-align:center"><div class="text-xs text-gray-400 mb-1">${label}</div><div style="display:flex;gap:3px;flex-wrap:wrap;width:96px">`;
+          colorNames.forEach(c=>{
+            const isMultiplier=(i===numPickers-1); // last digit band is multiplier
+            if(!isMultiplier&&(c==='gold'||c==='silver'))return; // gold/silver not digits
+            html+=`<div class="color-picker${c===current?' selected':''}" style="background:${colors[c]}" data-color="${c}" data-idx="${i}"></div>`;
+          });
+          html+=`</div></div>`;
+        }
+        html+='</div>';
+        container.innerHTML=html;
+        container.querySelectorAll('.color-picker').forEach(el=>{
+          el.addEventListener('click',()=>{
+            const idx=parseInt(el.dataset.idx);const color=el.dataset.color;
+            bandColors[idx]=color;renderBands();renderPickers();calcResistor();
+          });
+        });
+      }
+
+      function calcResistor(){
+        const el=document.getElementById('res-result');
+        const digits=bandCount===4?bandColors.slice(0,2):bandColors.slice(0,3);
+        const multiplierIdx=bandCount===4?2:3;
+        const tolColor=bandColors[bandCount===4?3:4]||'gold';
+        const mult=multMap[bandColors[multiplierIdx]]||1;
+        const tol=tolMap[tolColor]||5;
+        let val=0;
+        if(bandCount===4)val=(digitMap[bandColors[0]]*10+digitMap[bandColors[1]])*mult;
+        else val=(digitMap[bandColors[0]]*100+digitMap[bandColors[1]]*10+digitMap[bandColors[2]])*mult;
+
+        const fmtVal=val>=1e6?(val/1e6).toFixed(2)+' MΩ':val>=1e3?(val/1e3).toFixed(2)+' kΩ':val.toFixed(1)+' Ω';
+        const rangeLow=val*(1-tol/100);const rangeHigh=val*(1+tol/100);
+        const fmtLow=rangeLow>=1e6?(rangeLow/1e6).toFixed(2)+' M':rangeLow>=1e3?(rangeLow/1e3).toFixed(2)+' k':rangeLow.toFixed(1);
+        const fmtHigh=rangeHigh>=1e6?(rangeHigh/1e6).toFixed(2)+' M':rangeHigh>=1e3?(rangeHigh/1e3).toFixed(2)+' k':rangeHigh.toFixed(1);
+
+        el.innerHTML=`<div class="solution-box text-center"><div class="res-result">${fmtVal}</div><div class="text-sm text-gray-400">± ${tol}% tolerance</div><div class="text-xs text-gray-500 mt-1">Range: ${fmtLow} Ω – ${fmtHigh} Ω</div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`${bandColors.join('-')}`,result:fmtVal});
+      }
+
+      // Reverse mode
+      document.getElementById('btn-reverse-mode').addEventListener('click',()=>{
+        reverseMode=!reverseMode;
+        document.getElementById('res-reverse').classList.toggle('hidden',!reverseMode);
+        document.getElementById('btn-reverse-mode').textContent=reverseMode?'→ Band Picker Mode':'↔ Reverse: Enter Value';
+      });
+
+      document.getElementById('btn-find-bands').addEventListener('click',()=>{
+        const val=parseFloat(document.getElementById('res-value').value);
+        const unitMult=parseFloat(document.getElementById('res-mult').value);
+        if(isNaN(val))return;
+        const ohms=val*unitMult;
+        // Find bands by converting to closest standard
+        let tmp=ohms;let multIdx=0;const muls=[1,10,100,1000,10000,100000,1000000,10000000];
+        while(tmp>=100&&multIdx<muls.length-1){tmp/=10;multIdx++}
+        const d1=Math.floor(tmp/10);const d2=Math.floor(tmp%10);
+        bandColors=[colorNames[d1]||'black',colorNames[d2]||'black',colorNames[multIdx]||'black','gold'];
+        if(bandCount===5){const d3=0;bandColors=[colorNames[d1]||'black',colorNames[d2]||'black',colorNames[d3]||'black',colorNames[multIdx]||'black','gold']}
+        renderBands();renderPickers();calcResistor();
+        Toast.show(`Bands set for ${ohms}Ω`,'info');
+      });
+
+      // Color chart
+      const chart=document.getElementById('color-chart');
+      chart.innerHTML=colorNames.map(c=>`<div class="flex items-center gap-2 text-xs"><span style="display:inline-block;width:16px;height:16px;border-radius:4px;background:${colors[c]};border:1px solid #ccc"></span>${c.charAt(0).toUpperCase()+c.slice(1)}${digitMap[c]!==undefined?` — ${digitMap[c]}`:''}${multMap[c]!==undefined?` ×${multMap[c]}`:''}${tolMap[c]!==undefined?` ±${tolMap[c]}%`:''}</div>`).join('');
+
+      renderBands();renderPickers();calcResistor();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

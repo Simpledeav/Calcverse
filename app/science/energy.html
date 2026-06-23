@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Energy Calculator — CalcVerse</title>
+  <meta name="description" content="Calculate kinetic energy, potential energy, work, and power from physics formulas. Solve for any variable." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.eg-tab{padding:8px 16px;border-radius:9999px;font-size:13px;font-weight:500;transition:all .15s;background:theme('colors.gray.100');color:theme('colors.gray.600')}.dark .eg-tab{background:theme('colors.gray.800');color:theme('colors.gray.400')}.eg-tab.active{background:theme('colors.primary.DEFAULT');color:white}.eg-formula{font-size:1.25rem;font-weight:600;font-family:'JetBrains Mono',monospace;text-align:center;padding:14px;border-radius:10px;background:theme('colors.gray.50');border:1px solid theme('colors.gray.200');margin-bottom:16px}.dark .eg-formula{background:theme('colors.black')/30;border-color:theme('colors.gray.700')}.eg-result{font-size:1.75rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:theme('colors.primary.DEFAULT')}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Science</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Energy Calculator</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Science</span>
+          <h1 class="calc-title">Energy & Work Calculator</h1>
+          <p class="calc-description" id="calc-desc">Calculate kinetic energy, gravitational potential energy, work, and power. Solve for any variable in each formula.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="sci-energy"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none mb-6" id="energy-tabs">
+            <button class="eg-tab active" data-eg="ke">Kinetic Energy</button>
+            <button class="eg-tab" data-eg="pe">Potential Energy</button>
+            <button class="eg-tab" data-eg="work">Work</button>
+            <button class="eg-tab" data-eg="power">Power</button>
+          </div>
+          <!-- KE = ½mv² -->
+          <div id="eg-ke" class="eg-mode">
+            <div class="eg-formula">KE = ½ · m · v²</div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="input-group"><label class="input-label">Mass (m, kg)</label><input type="number" class="input-field" data-ke="m" value="2" step="any" /></div>
+              <div class="input-group"><label class="input-label">Velocity (v, m/s)</label><input type="number" class="input-field" data-ke="v" value="5" step="any" /></div>
+              <div class="input-group"><label class="input-label">KE (Joules)</label><input type="number" class="input-field" data-ke="KE" value="" step="any" placeholder="blank to solve" /></div>
+            </div>
+            <button class="btn-primary w-full btn-solve-ke">Solve</button>
+            <div class="ke-res mt-4"></div>
+          </div>
+          <!-- PE = mgh -->
+          <div id="eg-pe" class="eg-mode hidden">
+            <div class="eg-formula">PE = m · g · h</div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="input-group"><label class="input-label">Mass (m, kg)</label><input type="number" class="input-field" data-pe="m" value="5" step="any" /></div>
+              <div class="input-group"><label class="input-label">Gravity (g, m/s²)</label><input type="number" class="input-field" data-pe="g" value="9.8" step="any" /></div>
+              <div class="input-group"><label class="input-label">Height (h, m)</label><input type="number" class="input-field" data-pe="h" value="10" step="any" /></div>
+              <div class="input-group"><label class="input-label">PE (Joules)</label><input type="number" class="input-field" data-pe="PE" value="" step="any" placeholder="blank to solve" /></div>
+            </div>
+            <button class="btn-primary w-full btn-solve-pe">Solve</button>
+            <div class="pe-res mt-4"></div>
+          </div>
+          <!-- W = Fd -->
+          <div id="eg-work" class="eg-mode hidden">
+            <div class="eg-formula">W = F · d</div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="input-group"><label class="input-label">Force (F, N)</label><input type="number" class="input-field" data-work="F" value="50" step="any" /></div>
+              <div class="input-group"><label class="input-label">Distance (d, m)</label><input type="number" class="input-field" data-work="d" value="10" step="any" /></div>
+              <div class="input-group"><label class="input-label">Work (W, J)</label><input type="number" class="input-field" data-work="W" value="" step="any" placeholder="blank to solve" /></div>
+            </div>
+            <button class="btn-primary w-full btn-solve-work">Solve</button>
+            <div class="work-res mt-4"></div>
+          </div>
+          <!-- P = W / t -->
+          <div id="eg-power" class="eg-mode hidden">
+            <div class="eg-formula">P = W / t</div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+              <div class="input-group"><label class="input-label">Work (W, J)</label><input type="number" class="input-field" data-power="W" value="500" step="any" /></div>
+              <div class="input-group"><label class="input-label">Time (t, s)</label><input type="number" class="input-field" data-power="t" value="10" step="any" /></div>
+              <div class="input-group"><label class="input-label">Power (P, W)</label><input type="number" class="input-field" data-power="P" value="" step="any" placeholder="blank to solve" /></div>
+            </div>
+            <button class="btn-primary w-full btn-solve-power">Solve</button>
+            <div class="power-res mt-4"></div>
+          </div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Solution</h3>
+          <div id="eg-solution"><p class="text-sm text-gray-400 italic">Enter known values, leave one blank to solve.</p></div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content">
+          <p class="text-gray-500 dark:text-gray-400 mb-2"><b>Kinetic Energy:</b> KE = ½mv² (Joules). <b>Potential Energy:</b> PE = mgh (J).</p>
+          <p class="text-gray-500 dark:text-gray-400 mb-2"><b>Work:</b> W = Fd (Joules). <b>Power:</b> P = W/t (Watts).</p>
+          <p class="text-xs text-gray-400">1 Joule = 1 N·m = 1 kg·m²/s². 1 Watt = 1 J/s.</p>
+        </div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'sci-energy',name:'Energy Calculator',category:'Science',categoryPath:'/app/dashboard.html',description:'Calculate kinetic energy, potential energy, work, and power.',icon:'⚡',related:[{id:'sci-physics',name:'Physics',icon:'⚛️',category:'Science',path:'/app/science/physics.html'},{id:'sci-force',name:'Force',icon:'💪',category:'Science',path:'/app/science/force.html'},{id:'sci-wavelength',name:'Wavelength',icon:'〰️',category:'Science',path:'/app/science/wavelength.html'},{id:'sci-ohm',name:"Ohm's Law",icon:'⚡',category:'Science',path:'/app/science/ohm-law.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'Energy, work, and power formulas.',CALC.description,{'KE=½mv²':'Kinetic Energy','PE=mgh':'Potential Energy','W=Fd':'Work','P=W/t':'Power'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Tab between inputs. Enter to calculate.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+      document.querySelectorAll('#energy-tabs .eg-tab').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('#energy-tabs .eg-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.eg-mode').forEach(p=>p.classList.add('hidden'));document.getElementById('eg-'+btn.dataset.eg).classList.remove('hidden')})});
+
+      function fmt(n){return MathEngine.formatNumber(n)}
+      function getV(prefix){const m={};document.querySelectorAll(`[data-${prefix}]`).forEach(i=>{const v=parseFloat(i.value);if(!isNaN(v))m[i.dataset[prefix]]=v});return m}
+      function showRes(el,val,unit,detail){el.innerHTML=`<div class="formula-card"><div class="eg-result">${val} ${unit}</div>${detail?`<div class="text-sm text-gray-500 dark:text-gray-400 mt-1">${detail}</div>`:''}</div>`;}
+      function showSol(t){document.getElementById('eg-solution').innerHTML=t}
+
+      function genSolve(prefix,vars,suffix,formula,units,historyExpr){
+        const v=getV(prefix);const el=document.querySelector('.'+suffix+'-res');
+        const blanks=vars.filter(k=>v[k]===undefined);
+        if(blanks.length!==1){showRes(el,'Wrong blanks','','Leave exactly one blank');return}
+        const b=blanks[0];let val;
+        const ek=prefix==='ke',ep=prefix==='pe',ew=prefix==='work',epw=prefix==='power';
+        if(ek){if(b==='KE')val=0.5*v.m*v.v*v.v;else if(b==='m')val=2*v.KE/(v.v*v.v);else val=Math.sqrt(2*v.KE/v.m)}
+        else if(ep){if(b==='PE')val=v.m*v.g*v.h;else if(b==='m')val=v.PE/(v.g*v.h);else if(b==='g')val=v.PE/(v.m*v.h);else val=v.PE/(v.m*v.g)}
+        else if(ew){if(b==='W')val=v.F*v.d;else if(b==='F')val=v.W/v.d;else val=v.W/v.F}
+        else{if(b==='P')val=v.W/v.t;else if(b==='W')val=v.P*v.t;else val=v.W/v.P}
+        showRes(el,fmt(val),units[b]||'',`${b} = ${fmt(val)} ${units[b]||''}`);
+        showSol(`<div class="p-3 rounded-lg bg-gray-50 dark:bg-black/30"><div class="text-xs text-gray-400">${formula}</div><div class="text-sm mt-1">${b} = ${fmt(val)} ${units[b]||''}</div></div>`);
+        CalcStorage.addHistory(CALC.id,{expression:historyExpr||`${formula}`,result:`${b}=${fmt(val)}${units[b]||''}`});
+      }
+
+      document.querySelector('.btn-solve-ke')?.addEventListener('click',()=>genSolve('ke',['m','v','KE'],'ke','KE = ½mv²',{KE:'J',m:'kg',v:'m/s'},`KE: m=${document.querySelector('[data-ke="m"]').value}, v=${document.querySelector('[data-ke="v"]').value}`));
+      document.querySelector('.btn-solve-pe')?.addEventListener('click',()=>genSolve('pe',['m','g','h','PE'],'pe','PE = mgh',{PE:'J',m:'kg',g:'m/s²',h:'m'},`PE: m=${document.querySelector('[data-pe="m"]').value}, h=${document.querySelector('[data-pe="h"]').value}`));
+      document.querySelector('.btn-solve-work')?.addEventListener('click',()=>genSolve('work',['F','d','W'],'work','W = Fd',{W:'J',F:'N',d:'m'},`W=Fd: F=${document.querySelector('[data-work="F"]').value}, d=${document.querySelector('[data-work="d"]').value}`));
+      document.querySelector('.btn-solve-power')?.addEventListener('click',()=>genSolve('power',['W','t','P'],'power','P = W/t',{P:'W',W:'J',t:'s'},`P=W/t: W=${document.querySelector('[data-power="W"]').value}, t=${document.querySelector('[data-power="t"]').value}`));
+
+      document.querySelector('.btn-solve-ke')?.click();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

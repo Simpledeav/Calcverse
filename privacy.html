@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — CalcVerse</title>
+  <meta name="description" content="CalcVerse Privacy Policy" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="max-w-3xl mx-auto px-6 py-20">
+    <a href="/" class="text-sm text-gray-400 hover:text-primary transition-colors mb-8 inline-block">← Back to Home</a>
+    <h1 class="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">Privacy Policy</h1>
+    <p class="text-gray-500 dark:text-gray-400 mb-8">Last updated: June 2025</p>
+
+    <div class="space-y-6 text-gray-600 dark:text-gray-400 leading-relaxed">
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Information We Collect</h2>
+        <p>CalcVerse is designed to respect your privacy. All calculations are performed locally in your browser. We do not collect, store, or transmit your calculation data to any server.</p>
+        <p class="mt-2">The only data stored is in your browser's localStorage and includes:</p>
+        <ul class="list-disc list-inside mt-2 space-y-1">
+          <li>Your theme preference (dark/light mode)</li>
+          <li>Your favorite calculators</li>
+          <li>Calculation history (stored locally only)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Third-Party Services</h2>
+        <p>We use Google Fonts for typography. When you load CalcVerse, your browser may request font files from Google's servers. No personal data is shared through this process.</p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Cookies</h2>
+        <p>CalcVerse does not use cookies for tracking or analytics. All preferences are stored using the browser's localStorage API, which does not transmit data to servers.</p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Contact</h2>
+        <p>If you have questions about this privacy policy, please reach out via our <a href="/about.html" class="text-primary hover:underline">about page</a>.</p>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

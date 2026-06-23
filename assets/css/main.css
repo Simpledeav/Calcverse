@@ -9,10 +9,7 @@
     --color-primary-dark: #5aaa00;
     --color-primary-light: #a3e84a;
 
-    /* Gradient */
-    --gradient-brand: linear-gradient(135deg, #77d202 0%, #3a6b00 50%, #000000 100%);
-    --gradient-brand-h: linear-gradient(90deg, #77d202, #000000);
-    --gradient-brand-v: linear-gradient(180deg, #77d202, #000000);
+    /* Gradient tokens removed — using solid primary #77d202 only */
 
     /* Light Mode Surface */
     --bg-base: #f3f5f6;
@@ -79,13 +76,7 @@
     @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-white dark:ring-offset-black;
   }
 
-  /* Reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
+
 }
 
 @layer components {
@@ -94,9 +85,10 @@
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
     @apply font-semibold text-white text-sm;
-    @apply bg-gradient-to-r from-primary to-black;
-    @apply shadow-glow hover:shadow-glow-lg;
+    @apply bg-primary;
+    @apply shadow-sm hover:shadow-md;
     @apply transition-all duration-200 ease-out;
+    @apply hover:bg-primary-dark;
     @apply hover:translate-y-[-1px];
     @apply active:scale-[0.98];
     @apply focus-visible:ring-2 focus-visible:ring-primary;
@@ -154,7 +146,7 @@
   .card-gradient-border::before {
     content: '';
     @apply absolute top-0 left-0 w-1 h-full;
-    @apply bg-gradient-to-b from-primary to-black;
+    @apply bg-primary;
     @apply rounded-l-xl;
   }
 
@@ -172,7 +164,7 @@
 
   .badge-coming-soon {
     @apply badge;
-    @apply bg-gradient-to-r from-primary/20 to-black/30;
+    @apply bg-primary/10;
     @apply border border-primary/30 text-primary;
   }
 
@@ -301,8 +293,62 @@
 
   .coming-soon-card {
     @apply card p-8 text-center;
-    @apply border-primary/20;
-    @apply bg-gradient-to-br from-primary/[0.03] to-black/[0.05] dark:from-primary/[0.05] dark:to-black/[0.2];
+    @apply border-primary/20 bg-primary/[0.02];
+  }
+
+  /* ===== Everyday Pages ===== */
+
+  .everyday-card {
+    @apply card p-5 sm:p-6;
+    @apply hover:border-primary/30 hover:shadow-md transition-all duration-200;
+  }
+
+  .everyday-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 12px;
+    align-items: center;
+  }
+  @media (max-width: 640px) {
+    .everyday-grid { grid-template-columns: 1fr; }
+  }
+
+  .everyday-select {
+    @apply input-field;
+    @apply py-2 text-sm;
+  }
+
+  .everyday-input {
+    @apply input-field font-mono text-right text-lg;
+  }
+
+  .everyday-result {
+    @apply input-field font-mono text-right text-lg font-bold text-primary;
+    @apply cursor-default;
+  }
+
+  .everyday-ref-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 16px;
+  }
+  @media (max-width: 480px) {
+    .everyday-ref-grid { grid-template-columns: 1fr; }
+  }
+
+  .everyday-ref-item {
+    @apply flex items-center justify-between px-3 py-2.5 rounded-lg;
+    @apply border border-gray-200 dark:border-gray-700;
+    @apply bg-gray-50 dark:bg-black/30;
+    @apply cursor-pointer transition-all duration-150;
+    @apply hover:border-primary/30 hover:bg-primary/5;
+  }
+  .everyday-ref-item .label {
+    @apply text-xs font-semibold uppercase tracking-wider text-gray-400;
+  }
+  .everyday-ref-item .value {
+    @apply font-mono text-sm font-bold text-primary;
   }
 
   .coming-soon-card .sparkle-container {
@@ -328,10 +374,7 @@
     @apply bg-gradient-to-r from-primary to-primary-dark;
   }
 
-  .text-gradient-brand {
-    @apply bg-clip-text text-transparent;
-    @apply bg-gradient-to-r from-primary to-black;
-  }
+  /* text-gradient-brand removed — using solid primary color */
 
   .bg-dot-grid {
     background-image: radial-gradient(circle, currentColor 0.5px, transparent 0.5px);

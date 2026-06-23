@@ -77,7 +77,7 @@ def retirement_projection(data: RetirementInput):
             ))
 
         return {
-            "projections": [row.dict() for row in rows],
+            "projections": [row.model_dump() for row in rows],
             "summary": {
                 "final_balance": round(balance, 2),
                 "final_balance_inflation_adj": round(balance * (1 - data.inflation_rate / 100) ** years, 2),

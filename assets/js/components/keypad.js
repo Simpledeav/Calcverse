@@ -58,20 +58,20 @@ class CalcVerseKeypad {
         ${this._key('±', 'calc-key-fn')}
         ${this._key('%', 'calc-key-fn')}
         ${this._key('÷', 'calc-key-op')}
-        ${this._key('7')}
-        ${this._key('8')}
-        ${this._key('9')}
+        ${this._key('7', 'calc-key-num')}
+        ${this._key('8', 'calc-key-num')}
+        ${this._key('9', 'calc-key-num')}
         ${this._key('×', 'calc-key-op')}
-        ${this._key('4')}
-        ${this._key('5')}
-        ${this._key('6')}
+        ${this._key('4', 'calc-key-num')}
+        ${this._key('5', 'calc-key-num')}
+        ${this._key('6', 'calc-key-num')}
         ${this._key('−', 'calc-key-op')}
-        ${this._key('1')}
-        ${this._key('2')}
-        ${this._key('3')}
+        ${this._key('1', 'calc-key-num')}
+        ${this._key('2', 'calc-key-num')}
+        ${this._key('3', 'calc-key-num')}
         ${this._key('+', 'calc-key-op')}
-        ${this._key('0', 'calc-key-wide')}
-        ${this._key('.')}
+        ${this._key('0', 'calc-key-wide calc-key-num')}
+        ${this._key('.', 'calc-key-num')}
         ${this._key('=', 'calc-key-equals')}
       </div>
     `;
@@ -105,20 +105,20 @@ class CalcVerseKeypad {
         ${this._key('±', 'calc-key-fn')}
         ${this._key('%', 'calc-key-fn')}
         ${this._key('÷', 'calc-key-op')}
-        ${this._key('7')}
-        ${this._key('8')}
-        ${this._key('9')}
+        ${this._key('7', 'calc-key-num')}
+        ${this._key('8', 'calc-key-num')}
+        ${this._key('9', 'calc-key-num')}
         ${this._key('×', 'calc-key-op')}
-        ${this._key('4')}
-        ${this._key('5')}
-        ${this._key('6')}
+        ${this._key('4', 'calc-key-num')}
+        ${this._key('5', 'calc-key-num')}
+        ${this._key('6', 'calc-key-num')}
         ${this._key('−', 'calc-key-op')}
-        ${this._key('1')}
-        ${this._key('2')}
-        ${this._key('3')}
+        ${this._key('1', 'calc-key-num')}
+        ${this._key('2', 'calc-key-num')}
+        ${this._key('3', 'calc-key-num')}
         ${this._key('+', 'calc-key-op')}
-        ${this._key('0', 'calc-key-wide')}
-        ${this._key('.')}
+        ${this._key('0', 'calc-key-wide calc-key-num')}
+        ${this._key('.', 'calc-key-num')}
         ${this._key('=', 'calc-key-equals')}
       </div>
     `;
@@ -198,17 +198,17 @@ class CalcVerseKeypad {
           </select>
         </div>
         <div class="keypad-numpad mx-auto">
-          ${this._key('7')}
-          ${this._key('8')}
-          ${this._key('9')}
-          ${this._key('4')}
-          ${this._key('5')}
-          ${this._key('6')}
-          ${this._key('1')}
-          ${this._key('2')}
-          ${this._key('3')}
-          ${this._key('0', 'calc-key-wide')}
-          ${this._key('.')}
+          ${this._key('7', 'calc-key-num')}
+          ${this._key('8', 'calc-key-num')}
+          ${this._key('9', 'calc-key-num')}
+          ${this._key('4', 'calc-key-num')}
+          ${this._key('5', 'calc-key-num')}
+          ${this._key('6', 'calc-key-num')}
+          ${this._key('1', 'calc-key-num')}
+          ${this._key('2', 'calc-key-num')}
+          ${this._key('3', 'calc-key-num')}
+          ${this._key('0', 'calc-key-wide calc-key-num')}
+          ${this._key('.', 'calc-key-num')}
           ${this._key('C', 'calc-key-clear')}
         </div>
       </div>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Body Fat Calculator — CalcVerse</title>
+  <meta name="description" content="Calculate your body fat percentage using the US Navy method. Enter neck, waist, height, and hip measurements." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.bf-result{font-size:2.5rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:theme('colors.primary.DEFAULT')}.bf-gauge{width:100%;height:16px;border-radius:9999px;background:linear-gradient(90deg,#3b82f6 6%,#77d202 14%,#77d202 21%,#eab308 25%,#f97316 32%,#ef4444 40%,#dc2626 100%);position:relative;overflow:hidden}.bf-marker{position:absolute;top:-3px;width:6px;height:22px;background:white;border:2px solid #333;border-radius:2px;transition:left .5s ease}.bf-detail{display:flex;justify-content:space-between;padding:10px 14px;border-radius:10px;background:theme('colors.gray.50')}.dark .bf-detail{background:theme('colors.black')/30}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Health</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Body Fat Calculator</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Health</span>
+          <h1 class="calc-title">Body Fat Percentage</h1>
+          <p class="calc-description" id="calc-desc">Calculate your body fat percentage using the US Navy circumference method. Requires neck, waist, and height measurements.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="health-bodyfat"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <div class="flex gap-2 mb-4">
+            <span class="sex-btn active" data-sex="male">♂ Male</span>
+            <span class="sex-btn" data-sex="female">♀ Female</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="input-group"><label class="input-label" for="bf-neck">Neck Circumference (cm)</label><input type="number" class="input-field" id="bf-neck" value="38" step="0.1" min="0" /></div>
+            <div class="input-group"><label class="input-label" for="bf-waist">Waist Circumference (cm)</label><input type="number" class="input-field" id="bf-waist" value="82" step="0.1" min="0" /></div>
+            <div class="input-group"><label class="input-label" for="bf-height">Height (cm)</label><input type="number" class="input-field" id="bf-height" value="175" step="0.1" min="0" /></div>
+            <div class="input-group" id="bf-hip-group"><label class="input-label" for="bf-hip">Hip Circumference (cm)</label><input type="number" class="input-field" id="bf-hip" value="95" step="0.1" min="0" /></div>
+          </div>
+          <button class="btn-primary w-full" id="btn-calc-bf">Calculate</button>
+          <div id="bf-result" class="mt-4"></div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Categories</h3>
+          <div class="space-y-2 text-sm" id="bf-cats"></div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content"><p class="text-gray-500 dark:text-gray-400">US Navy Method: Uses circumference measurements and height. Men: 86×log₁₀(waist-neck) − 70×log₁₀(height) + 36.76. Women: 163×log₁₀(waist+hip-neck) − 97×log₁₀(height) − 78.39.</p></div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script src="/assets/js/engines/health-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'health-bodyfat',name:'Body Fat Calculator',category:'Health',categoryPath:'/app/dashboard.html',description:'Calculate body fat percentage using US Navy method.',icon:'📐',related:[{id:'health-bmi',name:'BMI',icon:'⚖️',category:'Health',path:'/app/health/bmi.html'},{id:'health-idealwt',name:'Ideal Weight',icon:'🎯',category:'Health',path:'/app/health/ideal-weight.html'},{id:'health-tdee',name:'TDEE',icon:'⚡',category:'Health',path:'/app/health/tdee.html'},{id:'health-water',name:'Water Intake',icon:'💧',category:'Health',path:'/app/health/water-intake.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'US Navy circumference method.',CALC.description,{'Men':'86×log₁₀(W-N) - 70×log₁₀(H) + 36.76','Women':'163×log₁₀(W+H-N) - 97×log₁₀(H) - 78.39'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Tab between inputs. Enter to calculate.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      let sex='male';
+      document.querySelectorAll('.sex-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.sex-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');sex=btn.dataset.sex;document.getElementById('bf-hip-group').style.display=sex==='female'?'block':'none';calcBF()})});
+      document.getElementById('bf-hip-group').style.display='none';
+
+      function fmt(n){return MathEngine.formatNumber(n)}
+
+      function calcBF(){
+        const neck=parseFloat(document.getElementById('bf-neck').value);const waist=parseFloat(document.getElementById('bf-waist').value);
+        const height=parseFloat(document.getElementById('bf-height').value);const hip=parseFloat(document.getElementById('bf-hip').value);
+        const el=document.getElementById('bf-result');
+        if(isNaN(neck)||isNaN(waist)||isNaN(height)||neck<=0||waist<=0||height<=0||(sex==='female'&&isNaN(hip))){el.innerHTML='<p class="text-sm text-red-500">Enter valid measurements.</p>';return}
+        const bf=HealthEngine.bodyFatPercentage(sex,neck,waist,height,sex==='female'?hip:0);
+        const cat=HealthEngine.bodyFatCategory(sex,bf);
+        const leanMass=100-bf;const fatMass=bf;
+        const fatPct=Math.min(100,Math.max(1,(bf/50)*100));
+        el.innerHTML=`<div class="solution-box"><div class="flex items-end justify-between mb-3"><div><div class="text-sm text-gray-400">Body Fat</div><div class="bf-result">${fmt(bf,1)}%</div></div><div class="text-right"><div class="text-xs text-gray-400">Category</div><div class="text-lg font-semibold ${cat.color}">${cat.label}</div></div></div><div class="bf-gauge"><div class="bf-marker" style="left:${fatPct}%"></div></div><div class="flex justify-between text-xs text-gray-400 mt-1"><span>Essential</span><span>Athlete</span><span>Fitness</span><span>Avg</span><span>Obese</span></div><div class="flex gap-3 mt-3"><div class="bf-detail flex-1"><span class="text-xs text-gray-400">Lean Mass</span><span class="font-semibold font-mono">${fmt(leanMass,1)}%</span></div><div class="bf-detail flex-1"><span class="text-xs text-gray-400">Fat Mass</span><span class="font-semibold font-mono">${fmt(fatMass,1)}%</span></div></div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`BF%: ${sex}, neck=${neck}cm, waist=${waist}cm`,result:`${fmt(bf,1)}%`});
+      }
+
+      document.getElementById('btn-calc-bf').addEventListener('click',calcBF);
+
+      // Render category ref
+      const cats=['Essential','Athlete','Fitness','Average','Obese'];const colors=['text-blue-400','text-primary','text-green-500','text-yellow-500','text-red-500'];
+      document.getElementById('bf-cats').innerHTML=cats.map((c,i)=>`<div class="flex justify-between p-2 rounded-lg"><span>${c}</span><span class="${colors[i]} font-mono">${['<6%','6-14%','14-18%','18-25%','25%+'][i]} (M) / ${['<14%','14-21%','21-25%','25-32%','32%+'][i]} (F)</span></div>`).join('');
+
+      calcBF();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basic Calculator — CalcVerse</title>
+  <meta name="description" content="A fully-featured standard calculator with arithmetic operations, expression display, history tracking, and keyboard support." />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/keypad.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <div id="sidebar-container"></div>
+
+  <!-- Mobile toggle -->
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Main -->
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <!-- Top Bar -->
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/>
+          </svg>
+        </button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme">
+          <span class="dark:hidden">🌙</span>
+          <span class="hidden dark:inline">☀️</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Calculator Content -->
+    <div class="calc-page" id="calc-app">
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" id="calc-breadcrumb">
+        <a href="/app/dashboard.html">Dashboard</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="/app/dashboard.html" id="breadcrumb-category">Mathematics</a>
+        <span class="breadcrumb-separator">/</span>
+        <span id="breadcrumb-name">Basic Calculator</span>
+      </nav>
+
+      <!-- Page Header -->
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge" id="calc-badge">Mathematics</span>
+          <h1 class="calc-title" id="calc-title">Basic Calculator</h1>
+          <p class="calc-description" id="calc-desc">Perform standard arithmetic operations with expression display, history tracking, and full keyboard support.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="math-basic" aria-label="Toggle favorite">
+            <span>☆</span> <span class="hidden sm:inline">Favorite</span>
+          </button>
+          <button class="btn-ghost" id="btn-share" aria-label="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            <span class="hidden sm:inline">Share</span>
+          </button>
+          <button class="btn-ghost" id="btn-formula" aria-label="Formula">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            <span class="hidden sm:inline">Formula</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Calculator Body -->
+      <div class="calc-body" id="calc-body">
+        <!-- LEFT COLUMN: Display + Keypad -->
+        <div class="calc-display-panel" id="calc-left">
+          <div id="display-container"></div>
+          <div id="keypad-container" class="mt-4"></div>
+        </div>
+
+        <!-- RIGHT COLUMN: Memory & Controls -->
+        <div class="calc-form-box" id="calc-right">
+          <!-- Memory Controls -->
+          <div class="mb-4">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Memory</h3>
+            <div class="grid grid-cols-4 gap-2">
+              <button class="btn-ghost text-xs py-2" id="btn-mc" title="Memory Clear">MC</button>
+              <button class="btn-ghost text-xs py-2" id="btn-mr" title="Memory Recall">MR</button>
+              <button class="btn-ghost text-xs py-2" id="btn-m-plus" title="Memory Add">M+</button>
+              <button class="btn-ghost text-xs py-2" id="btn-m-minus" title="Memory Subtract">M−</button>
+            </div>
+          </div>
+
+          <!-- Quick Reference -->
+          <div>
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Quick Tips</h3>
+            <ul class="text-xs text-gray-500 dark:text-gray-400 space-y-1.5">
+              <li class="flex items-start gap-2">
+                <span class="text-primary shrink-0 mt-0.5">⌨️</span>
+                <span>Type numbers and operators on your keyboard</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-primary shrink-0 mt-0.5">⌫</span>
+                <span>Backspace to delete the last digit</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-primary shrink-0 mt-0.5">⏎</span>
+                <span>Enter or = to evaluate</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-primary shrink-0 mt-0.5">📋</span>
+                <span>Click the result to copy it</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-primary shrink-0 mt-0.5">⭐</span>
+                <span>Star this calculator for quick access</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Results panel (for computed results) -->
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+
+      <!-- Formula Reference -->
+      <details class="calc-formula-box" id="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content">
+          <p class="text-gray-500 dark:text-gray-400">This calculator evaluates arithmetic expressions following the standard order of operations:</p>
+          <ol class="list-decimal list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1 mt-2">
+            <li><strong>Parentheses</strong> — expressions inside ( ) are evaluated first</li>
+            <li><strong>Exponents</strong> — ^ (power) and √ (root)</li>
+            <li><strong>Multiplication &amp; Division</strong> — × and ÷, left to right</li>
+            <li><strong>Addition &amp; Subtraction</strong> — + and −, left to right</li>
+          </ol>
+          <p class="text-xs text-gray-400 mt-3">The engine uses the shunting-yard algorithm for safe, eval()-free evaluation.</p>
+        </div>
+      </details>
+
+      <!-- Related Calculators -->
+      <div class="related-calcs" id="related-calcs">
+        <h3>Related Calculators</h3>
+        <div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/display.js"></script>
+  <script src="/assets/js/components/keypad.js"></script>
+  <script src="/assets/js/core/keyboard.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // ============================================================
+      // 1. Init Components
+      // ============================================================
+
+      // Sidebar
+      const sidebar = new CalcVerseSidebar('#sidebar-container', {
+        collapsed: window.innerWidth < 1024
+      });
+      window.calcSidebar = sidebar;
+
+      // Theme
+      window.themeEngine = themeEngine;
+      document.getElementById('theme-toggle-calc')?.addEventListener('click', () => themeEngine.toggle());
+
+      // ============================================================
+      // 2. Calculator Config
+      // ============================================================
+
+      const CALC = {
+        id: 'math-basic',
+        name: 'Basic Calculator',
+        category: 'Mathematics',
+        categoryPath: '/app/dashboard.html',
+        description: 'Perform standard arithmetic operations with expression display, history tracking, and full keyboard support.',
+        icon: '🔢',
+        layout: 'standard',
+        related: [
+          { id: 'math-scientific', name: 'Scientific', icon: '∑', category: 'Mathematics', path: '/app/math/scientific.html' },
+          { id: 'math-percentage', name: 'Percentage', icon: '%', category: 'Mathematics', path: '/app/math/percentage.html' },
+          { id: 'math-fraction', name: 'Fraction', icon: '½', category: 'Mathematics', path: '/app/math/fraction.html' },
+        ],
+      };
+
+      // Apply config
+      document.getElementById('calc-badge').textContent = CALC.category;
+      document.getElementById('calc-title').textContent = CALC.name;
+      document.getElementById('calc-desc').textContent = CALC.description;
+      document.getElementById('breadcrumb-category').textContent = CALC.category;
+      document.getElementById('breadcrumb-category').href = CALC.categoryPath;
+      document.getElementById('breadcrumb-name').textContent = CALC.name;
+      document.getElementById('btn-favorite').dataset.calcId = CALC.id;
+      document.title = CALC.name + ' — CalcVerse';
+      document.querySelector('meta[name="description"]').content = CALC.description;
+      sidebar.setActive(CALC.id);
+      CalcStorage.recordVisit(CALC.id, CALC.name);
+
+      // ============================================================
+      // 3. Calculator State Machine
+      // ============================================================
+
+      const state = {
+        currentValue: '0',
+        previousValue: null,
+        operation: null,
+        result: '0',
+        expression: '',
+        justEvaluated: false,
+        newNumber: true,
+        memory: 0,
+        hasHistory: false,
+      };
+
+      function updateDisplay() {
+        const expr = state.expression || '';
+        const res = state.result;
+        display.update(expr, res, false);
+      }
+
+      function setError(msg) {
+        state.result = msg;
+        state.expression = '';
+        display.update('', msg, true);
+      }
+
+      function compute(a, op, b) {
+        switch (op) {
+          case '+': return a + b;
+          case '−': return a - b;
+          case '×': return a * b;
+          case '÷':
+            if (b === 0) throw new Error('Cannot divide by zero');
+            return a / b;
+          default: return b;
+        }
+      }
+
+      function evaluatePending() {
+        if (state.operation && state.previousValue !== null) {
+          const a = parseFloat(state.previousValue);
+          const b = parseFloat(state.currentValue);
+          if (isNaN(a) || isNaN(b)) {
+            setError('Error');
+            return false;
+          }
+          try {
+            const result = compute(a, state.operation, b);
+            if (!isFinite(result)) {
+              setError('Cannot divide by zero');
+              return false;
+            }
+            state.result = MathEngine.formatNumber(result);
+            state.expression = state.expression || (MathEngine.formatNumber(a) + ' ' + state.operation + ' ' + MathEngine.formatNumber(b));
+            state.previousValue = state.result;
+            state.currentValue = state.result;
+            return true;
+          } catch (e) {
+            setError(e.message);
+            return false;
+          }
+        }
+        return false;
+      }
+
+      // ============================================================
+      // 4. Key Handler
+      // ============================================================
+
+      function handleKey(key) {
+        // Backspace
+        if (key === '⌫') {
+          if (state.justEvaluated) return;
+          if (state.newNumber) return;
+          if (state.currentValue.length <= 1 || (state.currentValue.length === 2 && state.currentValue.startsWith('-'))) {
+            state.currentValue = '0';
+          } else {
+            state.currentValue = state.currentValue.slice(0, -1);
+          }
+          state.result = state.currentValue;
+          updateDisplay();
+          return;
+        }
+
+        // Clear
+        if (key === 'C') {
+          state.currentValue = '0';
+          state.previousValue = null;
+          state.operation = null;
+          state.result = '0';
+          state.expression = '';
+          state.justEvaluated = false;
+          state.newNumber = true;
+          updateDisplay();
+          return;
+        }
+
+        // Clear Entry
+        if (key === 'CE') {
+          state.currentValue = '0';
+          state.result = '0';
+          state.newNumber = true;
+          updateDisplay();
+          return;
+        }
+
+        // Numbers
+        if (/^[0-9]$/.test(key)) {
+          if (state.justEvaluated) {
+            state.currentValue = '0';
+            state.previousValue = null;
+            state.operation = null;
+            state.expression = '';
+            state.justEvaluated = false;
+          }
+          if (state.newNumber) {
+            state.currentValue = key;
+            state.newNumber = false;
+          } else {
+            if (state.currentValue.length < 15) {
+              state.currentValue = state.currentValue === '0' ? key : state.currentValue + key;
+            }
+          }
+          state.result = state.currentValue;
+          // Update expression to show the building number if no operation yet
+          if (!state.operation) {
+            state.expression = '';
+          }
+          updateDisplay();
+          return;
+        }
+
+        // Decimal
+        if (key === '.') {
+          if (state.justEvaluated) {
+            state.currentValue = '0';
+            state.previousValue = null;
+            state.operation = null;
+            state.expression = '';
+            state.justEvaluated = false;
+            state.newNumber = false;
+          }
+          if (state.newNumber) {
+            state.currentValue = '0.';
+            state.newNumber = false;
+          } else if (!state.currentValue.includes('.')) {
+            state.currentValue += '.';
+          }
+          state.result = state.currentValue;
+          updateDisplay();
+          return;
+        }
+
+        // Toggle sign
+        if (key === '±') {
+          if (state.currentValue === '0') return;
+          state.currentValue = state.currentValue.startsWith('-')
+            ? state.currentValue.slice(1)
+            : '-' + state.currentValue;
+          state.result = state.currentValue;
+          updateDisplay();
+          return;
+        }
+
+        // Percent
+        if (key === '%') {
+          const val = parseFloat(state.currentValue);
+          if (!isNaN(val)) {
+            state.currentValue = (val / 100).toString();
+            state.result = state.currentValue;
+            updateDisplay();
+          }
+          return;
+        }
+
+        // Operators (+, −, ×, ÷)
+        if (['+', '−', '×', '÷'].includes(key)) {
+          state.expression = (state.previousValue !== null ? state.previousValue : state.currentValue) + ' ' + key + ' ';
+          
+          if (state.previousValue !== null && !state.newNumber && !state.justEvaluated) {
+            // Chain: evaluate pending operation first
+            const ok = evaluatePending();
+            if (!ok) return;
+            state.expression = state.result + ' ' + key + ' ';
+            state.previousValue = state.result;
+          } else {
+            state.previousValue = state.currentValue;
+          }
+
+          state.operation = key;
+          state.newNumber = true;
+          state.justEvaluated = false;
+          updateDisplay();
+          return;
+        }
+
+        // Equals
+        if (key === '=') {
+          if (state.operation && state.previousValue !== null) {
+            // Build expression for history before evaluating
+            const exprStr = MathEngine.formatNumber(parseFloat(state.previousValue)) + ' ' + state.operation + ' ' + MathEngine.formatNumber(parseFloat(state.currentValue));
+            state.expression = exprStr + ' =';
+            
+            const ok = evaluatePending();
+            if (!ok) return;
+
+            state.justEvaluated = true;
+            state.newNumber = true;
+            state.operation = null;
+
+            // Save to history
+            CalcStorage.addHistory(CALC.id, {
+              expression: exprStr,
+              result: state.result,
+            });
+            loadHistory();
+            updateDisplay();
+          }
+          return;
+        }
+      }
+
+      // ============================================================
+      // 5. Init Keypad & Display
+      // ============================================================
+
+      const display = new CalcVerseDisplay('#display-container', {
+        onCopy: () => Toast.show('Result copied to clipboard!', 'success'),
+      });
+
+      const keypad = new CalcVerseKeypad({
+        layout: 'standard',
+        onKey: handleKey,
+      });
+      keypad.render('#keypad-container');
+
+      // Init display with initial state
+      display.update('', '0', false);
+
+      // ============================================================
+      // 6. Keyboard Bridge
+      // ============================================================
+
+      const keyboard = new KeyboardBridge(keypad);
+      keyboard.bind();
+
+      // ============================================================
+      // 7. History
+      // ============================================================
+
+      function loadHistory() {
+        const history = CalcStorage.getHistory(CALC.id);
+        display.setHistory(history.map(h => ({
+          expression: h.expression,
+          result: h.result,
+        })));
+      }
+      loadHistory();
+
+      // ============================================================
+      // 8. Favorite Toggle
+      // ============================================================
+
+      const favBtn = document.getElementById('btn-favorite');
+      function updateFavBtn() {
+        const isFav = CalcStorage.isFavorite(CALC.id);
+        favBtn.innerHTML = isFav
+          ? '<span>★</span> <span class="hidden sm:inline">Favorited</span>'
+          : '<span>☆</span> <span class="hidden sm:inline">Favorite</span>';
+        favBtn.classList.toggle('text-primary', isFav);
+      }
+      favBtn?.addEventListener('click', () => {
+        CalcStorage.toggleFavorite(CALC.id);
+        updateFavBtn();
+        Toast.show(
+          CalcStorage.isFavorite(CALC.id) ? 'Added to favorites ⭐' : 'Removed from favorites',
+          CalcStorage.isFavorite(CALC.id) ? 'success' : 'info'
+        );
+      });
+      updateFavBtn();
+      document.addEventListener('cv:favorites-update', updateFavBtn);
+
+      // ============================================================
+      // 9. Share
+      // ============================================================
+
+      document.getElementById('btn-share')?.addEventListener('click', () => {
+        if (navigator.share) {
+          navigator.share({ title: CALC.name, text: CALC.description, url: window.location.href });
+        } else {
+          navigator.clipboard.writeText(window.location.href);
+          Toast.show('Link copied to clipboard!', 'success');
+        }
+      });
+
+      // ============================================================
+      // 10. Formula Modal
+      // ============================================================
+
+      document.getElementById('btn-formula')?.addEventListener('click', () => {
+        Modal.showFormula(CALC.name,
+          'MathEngine uses the shunting-yard algorithm to parse and evaluate arithmetic expressions safely without eval().',
+          CALC.description,
+          { a: 'First operand', b: 'Second operand', op: 'Operator (+, −, ×, ÷)' }
+        );
+      });
+
+      // ============================================================
+      // 11. Memory Controls
+      // ============================================================
+
+      document.getElementById('btn-mc')?.addEventListener('click', () => {
+        state.memory = 0;
+        Toast.show('Memory cleared', 'info');
+      });
+      document.getElementById('btn-mr')?.addEventListener('click', () => {
+        if (state.memory !== 0) {
+          state.currentValue = state.memory.toString();
+          state.result = state.currentValue;
+          state.newNumber = true;
+          updateDisplay();
+          Toast.show('Memory recalled: ' + state.memory, 'info');
+        }
+      });
+      document.getElementById('btn-m-plus')?.addEventListener('click', () => {
+        state.memory += parseFloat(state.result) || 0;
+        Toast.show('Added to memory: ' + state.result, 'success');
+      });
+      document.getElementById('btn-m-minus')?.addEventListener('click', () => {
+        state.memory -= parseFloat(state.result) || 0;
+        Toast.show('Subtracted from memory: ' + state.result, 'info');
+      });
+
+      // ============================================================
+      // 12. Related Calculators
+      // ============================================================
+
+      const relatedList = document.getElementById('related-list');
+      if (CALC.related && CALC.related.length > 0) {
+        relatedList.innerHTML = CALC.related.map(r => `
+          <a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0">
+            <div class="text-xl mb-1">${r.icon || '🔢'}</div>
+            <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4>
+            <p class="text-xs text-gray-400 mt-0.5">${r.category}</p>
+          </a>
+        `).join('');
+      } else {
+        relatedList.innerHTML = '<p class="text-sm text-gray-400 italic">Related calculators coming soon.</p>';
+      }
+
+      // ============================================================
+      // 13. Keyboard Help
+      // ============================================================
+
+      document.getElementById('btn-keyboard-help')?.addEventListener('click', () => {
+        Modal.show({
+          title: '⌨️ Keyboard Shortcuts',
+          content: `
+            <div class="grid grid-cols-2 gap-3">
+              ${[['0-9','Numbers'],['.','Decimal'],['+','Add'],['-','Subtract'],
+                 ['*','Multiply'],['/','Divide'],['Enter / =','Calculate'],
+                 ['Backspace','Delete last digit'],['Escape','Clear all'],
+                 ['F9','Toggle ±'],['%','Percent']].map(([k,d]) =>
+                `<div class="flex items-center gap-2 text-sm"><kbd class="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 font-mono text-xs">${k}</kbd><span class="text-gray-600 dark:text-gray-400">${d}</span></div>`
+              ).join('')}
+            </div>`
+        });
+      });
+
+      // ============================================================
+      // 14. Mobile Menu
+      // ============================================================
+
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click', () => {
+        const width = window.innerWidth;
+        if (width < 768) {
+          sidebar.show();
+        } else {
+          sidebar.toggle();
+        }
+      });
+
+      // ============================================================
+      // 15. Resize Handler
+      // ============================================================
+
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (window.innerWidth < 1024) sidebar.collapse();
+          else sidebar.expand();
+        }, 150);
+      });
+    });
+  </script>
+</body>
+</html>

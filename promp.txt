@@ -1,0 +1,22 @@
+Start Phase 5 — build the Financial calculators (Loan/EMI, Mortgage, Compound Interest)
+
+1. I want you to fix the sidebar in mobile, when i click the handborger the sidebar is hidden behind the content, so fix 
+the side bar when on mobile screen also fix when on large sreen i dont need to refresh for it to take effect.
+
+
+2. I want youtomodify the keys in basic and scientific Calculator pages and give me a number keyboard kind of design 
+or a real casio keys kind of design for the onscreen keys
+
+3. I want you to review the pages under everyday category, some pages doesnt exist when i click them onthe sidebar, while those
+that exisit, their design is broken i want you to. fix their design  
+
+
+
+Using the design guide in DESIGN_SYSTEM.md i want you to build a simple dashborad page for an invoice editor/generator where users can 
+fill in their details and an invoice will be generated it should be well designed and well detailed. it must have the 
+feel like an advanced editor screen.
+
+build the project in a seperate folder with all it file, cause it a different project
+
+
+

@@ -20,14 +20,24 @@
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" as="style" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/assets/icons/calcverse-192.svg" sizes="any" type="image/svg+xml" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
   <!-- CSS -->
   <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/accessibility.css" />
   <link rel="stylesheet" href="/assets/css/calculator.css" />
   <link rel="stylesheet" href="/assets/css/keypad.css" />
   <link rel="stylesheet" href="/assets/css/themes.css" />
   <link href="/assets/css/output.css" rel="stylesheet" />
 </head>
 <body>
+  <!-- Skip link -->
+  <a href="#main-content" class="skip-link">Skip to dashboard</a>
+
   <!-- Sidebar Container -->
   <div id="sidebar-container"></div>
 
@@ -39,16 +49,19 @@
   </button>
 
   <!-- Main Content -->
-  <main class="ml-64 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
     <!-- Top Bar -->
     <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
       <div class="flex items-center justify-between px-6 h-16">
         <!-- Search -->
-        <div class="flex-1 max-w-md">
+        <div class="flex-1 max-w-md relative">
           <div class="relative">
-            <input type="text" id="global-search" class="w-full px-4 py-2 pl-10 rounded-xl bg-gray-100 dark:bg-gray-800 border-0 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="🔍 Search calculators... (press / to focus)" />
+            <input type="text" id="global-search" class="w-full px-4 py-2 pl-10 rounded-xl bg-gray-100 dark:bg-gray-800 border-0 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="🔍 Search calculators..." autocomplete="off" />
             <kbd class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded hidden sm:inline">/</kbd>
           </div>
+          <!-- Search Results Dropdown -->
+          <div id="search-results" class="hidden card absolute top-full left-0 right-0 mt-2 max-h-80 overflow-y-auto z-30 shadow-lg rounded-xl"></div>
+          <div id="search-empty-hint" class="hidden text-xs text-gray-400 mt-1 px-1">No calculators found</div>
         </div>
 
         <!-- Right actions -->
@@ -70,41 +83,73 @@
     <div class="p-6" id="page-content">
       <!-- Dashboard Home (default view) -->
       <div id="dashboard-home" class="animate-fade-in">
+        <!-- Section label -->
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary mb-4">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+          Dashboard
+        </div>
+
         <!-- Quick Stats -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div class="stat-card">
-            <div class="stat-value">64</div>
+          <div class="stat-card group cursor-default">
+            <div class="stat-value group-hover:scale-110 transition-transform origin-center">64</div>
             <div class="stat-label">Calculators</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-value">7</div>
+          <div class="stat-card group cursor-default">
+            <div class="stat-value group-hover:scale-110 transition-transform origin-center">7</div>
             <div class="stat-label">Categories</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-value" id="recent-count">0</div>
+          <div class="stat-card group cursor-default">
+            <div class="stat-value group-hover:scale-110 transition-transform origin-center" id="recent-count">0</div>
             <div class="stat-label">Recent</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-value" id="fav-count">0</div>
+          <div class="stat-card group cursor-default">
+            <div class="stat-value group-hover:scale-110 transition-transform origin-center" id="fav-count">0</div>
             <div class="stat-label">Favorites</div>
           </div>
         </div>
 
         <!-- Favorites -->
         <section class="mb-8" id="favorites-section">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-            <span>⭐</span> Favorites
-          </h2>
-          <div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="favorites-list">
-            <div class="text-sm text-gray-400 italic">No favorites yet. Star a calculator to add it here.</div>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <span>⭐</span> Favorites
+            </h2>
+          </div>
+          <div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory" id="favorites-list">
+            <div class="text-sm text-gray-400 italic px-2 py-4">No favorites yet. Star a calculator to add it here.</div>
+          </div>
+        </section>
+
+        <!-- Featured Calculator of the Day -->
+        <section class="mb-8" id="featured-section">
+          <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+            <span>🔥</span> Featured
+          </div>
+          <div class="card-gradient-border p-6 relative overflow-hidden group cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300" id="featured-card" onclick="window.location.href=this.dataset.href">
+            <div class="flex items-start justify-between gap-6">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-xs font-semibold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full" id="featured-badge">Mathematics</span>
+                  <span class="text-xs text-gray-400" id="featured-difficulty">Beginner Friendly</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2" id="featured-name">Basic Calculator</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed" id="featured-desc">Start here — the flagship calculator with full arithmetic support, expression display, and calculation history.</p>
+                <div class="flex items-center gap-1 text-primary text-sm font-medium mt-4 group-hover:gap-3 transition-all">
+                  <span>Open Calculator</span>
+                  <span>→</span>
+                </div>
+              </div>
+              <div class="text-5xl shrink-0 opacity-20 group-hover:opacity-40 transition-opacity" id="featured-icon">🔢</div>
+            </div>
           </div>
         </section>
 
         <!-- Recent Calculators -->
-        <section class="mb-8">
+        <section class="mb-8" id="recent-section">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Recent Calculators</h2>
-          <div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="recent-list">
-            <div class="text-sm text-gray-400 italic">No recent calculators.</div>
+          <div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory" id="recent-list">
+            <div class="text-sm text-gray-400 italic px-2 py-4">No recent calculators.</div>
           </div>
         </section>
 
@@ -112,56 +157,71 @@
         <section>
           <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">All Categories</h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <a href="#math" class="card-hover p-4 flex items-center gap-3" data-category="math">
-              <span class="text-2xl">∑</span>
-              <div>
+            <a href="/app/math/basic.html" class="card-gradient-border group p-4 flex items-center gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300" data-category="math">
+              <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">∑</div>
+              <div class="min-w-0 flex-1">
                 <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Mathematics</h3>
                 <p class="text-xs text-gray-400">10 calculators</p>
               </div>
             </a>
-            <a href="#finance" class="card-hover p-4 flex items-center gap-3" data-category="finance">
-              <span class="text-2xl">$</span>
-              <div>
+            <a href="/app/finance/loan.html" class="card-gradient-border group p-4 flex items-center gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300" data-category="finance">
+              <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">$</div>
+              <div class="min-w-0 flex-1">
                 <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Finance</h3>
                 <p class="text-xs text-gray-400">16 calculators</p>
               </div>
             </a>
-            <a href="#health" class="card-hover p-4 flex items-center gap-3" data-category="health">
-              <span class="text-2xl">♥</span>
-              <div>
-                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Health & Fitness</h3>
+            <a href="/app/health/bmi.html" class="card-gradient-border group p-4 flex items-center gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300" data-category="health">
+              <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">♥</div>
+              <div class="min-w-0 flex-1">
+                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Health &amp; Fitness</h3>
                 <p class="text-xs text-gray-400">10 calculators</p>
               </div>
             </a>
-            <a href="#science" class="card-hover p-4 flex items-center gap-3" data-category="science">
-              <span class="text-2xl">⚗</span>
-              <div>
-                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Science & Physics</h3>
+            <a href="/app/science/physics.html" class="card-gradient-border group p-4 flex items-center gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300" data-category="science">
+              <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">⚗</div>
+              <div class="min-w-0 flex-1">
+                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Science &amp; Physics</h3>
                 <p class="text-xs text-gray-400">8 calculators</p>
               </div>
             </a>
-            <a href="#engineering" class="card-hover p-4 flex items-center gap-3" data-category="engineering">
-              <span class="text-2xl">⚙</span>
-              <div>
-                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Engineering & Tech</h3>
+            <a href="/app/engineering/unit-converter.html" class="card-gradient-border group p-4 flex items-center gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300" data-category="engineering">
+              <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">⚙</div>
+              <div class="min-w-0 flex-1">
+                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Engineering &amp; Tech</h3>
                 <p class="text-xs text-gray-400">8 calculators</p>
               </div>
             </a>
-            <a href="#everyday" class="card-hover p-4 flex items-center gap-3" data-category="everyday">
-              <span class="text-2xl">📅</span>
-              <div>
+            <a href="/app/everyday/age.html" class="card-gradient-border group p-4 flex items-center gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300" data-category="everyday">
+              <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">📅</div>
+              <div class="min-w-0 flex-1">
                 <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100">Everyday Utilities</h3>
                 <p class="text-xs text-gray-400">10 calculators</p>
+              </div>
+            </a>
+            <a href="/app/coming-soon/ai-math.html" class="card-gradient-border group p-4 flex items-center gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 opacity-80" data-category="ai">
+              <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">✨</div>
+              <div class="min-w-0 flex-1">
+                <h3 class="font-semibold text-sm text-gray-900 dark:text-gray-100 flex items-center gap-2">AI &amp; Coming Soon <span class="coming-soon-badge text-[10px]"><span class="badge-dot"></span> Soon</span></h3>
+                <p class="text-xs text-gray-400">2 previews</p>
               </div>
             </a>
           </div>
         </section>
       </div>
-
-      <!-- Search Results Dropdown -->
-      <div id="search-results" class="hidden card absolute top-full left-6 right-6 mt-2 max-h-96 overflow-y-auto z-30 shadow-lg"></div>
     </div>
   </main>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js').catch(err => {
+          console.warn('SW registration failed:', err);
+        });
+      });
+    }
+  </script>
 
   <!-- Scripts -->
   <script src="/assets/js/core/storage.js"></script>
@@ -173,114 +233,294 @@
   <script src="/assets/js/components/modal.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
+      // ===== Calculator Registry (shared) =====
+      const REGISTRY = [
+        { id: 'math-basic', name: 'Basic Calculator', category: 'Mathematics', description: 'Standard arithmetic operations', icon: '🔢', path: '/app/math/basic.html', tags: ['math', 'arithmetic', 'basic'] },
+        { id: 'math-scientific', name: 'Scientific Calculator', category: 'Mathematics', description: 'Advanced scientific functions', icon: '∑', path: '/app/math/scientific.html', tags: ['math', 'scientific', 'trig'] },
+        { id: 'math-algebra', name: 'Algebra Solver', category: 'Mathematics', description: 'Linear & quadratic equations', icon: 'x²', path: '/app/math/algebra.html', tags: ['math', 'algebra', 'equations'] },
+        { id: 'math-percentage', name: 'Percentage Calculator', category: 'Mathematics', description: 'Percentages, changes, ratios', icon: '%', path: '/app/math/percentage.html', tags: ['math', 'percentage'] },
+        { id: 'math-fraction', name: 'Fraction Calculator', category: 'Mathematics', description: 'Fraction arithmetic', icon: '½', path: '/app/math/fraction.html', tags: ['math', 'fraction'] },
+        { id: 'math-prime', name: 'Prime Number Calculator', category: 'Mathematics', description: 'Prime checking & factorization', icon: '🔢', path: '/app/math/prime.html', tags: ['math', 'prime'] },
+        { id: 'math-matrix', name: 'Matrix Calculator', category: 'Mathematics', description: '2x2 & 3x3 matrix operations', icon: '⊞', path: '/app/math/matrix.html', tags: ['math', 'matrix'] },
+        { id: 'math-statistics', name: 'Statistics Calculator', category: 'Mathematics', description: 'Mean, median, std deviation', icon: '📊', path: '/app/math/statistics.html', tags: ['math', 'statistics'] },
+        { id: 'math-graphing', name: 'Function Grapher', category: 'Mathematics', description: 'Plot mathematical functions', icon: '📈', path: '/app/math/graphing.html', tags: ['math', 'graphing'] },
+        { id: 'math-base', name: 'Number Base Converter', category: 'Mathematics', description: 'Binary, octal, decimal, hex', icon: '0x1F', path: '/app/math/number-base.html', tags: ['math', 'base'] },
+        { id: 'fin-loan', name: 'Loan / EMI Calculator', category: 'Finance', description: 'Monthly payment & amortization', icon: '💰', path: '/app/finance/loan.html', tags: ['finance', 'loan'] },
+        { id: 'fin-mortgage', name: 'Mortgage Calculator', category: 'Finance', description: 'Full amortization schedule', icon: '🏠', path: '/app/finance/mortgage.html', tags: ['finance', 'mortgage'] },
+        { id: 'fin-compound', name: 'Compound Interest', category: 'Finance', description: 'Growth with contributions', icon: '📈', path: '/app/finance/compound-interest.html', tags: ['finance', 'compound'] },
+        { id: 'fin-simple', name: 'Simple Interest', category: 'Finance', description: 'Simple interest calculations', icon: '💵', path: '/app/finance/simple-interest.html', tags: ['finance', 'simple'] },
+        { id: 'fin-roi', name: 'ROI Calculator', category: 'Finance', description: 'Return on investment', icon: '📊', path: '/app/finance/roi.html', tags: ['finance', 'roi'] },
+        { id: 'fin-npv', name: 'NPV / DCF', category: 'Finance', description: 'Net present value & DCF', icon: '📉', path: '/app/finance/npv.html', tags: ['finance', 'npv'] },
+        { id: 'fin-irr', name: 'IRR Calculator', category: 'Finance', description: 'Internal rate of return', icon: '🔄', path: '/app/finance/irr.html', tags: ['finance', 'irr'] },
+        { id: 'fin-salary', name: 'Salary Calculator', category: 'Finance', description: 'Paycheck & tax breakdown', icon: '💼', path: '/app/finance/salary.html', tags: ['finance', 'salary'] },
+        { id: 'fin-tax', name: 'Tax Estimator', category: 'Finance', description: 'Income tax estimation', icon: '🧾', path: '/app/finance/tax.html', tags: ['finance', 'tax'] },
+        { id: 'fin-vat', name: 'VAT / GST', category: 'Finance', description: 'Value added tax', icon: '📋', path: '/app/finance/vat.html', tags: ['finance', 'vat'] },
+        { id: 'fin-currency', name: 'Currency Converter', category: 'Finance', description: 'Live exchange rates', icon: '🌍', path: '/app/finance/currency.html', tags: ['finance', 'currency'] },
+        { id: 'fin-savings', name: 'Savings Goal Planner', category: 'Finance', description: 'Plan toward a savings goal', icon: '🎯', path: '/app/finance/savings-goal.html', tags: ['finance', 'savings'] },
+        { id: 'fin-retirement', name: 'Retirement Calculator', category: 'Finance', description: 'Retirement projection', icon: '👴', path: '/app/finance/retirement.html', tags: ['finance', 'retirement'] },
+        { id: 'fin-breakeven', name: 'Break-Even Analysis', category: 'Finance', description: 'Business break-even point', icon: '⚖️', path: '/app/finance/break-even.html', tags: ['finance', 'breakeven'] },
+        { id: 'fin-margin', name: 'Profit Margin', category: 'Finance', description: 'Margin & markup', icon: '📈', path: '/app/finance/profit-margin.html', tags: ['finance', 'margin'] },
+        { id: 'fin-crypto', name: 'Crypto P&L', category: 'Finance', description: 'Cryptocurrency profit/loss', icon: '₿', path: '/app/finance/crypto.html', tags: ['finance', 'crypto'] },
+        { id: 'health-bmi', name: 'BMI Calculator', category: 'Health', description: 'Body Mass Index', icon: '⚖️', path: '/app/health/bmi.html', tags: ['health', 'bmi'] },
+        { id: 'health-bmr', name: 'BMR Calculator', category: 'Health', description: 'Basal Metabolic Rate', icon: '🔥', path: '/app/health/bmr.html', tags: ['health', 'bmr'] },
+        { id: 'health-tdee', name: 'TDEE Calculator', category: 'Health', description: 'Total Daily Energy Expenditure', icon: '⚡', path: '/app/health/tdee.html', tags: ['health', 'tdee'] },
+        { id: 'health-bodyfat', name: 'Body Fat Calculator', category: 'Health', description: 'Body fat percentage', icon: '📐', path: '/app/health/body-fat.html', tags: ['health', 'bodyfat'] },
+        { id: 'health-idealwt', name: 'Ideal Weight', category: 'Health', description: 'Ideal body weight', icon: '🎯', path: '/app/health/ideal-weight.html', tags: ['health', 'weight'] },
+        { id: 'health-calorie', name: 'Calorie Burn', category: 'Health', description: 'Calories burned during exercise', icon: '🏃', path: '/app/health/calorie.html', tags: ['health', 'calories'] },
+        { id: 'health-water', name: 'Water Intake', category: 'Health', description: 'Daily water recommendation', icon: '💧', path: '/app/health/water-intake.html', tags: ['health', 'water'] },
+        { id: 'health-pregnancy', name: 'Due Date Calculator', category: 'Health', description: 'Pregnancy due date', icon: '👶', path: '/app/health/pregnancy.html', tags: ['health', 'pregnancy'] },
+        { id: 'health-ovulation', name: 'Ovulation Calculator', category: 'Health', description: 'Fertility window', icon: '🌸', path: '/app/health/ovulation.html', tags: ['health', 'ovulation'] },
+        { id: 'health-heartrate', name: 'Heart Rate Zones', category: 'Health', description: 'Target heart rate zones', icon: '💓', path: '/app/health/heart-rate.html', tags: ['health', 'heart'] },
+        { id: 'sci-physics', name: 'Physics Calculator', category: 'Science', description: 'Kinematics & mechanics', icon: '⚛️', path: '/app/science/physics.html', tags: ['science', 'physics'] },
+        { id: 'sci-chemistry', name: 'Chemistry Calculator', category: 'Science', description: 'Molar mass & molarity', icon: '🧪', path: '/app/science/chemistry.html', tags: ['science', 'chemistry'] },
+        { id: 'sci-ohm', name: "Ohm's Law", category: 'Science', description: 'Voltage, current, resistance', icon: '⚡', path: '/app/science/ohm-law.html', tags: ['science', 'ohm'] },
+        { id: 'sci-force', name: 'Force Calculator', category: 'Science', description: "Newton's second law", icon: '💪', path: '/app/science/force.html', tags: ['science', 'force'] },
+        { id: 'sci-pressure', name: 'Gas Laws Calculator', category: 'Science', description: 'Boyle, Charles, Ideal Gas', icon: '🌡️', path: '/app/science/pressure.html', tags: ['science', 'pressure'] },
+        { id: 'sci-energy', name: 'Energy Calculator', category: 'Science', description: 'Energy, work, power', icon: '⚡', path: '/app/science/energy.html', tags: ['science', 'energy'] },
+        { id: 'sci-wavelength', name: 'Wavelength Calculator', category: 'Science', description: 'Wave speed & frequency', icon: '〰️', path: '/app/science/wavelength.html', tags: ['science', 'wavelength'] },
+        { id: 'sci-periodic', name: 'Periodic Table', category: 'Science', description: 'Element lookup', icon: '🧬', path: '/app/science/periodic.html', tags: ['science', 'periodic'] },
+        { id: 'eng-unit', name: 'Unit Converter', category: 'Engineering', description: 'Universal unit conversion', icon: '📐', path: '/app/engineering/unit-converter.html', tags: ['engineering', 'units'] },
+        { id: 'eng-resistor', name: 'Resistor Color Code', category: 'Engineering', description: 'Resistor value decoder', icon: '🎨', path: '/app/engineering/resistor.html', tags: ['engineering', 'resistor'] },
+        { id: 'eng-voltage', name: 'Voltage Divider', category: 'Engineering', description: 'Voltage divider circuit', icon: '⚡', path: '/app/engineering/voltage-divider.html', tags: ['engineering', 'voltage'] },
+        { id: 'eng-binary', name: 'Binary Calculator', category: 'Engineering', description: 'Bitwise operations', icon: '01', path: '/app/engineering/binary.html', tags: ['engineering', 'binary'] },
+        { id: 'eng-hex', name: 'Hex Color Converter', category: 'Engineering', description: 'Color code conversion', icon: '#', path: '/app/engineering/hex.html', tags: ['engineering', 'hex'] },
+        { id: 'eng-subnet', name: 'IP Subnet Calculator', category: 'Engineering', description: 'CIDR and subnetting', icon: '🌐', path: '/app/engineering/ip-subnet.html', tags: ['engineering', 'subnet'] },
+        { id: 'eng-datastorage', name: 'Data Storage Converter', category: 'Engineering', description: 'Storage unit conversion', icon: '💾', path: '/app/engineering/data-storage.html', tags: ['engineering', 'storage'] },
+        { id: 'eng-bandwidth', name: 'Bandwidth Calculator', category: 'Engineering', description: 'Transfer time & speed', icon: '📡', path: '/app/engineering/bandwidth.html', tags: ['engineering', 'bandwidth'] },
+        { id: 'day-age', name: 'Age Calculator', category: 'Everyday', description: 'Age from birth date', icon: '🎂', path: '/app/everyday/age.html', tags: ['everyday', 'age'] },
+        { id: 'day-temp', name: 'Temperature Converter', category: 'Everyday', description: '°C, °F, K, °R conversion', icon: '🌡️', path: '/app/everyday/temperature.html', tags: ['everyday', 'temperature'] },
+        { id: 'day-length', name: 'Length Converter', category: 'Everyday', description: 'Metric & imperial units', icon: '📏', path: '/app/everyday/length.html', tags: ['everyday', 'length'] },
+        { id: 'day-weight', name: 'Weight Converter', category: 'Everyday', description: 'Mass & weight units', icon: '⚖️', path: '/app/everyday/weight.html', tags: ['everyday', 'weight'] },
+        { id: 'day-volume', name: 'Volume Converter', category: 'Everyday', description: 'Liquid & dry volume units', icon: '🧪', path: '/app/everyday/volume.html', tags: ['everyday', 'volume'] },
+        { id: 'day-datediff', name: 'Date Difference', category: 'Everyday', description: 'Days between dates', icon: '📅', path: '/app/everyday/date-diff.html', tags: ['everyday', 'date'] },
+        { id: 'day-timezone', name: 'Time Zone Converter', category: 'Everyday', description: 'Convert between time zones', icon: '🌍', path: '/app/everyday/time-zone.html', tags: ['everyday', 'timezone'] },
+        { id: 'day-tip', name: 'Tip Calculator', category: 'Everyday', description: 'Bill splitting & tips', icon: '🍕', path: '/app/everyday/tip.html', tags: ['everyday', 'tip'] },
+        { id: 'day-discount', name: 'Discount Calculator', category: 'Everyday', description: 'Sale price & savings', icon: '🏷️', path: '/app/everyday/discount.html', tags: ['everyday', 'discount'] },
+        { id: 'day-fuel', name: 'Fuel Cost Calculator', category: 'Everyday', description: 'Trip fuel costs', icon: '⛽', path: '/app/everyday/fuel.html', tags: ['everyday', 'fuel'] },
+        { id: 'day-speed', name: 'Speed/Distance/Time', category: 'Everyday', description: 'Travel time calculator', icon: '🚗', path: '/app/everyday/speed-distance.html', tags: ['everyday', 'speed'] },
+        { id: 'day-cooking', name: 'Cooking Converter', category: 'Everyday', description: 'Recipe scaling & units', icon: '🍳', path: '/app/everyday/cooking.html', tags: ['everyday', 'cooking'] },
+        { id: 'day-grade', name: 'Grade / GPA', category: 'Everyday', description: 'Grade point average', icon: '🎓', path: '/app/everyday/grade.html', tags: ['everyday', 'grade'] },
+        { id: 'day-random', name: 'Random Generator', category: 'Everyday', description: 'Random numbers & passwords', icon: '🎲', path: '/app/everyday/random-number.html', tags: ['everyday', 'random'] },
+        { id: 'ai-math', name: 'AI Math Solver', category: 'AI & Coming Soon', description: 'Natural language math solving', icon: '🤖', path: '/app/coming-soon/ai-math.html', tags: ['ai', 'coming-soon', 'math'] },
+        { id: 'ai-budget', name: 'Smart Budget', category: 'AI & Coming Soon', description: 'AI-powered budget planning', icon: '🎯', path: '/app/coming-soon/smart-budget.html', tags: ['ai', 'coming-soon', 'budget'] },
+      ];
+
+      const registryMap = {};
+      REGISTRY.forEach(r => { registryMap[r.id] = r; });
+
       // ===== Init Sidebar =====
       const sidebar = new CalcVerseSidebar('#sidebar-container', {
-        collapsed: window.innerWidth < 1280
+        collapsed: window.innerWidth < 1024
       });
       window.calcSidebar = sidebar;
 
       // ===== Init Theme =====
       window.themeEngine = themeEngine;
 
-      // Theme toggle in dashboard
       document.getElementById('theme-toggle-dash')?.addEventListener('click', () => {
         themeEngine.toggle();
       });
 
       // ===== Init Search =====
-      const searchEngine = new CalcVerseSearch([]);
-
-      // Register calculators
-      const registry = [
-        { id: 'math-basic', name: 'Basic Calculator', category: 'Mathematics', description: 'Standard arithmetic operations', tags: ['math', 'arithmetic', 'basic'] },
-        { id: 'math-scientific', name: 'Scientific Calculator', category: 'Mathematics', description: 'Advanced scientific functions', tags: ['math', 'scientific', 'trig'] },
-        { id: 'math-algebra', name: 'Algebra Solver', category: 'Mathematics', description: 'Linear & quadratic equations', tags: ['math', 'algebra', 'equations'] },
-        { id: 'math-percentage', name: 'Percentage Calculator', category: 'Mathematics', description: 'Percentages, changes, and ratios', tags: ['math', 'percentage', 'percent'] },
-        { id: 'math-fraction', name: 'Fraction Calculator', category: 'Mathematics', description: 'Fraction arithmetic and simplification', tags: ['math', 'fraction', 'rational'] },
-        { id: 'math-prime', name: 'Prime Number Calculator', category: 'Mathematics', description: 'Prime checking and factorization', tags: ['math', 'prime', 'factors'] },
-        { id: 'math-matrix', name: 'Matrix Calculator', category: 'Mathematics', description: 'Matrix operations (2x2, 3x3)', tags: ['math', 'matrix', 'linear'] },
-        { id: 'math-statistics', name: 'Statistics Calculator', category: 'Mathematics', description: 'Mean, median, standard deviation', tags: ['math', 'statistics', 'stats'] },
-        { id: 'math-graphing', name: 'Function Grapher', category: 'Mathematics', description: 'Plot mathematical functions', tags: ['math', 'graphing', 'plot'] },
-        { id: 'math-base', name: 'Number Base Converter', category: 'Mathematics', description: 'Binary, octal, decimal, hex', tags: ['math', 'base', 'binary', 'hex'] },
-        { id: 'fin-loan', name: 'Loan / EMI Calculator', category: 'Finance', description: 'Monthly payment and amortization', tags: ['finance', 'loan', 'emi', 'payment'] },
-        { id: 'fin-mortgage', name: 'Mortgage Calculator', category: 'Finance', description: 'Mortgage with amortization table', tags: ['finance', 'mortgage', 'home', 'loan'] },
-        { id: 'fin-compound', name: 'Compound Interest', category: 'Finance', description: 'Compound growth with contributions', tags: ['finance', 'compound', 'interest', 'growth'] },
-        { id: 'fin-simple', name: 'Simple Interest', category: 'Finance', description: 'Simple interest calculations', tags: ['finance', 'simple', 'interest'] },
-        { id: 'fin-roi', name: 'ROI Calculator', category: 'Finance', description: 'Return on investment', tags: ['finance', 'roi', 'return'] },
-        { id: 'fin-npv', name: 'NPV / DCF Calculator', category: 'Finance', description: 'Net present value and DCF', tags: ['finance', 'npv', 'dcf', 'valuation'] },
-        { id: 'fin-irr', name: 'IRR Calculator', category: 'Finance', description: 'Internal rate of return', tags: ['finance', 'irr', 'return'] },
-        { id: 'fin-salary', name: 'Salary Calculator', category: 'Finance', description: 'Paycheck and tax breakdown', tags: ['finance', 'salary', 'paycheck', 'tax'] },
-        { id: 'fin-tax', name: 'Tax Estimator', category: 'Finance', description: 'Income tax estimation', tags: ['finance', 'tax', 'income'] },
-        { id: 'fin-vat', name: 'VAT / GST Calculator', category: 'Finance', description: 'Value added tax calculations', tags: ['finance', 'vat', 'gst', 'tax'] },
-        { id: 'fin-currency', name: 'Currency Converter', category: 'Finance', description: 'Live exchange rates', tags: ['finance', 'currency', 'exchange', 'forex'] },
-        { id: 'fin-savings', name: 'Savings Goal Planner', category: 'Finance', description: 'Plan savings toward a goal', tags: ['finance', 'savings', 'goal'] },
-        { id: 'fin-retirement', name: 'Retirement Calculator', category: 'Finance', description: 'Retirement savings projection', tags: ['finance', 'retirement', 'savings'] },
-        { id: 'fin-breakeven', name: 'Break-Even Analysis', category: 'Finance', description: 'Break-even point calculator', tags: ['finance', 'breakeven', 'business'] },
-        { id: 'fin-margin', name: 'Profit Margin', category: 'Finance', description: 'Margin and markup calculator', tags: ['finance', 'margin', 'profit', 'markup'] },
-        { id: 'fin-crypto', name: 'Crypto P&L Calculator', category: 'Finance', description: 'Cryptocurrency profit/loss', tags: ['finance', 'crypto', 'bitcoin', 'profit'] },
-        { id: 'health-bmi', name: 'BMI Calculator', category: 'Health', description: 'Body Mass Index', tags: ['health', 'bmi', 'weight'] },
-        { id: 'health-bmr', name: 'BMR Calculator', category: 'Health', description: 'Basal Metabolic Rate', tags: ['health', 'bmr', 'metabolism'] },
-        { id: 'health-tdee', name: 'TDEE Calculator', category: 'Health', description: 'Total Daily Energy Expenditure', tags: ['health', 'tdee', 'calories', 'energy'] },
-        { id: 'health-bodyfat', name: 'Body Fat Calculator', category: 'Health', description: 'Body fat percentage', tags: ['health', 'bodyfat', 'fat'] },
-        { id: 'health-idealwt', name: 'Ideal Weight', category: 'Health', description: 'Ideal body weight', tags: ['health', 'weight', 'ideal'] },
-        { id: 'health-calorie', name: 'Calorie Burn', category: 'Health', description: 'Calories burned during exercise', tags: ['health', 'calories', 'exercise', 'burn'] },
-        { id: 'health-water', name: 'Water Intake', category: 'Health', description: 'Daily water intake recommendation', tags: ['health', 'water', 'hydration'] },
-        { id: 'health-pregnancy', name: 'Due Date Calculator', category: 'Health', description: 'Pregnancy due date', tags: ['health', 'pregnancy', 'due date'] },
-        { id: 'health-ovulation', name: 'Ovulation Calculator', category: 'Health', description: 'Fertility window', tags: ['health', 'ovulation', 'fertility'] },
-        { id: 'health-heartrate', name: 'Heart Rate Zones', category: 'Health', description: 'Target heart rate zones', tags: ['health', 'heart', 'cardio', 'zones'] },
-        { id: 'sci-physics', name: 'Physics Calculator', category: 'Science', description: 'Kinematics and mechanics', tags: ['science', 'physics', 'mechanics'] },
-        { id: 'sci-chemistry', name: 'Chemistry Calculator', category: 'Science', description: 'Molar mass and molarity', tags: ['science', 'chemistry', 'molar'] },
-        { id: 'sci-ohm', name: "Ohm's Law Calculator", category: 'Science', description: 'Voltage, current, resistance', tags: ['science', 'ohm', 'voltage', 'current'] },
-        { id: 'sci-force', name: 'Force Calculator', category: 'Science', description: "Newton's second law", tags: ['science', 'force', 'newton'] },
-        { id: 'sci-pressure', name: 'Gas Laws Calculator', category: 'Science', description: 'Boyle, Charles, Ideal Gas', tags: ['science', 'pressure', 'gas', 'ideal'] },
-        { id: 'sci-energy', name: 'Energy Calculator', category: 'Science', description: 'Energy, work, power', tags: ['science', 'energy', 'power', 'work'] },
-        { id: 'sci-wavelength', name: 'Wavelength Calculator', category: 'Science', description: 'Wave speed and frequency', tags: ['science', 'wavelength', 'frequency'] },
-        { id: 'sci-periodic', name: 'Periodic Table', category: 'Science', description: 'Element lookup', tags: ['science', 'periodic', 'elements'] },
-        { id: 'eng-unit', name: 'Unit Converter', category: 'Engineering', description: 'Universal unit conversion', tags: ['engineering', 'units', 'conversion'] },
-        { id: 'eng-resistor', name: 'Resistor Color Code', category: 'Engineering', description: 'Resistor value decoder', tags: ['engineering', 'resistor', 'electronics'] },
-        { id: 'eng-voltage', name: 'Voltage Divider', category: 'Engineering', description: 'Voltage divider circuit', tags: ['engineering', 'voltage', 'divider'] },
-        { id: 'eng-binary', name: 'Binary Calculator', category: 'Engineering', description: 'Bitwise operations', tags: ['engineering', 'binary', 'bitwise'] },
-        { id: 'eng-hex', name: 'Hex Color Converter', category: 'Engineering', description: 'Color code conversion', tags: ['engineering', 'hex', 'color', 'rgb'] },
-        { id: 'eng-subnet', name: 'IP Subnet Calculator', category: 'Engineering', description: 'CIDR and subnetting', tags: ['engineering', 'ip', 'subnet', 'cidr'] },
-        { id: 'eng-datastorage', name: 'Data Storage Converter', category: 'Engineering', description: 'Storage unit conversion', tags: ['engineering', 'storage', 'data'] },
-        { id: 'eng-bandwidth', name: 'Bandwidth Calculator', category: 'Engineering', description: 'Transfer time and speed', tags: ['engineering', 'bandwidth', 'network'] },
-        { id: 'day-age', name: 'Age Calculator', category: 'Everyday', description: 'Age from birth date', tags: ['everyday', 'age', 'birthday'] },
-        { id: 'day-datediff', name: 'Date Difference', category: 'Everyday', description: 'Days between dates', tags: ['everyday', 'date', 'difference'] },
-        { id: 'day-timezone', name: 'Time Zone Converter', category: 'Everyday', description: 'Convert between time zones', tags: ['everyday', 'timezone', 'time'] },
-        { id: 'day-tip', name: 'Tip Calculator', category: 'Everyday', description: 'Bill splitting and tips', tags: ['everyday', 'tip', 'bill', 'split'] },
-        { id: 'day-discount', name: 'Discount Calculator', category: 'Everyday', description: 'Sale price and savings', tags: ['everyday', 'discount', 'sale'] },
-        { id: 'day-fuel', name: 'Fuel Cost Calculator', category: 'Everyday', description: 'Trip fuel costs', tags: ['everyday', 'fuel', 'gas', 'trip'] },
-        { id: 'day-speed', name: 'Speed/Distance/Time', category: 'Everyday', description: 'Travel time calculator', tags: ['everyday', 'speed', 'distance', 'time'] },
-        { id: 'day-cooking', name: 'Cooking Converter', category: 'Everyday', description: 'Recipe scaling and units', tags: ['everyday', 'cooking', 'recipe', 'units'] },
-        { id: 'day-grade', name: 'Grade / GPA Calculator', category: 'Everyday', description: 'Grade point average', tags: ['everyday', 'grade', 'gpa', 'school'] },
-        { id: 'day-random', name: 'Random Generator', category: 'Everyday', description: 'Random numbers and passwords', tags: ['everyday', 'random', 'password'] },
-      ];
-
-      searchEngine.setRegistry(registry);
-
-      // Search input handling
+      const searchEngine = new CalcVerseSearch(REGISTRY);
       const searchInput = document.getElementById('global-search');
       const searchResults = document.getElementById('search-results');
+      const searchEmptyHint = document.getElementById('search-empty-hint');
+      let searchFocusedIndex = -1;
+      let searchLastResults = {};
+
+      // Render favorites from registry
+      function renderFavorites() {
+        const list = document.getElementById('favorites-list');
+        const favIds = CalcStorage.getFavorites();
+        const count = document.getElementById('fav-count');
+        if (count) count.textContent = favIds.length;
+
+        if (favIds.length === 0) {
+          list.innerHTML = '<div class="text-sm text-gray-400 italic px-2 py-4">No favorites yet. Star a calculator to add it here.</div>';
+          return;
+        }
+
+        list.innerHTML = favIds.map(id => {
+          const item = registryMap[id];
+          if (!item) return '';
+          return `
+            <a href="${item.path}" class="card-hover p-4 min-w-[180px] shrink-0 snap-start group">
+              <div class="text-2xl mb-2 group-hover:scale-110 transition-transform inline-block">${item.icon || '🔢'}</div>
+              <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">${item.name}</h4>
+              <p class="text-xs text-gray-400 mt-1">${item.category}</p>
+            </a>
+          `;
+        }).filter(Boolean).join('');
+      }
+
+      // Render recent calculators
+      function renderRecent() {
+        const list = document.getElementById('recent-list');
+        const recent = CalcStorage.getRecent();
+        const count = document.getElementById('recent-count');
+        if (count) count.textContent = recent.length;
+
+        if (recent.length === 0) {
+          list.innerHTML = '<div class="text-sm text-gray-400 italic px-2 py-4">No recent calculators.</div>';
+          return;
+        }
+
+        list.innerHTML = recent.map(r => {
+          const item = registryMap[r.id];
+          if (!item) return '';
+          const timeAgo = getTimeAgo(r.timestamp);
+          return `
+            <a href="${item.path}" class="card-hover p-4 min-w-[180px] shrink-0 snap-start group">
+              <div class="text-2xl mb-2 group-hover:scale-110 transition-transform inline-block">${item.icon || '🔢'}</div>
+              <h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">${item.name}</h4>
+              <p class="text-xs text-gray-400 mt-1">${timeAgo}</p>
+            </a>
+          `;
+        }).filter(Boolean).join('');
+      }
+
+      function getTimeAgo(timestamp) {
+        const mins = Math.floor((Date.now() - timestamp) / 60000);
+        if (mins < 1) return 'Just now';
+        if (mins < 60) return mins + 'm ago';
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return hours + 'h ago';
+        const days = Math.floor(hours / 24);
+        return days + 'd ago';
+      }
+
+      // Render featured calculator of the day (deterministic based on day of year)
+      function renderFeatured() {
+        const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+        const featuredIdx = dayOfYear % REGISTRY.length;
+        const featured = REGISTRY[featuredIdx];
+
+        document.getElementById('featured-name').textContent = featured.name;
+        document.getElementById('featured-desc').textContent = featured.description;
+        document.getElementById('featured-badge').textContent = featured.category;
+        document.getElementById('featured-icon').textContent = featured.icon || '🔢';
+        document.getElementById('featured-card').dataset.href = featured.path;
+      }
+
+      // Search input handling with debounce
+      let searchDebounce;
 
       searchInput?.addEventListener('input', (e) => {
+        clearTimeout(searchDebounce);
         const query = e.target.value;
-        if (query.length > 0) {
-          const results = searchEngine.search(query);
-          searchEngine.renderResults(results, searchResults);
-        } else {
+
+        if (query.length === 0) {
           searchResults.classList.add('hidden');
+          if (searchEmptyHint) searchEmptyHint.classList.add('hidden');
+          searchFocusedIndex = -1;
+          searchLastResults = {};
+          return;
+        }
+
+        searchDebounce = setTimeout(() => {
+          const results = searchEngine.search(query);
+          searchLastResults = results;
+          searchFocusedIndex = -1;
+
+          // Render results with keyboard nav support
+          const keys = Object.keys(results);
+          if (keys.length === 0) {
+            searchResults.innerHTML = '<div class="px-4 py-6 text-center text-sm text-gray-400">No calculators match your search.</div>';
+            searchResults.classList.remove('hidden');
+            if (searchEmptyHint) searchEmptyHint.classList.remove('hidden');
+            return;
+          }
+
+          if (searchEmptyHint) searchEmptyHint.classList.add('hidden');
+
+          let html = '';
+          let idx = 0;
+          keys.forEach(category => {
+            const items = results[category];
+            html += `
+              <div class="search-category">
+                <div class="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-900/50 sticky top-0">${category}</div>
+                ${items.map(item => {
+                  const currentIdx = idx++;
+                  return `
+                    <a href="${item.path}" class="search-result-item flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-75 text-sm" data-index="${currentIdx}" data-calc-id="${item.id}">
+                      <div class="flex-1 min-w-0">
+                        <div class="font-medium text-gray-900 dark:text-gray-100 truncate">${highlightMatch(item.name, query)}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 truncate">${highlightMatch(item.description, query)}</div>
+                      </div>
+                      <span class="text-gray-300 dark:text-gray-600 shrink-0">→</span>
+                    </a>
+                  `;
+                }).join('')}
+              </div>
+            `;
+          });
+
+          searchResults.innerHTML = html;
+          searchResults.classList.remove('hidden');
+
+          // Re-bind click navigation and keyboard selection
+          searchResults.querySelectorAll('.search-result-item').forEach(el => {
+            el.addEventListener('click', (e) => {
+              e.preventDefault();
+              const calcId = el.dataset.calcId;
+              const item = registryMap[calcId];
+              if (item) CalcStorage.recordVisit(calcId, item.name);
+              window.location.href = el.getAttribute('href');
+            });
+          });
+        }, 150);
+      });
+
+      function highlightMatch(text, query) {
+        const idx = text.toLowerCase().indexOf(query.toLowerCase());
+        if (idx === -1) return text;
+        return text.slice(0, idx) + '<span class="text-primary font-semibold">' + text.slice(idx, idx + query.length) + '</span>' + text.slice(idx + query.length);
+      }
+
+      // Arrow key and Enter navigation for search results
+      searchInput?.addEventListener('keydown', (e) => {
+        const items = searchResults.querySelectorAll('.search-result-item');
+        if (items.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          searchFocusedIndex = Math.min(searchFocusedIndex + 1, items.length - 1);
+          updateSearchFocus(items);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          searchFocusedIndex = Math.max(searchFocusedIndex - 1, 0);
+          updateSearchFocus(items);
+        } else if (e.key === 'Enter') {
+          if (searchFocusedIndex >= 0 && items[searchFocusedIndex]) {
+            e.preventDefault();
+            items[searchFocusedIndex].click();
+          } else if (items.length > 0) {
+            // Navigate to first result
+            items[0].click();
+          }
+        } else if (e.key === 'Escape') {
+          searchResults.classList.add('hidden');
+          searchInput.blur();
         }
       });
 
+      function updateSearchFocus(items) {
+        items.forEach((el, i) => {
+          el.classList.toggle('bg-gray-100', i === searchFocusedIndex);
+          el.classList.toggle('dark:bg-gray-700', i === searchFocusedIndex);
+        });
+        if (searchFocusedIndex >= 0 && items[searchFocusedIndex]) {
+          items[searchFocusedIndex].scrollIntoView({ block: 'nearest' });
+        }
+      }
+
       // Keyboard shortcut for search
       document.addEventListener('keydown', (e) => {
-        if (e.key === '/' && e.target.tagName !== 'INPUT') {
+        if (e.key === '/' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
           e.preventDefault();
           searchInput?.focus();
-        }
-        if (e.key === 'Escape') {
-          searchInput?.blur();
-          searchResults?.classList.add('hidden');
         }
       });
 
@@ -288,37 +528,39 @@
       document.addEventListener('click', (e) => {
         if (!e.target.closest('#global-search') && !e.target.closest('#search-results')) {
           searchResults?.classList.add('hidden');
+          if (searchEmptyHint) searchEmptyHint.classList.add('hidden');
         }
       });
 
-      // ===== Favorites & Recent counts =====
-      function updateStats() {
-        const favCount = CalcStorage.getFavorites().length;
-        const recentCount = CalcStorage.getRecent().length;
-        document.getElementById('fav-count').textContent = favCount;
-        document.getElementById('recent-count').textContent = recentCount;
+      // ===== Favorites & Recent updates =====
+      function updateDashboard() {
+        renderFavorites();
+        renderRecent();
       }
 
-      // Listen for updates
-      document.addEventListener('cv:favorites-update', updateStats);
-      document.addEventListener('cv:recent-update', updateStats);
-      updateStats();
+      document.addEventListener('cv:favorites-update', updateDashboard);
+      document.addEventListener('cv:recent-update', updateDashboard);
+
+      // Initial render
+      renderFeatured();
+      updateDashboard();
 
       // ===== Mobile menu toggle =====
       document.getElementById('mobile-menu-toggle')?.addEventListener('click', () => {
-        sidebar.toggle();
+        if (window.innerWidth < 768) {
+          sidebar.show();
+        } else {
+          sidebar.toggle();
+        }
       });
 
       // ===== Keyboard shortcuts help =====
       document.getElementById('btn-keyboard-help')?.addEventListener('click', () => {
         const shortcuts = [
-          ['/', 'Focus search'],
-          ['Escape', 'Close search / Clear'],
-          ['Enter', 'Calculate'],
-          ['0-9', 'Numbers'],
-          ['.', 'Decimal'],
-          ['+ - * /', 'Operators'],
-          ['Backspace', 'Delete last'],
+          ['/', 'Focus search'], ['↓↑', 'Navigate results'],
+          ['Enter', 'Select / Calculate'], ['Escape', 'Close / Clear'],
+          ['0-9', 'Numbers'], ['.', 'Decimal'],
+          ['+ - * /', 'Operators'], ['Backspace', 'Delete last'],
         ];
         Modal.show({
           title: '⌨️ Keyboard Shortcuts',
@@ -326,7 +568,7 @@
             <div class="grid grid-cols-2 gap-3">
               ${shortcuts.map(([key, desc]) => `
                 <div class="flex items-center gap-2 text-sm">
-                  <kbd class="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 font-mono text-xs">${key}</kbd>
+                  <kbd class="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 font-mono text-xs min-w-[24px] text-center">${key}</kbd>
                   <span class="text-gray-600 dark:text-gray-400">${desc}</span>
                 </div>
               `).join('')}
@@ -335,18 +577,7 @@
         });
       });
 
-      // ===== Handle resize for sidebar =====
-      let resizeTimer;
-      window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => {
-          if (window.innerWidth < 1280) {
-            sidebar.collapse();
-          } else {
-            sidebar.expand();
-          }
-        }, 150);
-      });
+
     });
   </script>
 </body>

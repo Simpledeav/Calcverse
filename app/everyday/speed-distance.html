@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speed Calculator — CalcVerse</title>
+  <meta name="description" content="Convert between speed units and calculate distance, time, and speed." />
+  <meta name="theme-color" content="#77d202" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" as="style" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.mode-tabs { display: flex; gap: 4px; background: var(--bg-base); border-radius: 10px; padding: 3px; margin-bottom: 20px; border: 1px solid; }
+    .dark .mode-tabs { background: #000; border-color: #2a2e2e; }
+    .mode-tab { flex: 1; padding: 8px 12px; text-align: center; border-radius: 8px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.2s; color: #8e9aab; }
+    .mode-tab.active { background: #77d202; color: #000; }
+    .mode-tab:hover:not(.active) { background: rgba(119,210,2,0.1); color: #77d202; }
+    
+    
+    
+    .input-group { margin-bottom: 14px; }
+    .input-group label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #8e9aab; margin-bottom: 4px; }
+    
+    
+    
+    
+    
+    .result-display { text-align: center; padding: 16px; margin-top: 12px; border-radius: 10px; background: rgba(119,210,2,0.05); border: 1px solid rgba(119,210,2,0.2); }
+    .result-display .value { font-family: 'JetBrains Mono', monospace; font-size: 1.75rem; font-weight: 700; color: #77d202; }
+    .result-display .unit { font-size: 0.85rem; color: #8e9aab; margin-top: 2px; }
+    .preset-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .preset-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid; font-size: 0.75rem; cursor: pointer; transition: all 0.15s; background: var(--bg-base); color: #8e9aab; }
+    .dark .preset-btn { background: #000; border-color: #2a2e2e; }
+    .preset-btn:hover { border-color: #77d202; color: #77d202; background: rgba(119,210,2,0.05); }</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-between px-6 h-16">
+        <div class="flex items-center gap-3">
+          <nav class="breadcrumb text-sm text-gray-400" aria-label="Breadcrumb">
+            <a href="/app/dashboard.html" class="hover:text-primary transition-colors">Dashboard</a><span class="mx-1.5">/</span>
+            <a href="/app/dashboard.html" class="hover:text-primary transition-colors">Everyday</a><span class="mx-1.5">/</span>
+            <span class="text-gray-600 dark:text-gray-300 font-medium">Speed Calculator</span>
+          </nav>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-icon" id="theme-toggle-page" aria-label="Toggle theme">
+            <span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    <div class="p-6">
+      <div class="calc-header flex flex-wrap items-start justify-between gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-semibold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">Everyday</span>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">🚗 Speed Calculator</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Convert between speed units and calculate speed, distance, or time.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-favorite" data-calc-id="day-speed">☆ Favorite</button>
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-share">Share</button>
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-formula">Formula ƒ</button>
+        </div>
+      </div>
+      <div class="calc-body max-w-xl">
+        <div class="mode-tabs" id="mode-tabs">
+          <div class="mode-tab active" data-mode="convert">🔄 Convert</div>
+          <div class="mode-tab" data-mode="sdt">📐 Speed/Distance/Time</div>
+        </div>
+        <div class="everyday-card" id="convert-mode">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Speed Converter</span>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <div class="flex-1 min-w-[140px]"><label>From</label>
+              <select id="conv-from-unit" class="everyday-select w-full mt-1">
+                <option value="kmph">km/h</option><option value="mph" selected>mph</option><option value="mps">m/s</option>
+                <option value="knot">knot</option><option value="fps">ft/s</option><option value="mach">Mach</option>
+              </select>
+              <input type="number" id="conv-from-val" class="everyday-input mt-1" placeholder="0" autofocus />
+            </div>
+            <div class="flex items-center self-end">
+              <button id="conv-swap" class="w-9 h-9 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors text-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16l-4-4 4-4"/><path d="M17 8l4 4-4 4"/><path d="M3 12h18"/></svg>
+              </button>
+            </div>
+            <div class="flex-1 min-w-[140px]"><label>To</label>
+              <select id="conv-to-unit" class="everyday-select w-full mt-1">
+                <option value="kmph" selected>km/h</option><option value="mph">mph</option><option value="mps">m/s</option>
+                <option value="knot">knot</option><option value="fps">ft/s</option><option value="mach">Mach</option>
+              </select>
+              <input type="text" id="conv-to-val" class="everyday-input mt-1 font-bold text-primary" readonly />
+            </div>
+          </div>
+          <div class="preset-grid">
+            <span class="text-xs text-gray-500 mr-1 self-center">Presets:</span>
+            <span class="preset-btn" data-speed="30" data-unit="mph">30 mph</span>
+            <span class="preset-btn" data-speed="55" data-unit="mph">55 mph</span>
+            <span class="preset-btn" data-speed="65" data-unit="mph">65 mph</span>
+            <span class="preset-btn" data-speed="80" data-unit="mph">80 mph</span>
+            <span class="preset-btn" data-speed="100" data-unit="kmph">100 km/h</span>
+            <span class="preset-btn" data-speed="120" data-unit="kmph">120 km/h</span>
+            <span class="preset-btn" data-speed="900" data-unit="kmph">900 km/h</span>
+            <span class="preset-btn" data-speed="1000" data-unit="kmph">1000 km/h</span>
+          </div>
+        </div>
+        <div class="everyday-card hidden" id="sdt-mode">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Speed = Distance ÷ Time</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="input-group"><label>Distance</label>
+              <input type="number" id="sdt-distance" class="everyday-input" placeholder="e.g. 150" />
+              <select id="sdt-dist-unit" class="everyday-select w-full mt-1"><option value="km">km</option><option value="mi">miles</option><option value="m">meters</option></select>
+            </div>
+            <div class="input-group"><label>Time</label>
+              <input type="number" id="sdt-time" class="everyday-input" placeholder="e.g. 2" />
+              <select id="sdt-time-unit" class="everyday-select w-full mt-1"><option value="h">hours</option><option value="min">minutes</option><option value="s">seconds</option></select>
+            </div>
+            <div class="input-group"><label>Speed</label>
+              <input type="number" id="sdt-speed" class="everyday-input" placeholder="e.g. 75" />
+              <select id="sdt-speed-unit" class="everyday-select w-full mt-1"><option value="kmh">km/h</option><option value="mph">mph</option><option value="ms">m/s</option></select>
+            </div>
+          </div>
+          <div class="result-display" id="sdt-result">
+            <div class="value" id="sdt-result-val">—</div>
+            <div class="unit" id="sdt-result-unit">Enter any two values to calculate the third</div>
+          </div>
+        </div>
+        <details class="calc-formula-box mt-6">
+          <summary class="cursor-pointer text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Formulas</summary>
+          <div class="mt-3 text-sm text-gray-500 dark:text-gray-400 space-y-1">
+            <p><strong>Speed</strong> = Distance ÷ Time</p>
+            <p><strong>Distance</strong> = Speed × Time</p>
+            <p><strong>Time</strong> = Distance ÷ Speed</p>
+            <p class="mt-2 text-xs text-gray-400">1 mph = 1.60934 km/h &middot; 1 knot = 1.852 km/h &middot; 1 Mach ≈ 1235 km/h (sea level)</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script src="/assets/js/engines/unit-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Mode tabs
+      const tabs = document.querySelectorAll('.mode-tab');
+      tabs.forEach(tab => tab.addEventListener('click', function() {
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('convert-mode').classList.toggle('hidden', this.dataset.mode !== 'convert');
+        document.getElementById('sdt-mode').classList.toggle('hidden', this.dataset.mode !== 'sdt');
+      }));
+
+      // Speed converter
+      const convFromVal = document.getElementById('conv-from-val');
+      const convFromUnit = document.getElementById('conv-from-unit');
+      const convToUnit = document.getElementById('conv-to-unit');
+      const convToVal = document.getElementById('conv-to-val');
+      document.getElementById('conv-swap').addEventListener('click', function() {
+        const tmp = convFromUnit.value; convFromUnit.value = convToUnit.value; convToUnit.value = tmp;
+        doConvert();
+      });
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          convFromUnit.value = this.dataset.unit;
+          convFromVal.value = this.dataset.speed;
+          doConvert();
+        });
+      });
+
+      function doConvert() {
+        const val = parseFloat(convFromVal.value);
+        if (isNaN(val)) { convToVal.value = ''; return; }
+        const result = UnitEngine.convert(val, convFromUnit.value, convToUnit.value, 'speed');
+        convToVal.value = UnitEngine.formatValue(result, 3) + ' ' + convToUnit.options[convToUnit.selectedIndex].text;
+        CalcStorage.addHistory('day-speed', {
+          expression: val + ' ' + convFromUnit.options[convFromUnit.selectedIndex].text + ' → ' + UnitEngine.formatValue(result, 3) + ' ' + convToUnit.options[convToUnit.selectedIndex].text,
+          result: UnitEngine.formatValue(result, 3), timestamp: Date.now()
+        });
+      }
+      convFromVal.addEventListener('input', doConvert);
+      convFromUnit.addEventListener('change', doConvert);
+      convToUnit.addEventListener('change', doConvert);
+
+      // SDT calculator
+      const sdtDist = document.getElementById('sdt-distance');
+      const sdtDistUnit = document.getElementById('sdt-dist-unit');
+      const sdtTime = document.getElementById('sdt-time');
+      const sdtTimeUnit = document.getElementById('sdt-time-unit');
+      const sdtSpeed = document.getElementById('sdt-speed');
+      const sdtSpeedUnit = document.getElementById('sdt-speed-unit');
+      const sdtResultVal = document.getElementById('sdt-result-val');
+      const sdtResultUnit = document.getElementById('sdt-result-unit');
+
+      function solveSDT(changed) {
+        const d = parseFloat(sdtDist.value);
+        const t = parseFloat(sdtTime.value);
+        const s = parseFloat(sdtSpeed.value);
+        const filled = [isNaN(d) ? 0 : 1, isNaN(t) ? 0 : 1, isNaN(s) ? 0 : 1].reduce((a, b) => a + b, 0);
+        if (filled < 2) { sdtResultVal.textContent = '—'; sdtResultUnit.textContent = 'Enter any two values'; return; }
+
+        // Convert distance to km, time to hours, speed to kmh
+        const dKm = isNaN(d) ? null : sdtDistUnit.value === 'km' ? d : sdtDistUnit.value === 'mi' ? d * 1.60934 : d / 1000;
+        const tH = isNaN(t) ? null : sdtTimeUnit.value === 'h' ? t : sdtTimeUnit.value === 'min' ? t / 60 : t / 3600;
+        const sKmph = isNaN(s) ? null : sdtSpeedUnit.value === 'kmh' ? s : sdtSpeedUnit.value === 'mph' ? s * 1.60934 : s * 3.6;
+
+        let resultText, resultUnit;
+        if (isNaN(s)) {
+          const r = dKm / tH;
+          const targetUnit = sdtSpeedUnit.value;
+          resultText = MathEngine.formatNumber(targetUnit === 'mph' ? r / 1.60934 : targetUnit === 'ms' ? r / 3.6 : r, 2);
+          resultUnit = sdtSpeedUnit.options[sdtSpeedUnit.selectedIndex].text;
+        } else if (isNaN(d)) {
+          const r = sKmph * tH;
+          const targetUnit = sdtDistUnit.value;
+          resultText = MathEngine.formatNumber(targetUnit === 'mi' ? r / 1.60934 : targetUnit === 'm' ? r * 1000 : r, 2);
+          resultUnit = sdtDistUnit.options[sdtDistUnit.selectedIndex].text;
+        } else {
+          const r = dKm / sKmph;
+          const targetUnit = sdtTimeUnit.value;
+          resultText = MathEngine.formatNumber(targetUnit === 'min' ? r * 60 : targetUnit === 's' ? r * 3600 : r, 2);
+          resultUnit = sdtTimeUnit.options[sdtTimeUnit.selectedIndex].text;
+        }
+
+        sdtResultVal.textContent = resultText;
+        sdtResultUnit.textContent = resultUnit;
+      }
+
+      [sdtDist, sdtDistUnit, sdtTime, sdtTimeUnit, sdtSpeed, sdtSpeedUnit].forEach(el => {
+        el.addEventListener('input', () => solveSDT(el));
+        el.addEventListener('change', () => solveSDT(el));
+      });
+
+      // Favorite
+      document.getElementById('btn-favorite')?.addEventListener('click', function() {
+        const isFav = CalcStorage.toggleFavorite(this.dataset.calcId);
+        this.textContent = isFav ? '★ Favorited' : '☆ Favorite';
+        this.classList.toggle('text-primary', isFav);
+        Toast.show(isFav ? 'Added to favorites' : 'Removed from favorites', isFav ? 'success' : 'info');
+      });
+      if (CalcStorage.isFavorite('day-speed')) { document.getElementById('btn-favorite').textContent = '★ Favorited'; document.getElementById('btn-favorite').classList.add('text-primary'); }
+
+      document.getElementById('btn-share')?.addEventListener('click', function() {
+        const val = document.getElementById('conv-to-val').value || document.getElementById('sdt-result-val').textContent;
+        Modal.show({ title: 'Share Result', content: '<p class="text-sm text-gray-500 mb-3">Copy the result below:</p><div class="flex gap-2"><input type="text" class="flex-1 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border-0 text-sm" value="' + val + '" readonly id="share-text"/><button class="btn-primary px-4 py-2 rounded-lg text-sm" onclick="navigator.clipboard.writeText(document.getElementById(\'share-text\').value).then(()=>{Modal.close();Toast.show(\'Copied!\',\'success\');})">Copy</button></div>' });
+      });
+
+      document.getElementById('btn-formula')?.addEventListener('click', function() {
+        Modal.show({ title: 'Speed Formulas', content: '<div class="text-sm text-gray-500 dark:text-gray-400 space-y-2"><p><strong>Speed</strong> = Distance ÷ Time</p><p><strong>Distance</strong> = Speed × Time</p><p><strong>Time</strong> = Distance ÷ Speed</p><p class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700"><strong>Conversions:</strong><br/>1 mph = 1.60934 km/h<br/>1 knot = 1.852 km/h<br/>1 m/s = 3.6 km/h<br/>Mach 1 ≈ 1235 km/h (sea level)</p></div>' });
+      });
+
+      document.getElementById('theme-toggle-page')?.addEventListener('click', () => themeEngine.toggle());
+      const sidebar = new CalcVerseSidebar('#sidebar-container', { collapsed: window.innerWidth < 1024 });
+      window.calcSidebar = sidebar;
+      CalcStorage.recordVisit('day-speed', 'Speed Calculator');
+      doConvert();
+    });
+  </script>
+</body>
+</html>

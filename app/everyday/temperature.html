@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Temperature Converter — CalcVerse</title>
+  <meta name="description" content="Convert between Celsius, Fahrenheit, Kelvin, and Rankine." />
+  <meta name="theme-color" content="#77d202" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" as="style" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.conv-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; }
+    @media (max-width: 640px) { .conv-grid { grid-template-columns: 1fr; } }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-between px-6 h-16">
+        <div class="flex items-center gap-3">
+          <nav class="breadcrumb text-sm text-gray-400" aria-label="Breadcrumb">
+            <a href="/app/dashboard.html" class="hover:text-primary transition-colors">Dashboard</a>
+            <span class="mx-1.5">/</span>
+            <a href="/app/dashboard.html" class="hover:text-primary transition-colors">Everyday</a>
+            <span class="mx-1.5">/</span>
+            <span class="text-gray-600 dark:text-gray-300 font-medium">Temperature Converter</span>
+          </nav>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-icon" id="theme-toggle-page" aria-label="Toggle theme">
+            <span class="dark:hidden">🌙</span>
+            <span class="hidden dark:inline">☀️</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    <div class="p-6">
+      <div class="calc-header flex flex-wrap items-start justify-between gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-semibold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">Everyday</span>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            🌡️ Temperature Converter
+          </h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Convert between Celsius, Fahrenheit, Kelvin, and Rankine instantly.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-favorite" data-calc-id="day-temp" aria-label="Toggle favorite">☆ Favorite</button>
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-share" aria-label="Share">Share</button>
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-formula" aria-label="Formula">Formula ƒ</button>
+        </div>
+      </div>
+
+      <div class="calc-body max-w-2xl">
+        <div class="everyday-card">
+          <div class="conv-grid">
+            <div>
+              <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">From</label>
+              <select id="from-unit" class="everyday-select mb-2">
+                <option value="celsius">°C — Celsius</option>
+                <option value="fahrenheit" selected>°F — Fahrenheit</option>
+                <option value="kelvin">K — Kelvin</option>
+                <option value="rankine">°R — Rankine</option>
+              </select>
+              <input type="number" id="from-value" class="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-0 font-mono text-lg text-right focus:outline-none focus:ring-2 focus:ring-primary/50" placeholder="0" autofocus />
+            </div>
+            <div class="flex justify-center">
+              <button id="swap-btn" class="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors text-primary" aria-label="Swap units">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16l-4-4 4-4"/><path d="M17 8l4 4-4 4"/><path d="M3 12h18"/></svg>
+              </button>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">To</label>
+              <select id="to-unit" class="everyday-select mb-2">
+                <option value="celsius" selected>°C — Celsius</option>
+                <option value="fahrenheit">°F — Fahrenheit</option>
+                <option value="kelvin">K — Kelvin</option>
+                <option value="rankine">°R — Rankine</option>
+              </select>
+              <input type="text" id="to-value" class="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-0 font-mono text-lg text-right font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/50" readonly />
+            </div>
+          </div>
+
+          <div class="everyday-ref-grid">
+            <div class="everyday-ref-item"><span class="label">Celsius</span><span class="value" id="disp-celsius">—</span></div>
+            <div class="everyday-ref-item"><span class="label">Fahrenheit</span><span class="value" id="disp-fahrenheit">—</span></div>
+            <div class="everyday-ref-item"><span class="label">Kelvin</span><span class="value" id="disp-kelvin">—</span></div>
+            <div class="everyday-ref-item"><span class="label">Rankine</span><span class="value" id="disp-rankine">—</span></div>
+          </div>
+        </div>
+
+        <!-- Conversion reference -->
+        <details class="calc-formula-box mt-6">
+          <summary class="cursor-pointer text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">How temperature conversion works</summary>
+          <div class="mt-3 text-sm text-gray-500 dark:text-gray-400 space-y-1">
+            <p><strong>°C → °F:</strong> (°C × 9/5) + 32</p>
+            <p><strong>°F → °C:</strong> (°F − 32) × 5/9</p>
+            <p><strong>°C → K:</strong> °C + 273.15</p>
+            <p><strong>K → °C:</strong> K − 273.15</p>
+            <p><strong>°F → K:</strong> (°F + 459.67) × 5/9</p>
+            <p><strong>K → °F:</strong> K × 9/5 − 459.67</p>
+            <p><strong>°R → K:</strong> °R × 5/9</p>
+            <p class="mt-2 text-xs text-gray-400">Formulas use Kelvin as the base unit, converting through K for all pairs.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </main>
+
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script src="/assets/js/engines/unit-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const fromVal = document.getElementById('from-value');
+      const fromUnit = document.getElementById('from-unit');
+      const toUnit = document.getElementById('to-unit');
+      const toVal = document.getElementById('to-value');
+      const swapBtn = document.getElementById('swap-btn');
+
+      function convert() {
+        const val = parseFloat(fromVal.value);
+        if (isNaN(val)) { toVal.value = ''; ['disp-celsius','disp-fahrenheit','disp-kelvin','disp-rankine'].forEach(id => document.getElementById(id).textContent = '—'); return; }
+
+        const result = UnitEngine.convert(val, fromUnit.value, toUnit.value, 'temperature');
+        toVal.value = UnitEngine.formatValue(result, 4) + ' ' + (toUnit.options[toUnit.selectedIndex]?.text.split(' — ')[0] || '');
+
+        // Show all temperatures
+        const units = ['celsius', 'fahrenheit', 'kelvin', 'rankine'];
+        const symbols = { celsius: '°C', fahrenheit: '°F', kelvin: 'K', rankine: '°R' };
+        units.forEach(u => {
+          const v = UnitEngine.convert(val, fromUnit.value, u, 'temperature');
+          document.getElementById('disp-' + u).textContent = UnitEngine.formatValue(v, 4) + ' ' + symbols[u];
+        });
+
+        // Save to history
+        CalcStorage.addHistory('day-temp', {
+          expression: val + ' ' + fromUnit.options[fromUnit.selectedIndex]?.text.split(' — ')[0] + ' → ' + UnitEngine.formatValue(result, 4) + ' ' + toUnit.options[toUnit.selectedIndex]?.text.split(' — ')[0],
+          result: UnitEngine.formatValue(result, 4),
+          timestamp: Date.now()
+        });
+      }
+
+      fromVal.addEventListener('input', convert);
+      fromUnit.addEventListener('change', convert);
+      toUnit.addEventListener('change', convert);
+
+      swapBtn.addEventListener('click', function() {
+        const tmp = fromUnit.value;
+        fromUnit.value = toUnit.value;
+        toUnit.value = tmp;
+        convert();
+      });
+
+      // Favorite
+      document.getElementById('btn-favorite')?.addEventListener('click', function() {
+        const id = this.dataset.calcId;
+        const isFav = CalcStorage.toggleFavorite(id);
+        this.textContent = isFav ? '★ Favorited' : '☆ Favorite';
+        this.classList.toggle('text-primary', isFav);
+        Toast.show(isFav ? 'Added to favorites' : 'Removed from favorites', isFav ? 'success' : 'info');
+      });
+      if (CalcStorage.isFavorite('day-temp')) {
+        document.getElementById('btn-favorite').textContent = '★ Favorited';
+        document.getElementById('btn-favorite').classList.add('text-primary');
+      }
+
+      // Share
+      document.getElementById('btn-share')?.addEventListener('click', function() {
+        const val = document.getElementById('to-value').value;
+        Modal.show({ title: 'Share Result', content: '<p class="text-sm text-gray-500 mb-3">Copy the result below:</p><div class="flex gap-2"><input type="text" class="flex-1 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border-0 text-sm" value="' + val + '" readonly id="share-text"/><button class="btn-primary px-4 py-2 rounded-lg text-sm" onclick="navigator.clipboard.writeText(document.getElementById(\'share-text\').value).then(()=>{Modal.close();Toast.show(\'Copied!\',\'success\');})">Copy</button></div>' });
+      });
+
+      // Formula modal
+      document.getElementById('btn-formula')?.addEventListener('click', function() {
+        Modal.show({
+          title: 'Temperature Conversion Formulas',
+          content: '<div class="text-sm text-gray-500 dark:text-gray-400 space-y-2"><p><strong>°C → °F:</strong> (°C × 9/5) + 32</p><p><strong>°F → °C:</strong> (°F − 32) × 5/9</p><p><strong>°C → K:</strong> °C + 273.15</p><p><strong>K → °C:</strong> K − 273.15</p><p><strong>°F → K:</strong> (°F + 459.67) × 5/9</p><p><strong>K → °F:</strong> K × 9/5 − 459.67</p><p><strong>°R → K:</strong> °R × 5/9</p></div>'
+        });
+      });
+
+      // Theme toggle
+      document.getElementById('theme-toggle-page')?.addEventListener('click', () => themeEngine.toggle());
+
+      // Init sidebar
+      const sidebar = new CalcVerseSidebar('#sidebar-container', { collapsed: window.innerWidth < 1024 });
+      window.calcSidebar = sidebar;
+      CalcStorage.recordVisit('day-temp', 'Temperature Converter');
+
+      convert();
+    });
+  </script>
+</body>
+</html>

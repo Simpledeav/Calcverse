@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Age Calculator — CalcVerse</title>
+  <meta name="description" content="Calculate your exact age in years, months, days, hours, and minutes." />
+  <meta name="theme-color" content="#77d202" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" as="style" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.age-card { background: var(--bg-surface); border: 1px solid; border-radius: 16px; padding: 28px; transition: all 0.2s; }
+    .dark .age-card { background: #0f1010; border-color: #2a2e2e; }
+    .age-card:hover { border-color: #77d202; box-shadow: 0 0 20px rgba(119,210,2,0.1); }
+    .age-big { font-family: 'JetBrains Mono', monospace; font-size: 3.5rem; font-weight: 800; color: #77d202; line-height: 1; }
+    .age-big-label { font-size: 0.85rem; color: #8e9aab; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+    .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    @media (max-width: 480px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+    .stat-cell { text-align: center; padding: 16px 8px; border-radius: 12px; border: 1px solid; background: var(--bg-base); }
+    .dark .stat-cell { background: #000; border-color: #2a2e2e; }
+    .stat-cell .num { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 700; color: #77d202; }
+    .stat-cell .lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #8e9aab; margin-top: 2px; }
+    .bday-banner { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 12px; background: rgba(119,210,2,0.08); border: 1px solid rgba(119,210,2,0.2); margin-top: 16px; }
+    .bday-banner .label { font-size: 0.8rem; color: #8e9aab; }
+    .bday-banner .value { font-family: 'JetBrains Mono', monospace; font-size: 1rem; font-weight: 600; color: #77d202; }
+    .date-input { width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid; background: var(--bg-base); color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; }
+    .dark .date-input { background: #000; border-color: #2a2e2e; color: #f3f5f6; }
+    .date-input:focus { outline: none; border-color: #77d202; box-shadow: 0 0 0 2px rgba(119,210,2,0.15); }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #77d202; display: inline-block; animation: pulse 2s infinite; margin-right: 6px; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-between px-6 h-16">
+        <div class="flex items-center gap-3">
+          <nav class="breadcrumb text-sm text-gray-400" aria-label="Breadcrumb">
+            <a href="/app/dashboard.html" class="hover:text-primary transition-colors">Dashboard</a><span class="mx-1.5">/</span>
+            <a href="/app/dashboard.html" class="hover:text-primary transition-colors">Everyday</a><span class="mx-1.5">/</span>
+            <span class="text-gray-600 dark:text-gray-300 font-medium">Age Calculator</span>
+          </nav>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-icon" id="theme-toggle-page" aria-label="Toggle theme">
+            <span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    <div class="p-6">
+      <div class="calc-header flex flex-wrap items-start justify-between gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-semibold uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">Everyday</span>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">🎂 Age Calculator</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Calculate your exact age, next birthday countdown, and more.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-favorite" data-calc-id="day-age">☆ Favorite</button>
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-share">Share</button>
+          <button class="btn-outline text-sm px-3 py-1.5 rounded-lg" id="btn-formula">Formula ƒ</button>
+        </div>
+      </div>
+      <div class="calc-body max-w-xl">
+        <div class="age-card">
+          <div class="mb-6">
+            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5" for="dob-input">Date of Birth</label>
+            <input type="date" id="dob-input" class="date-input" />
+          </div>
+
+          <!-- Main age display -->
+          <div class="text-center mb-6">
+            <div class="age-big" id="main-years">0</div>
+            <div class="age-big-label">Years Old</div>
+          </div>
+
+          <div class="stat-grid mb-4">
+            <div class="stat-cell"><div class="num" id="age-months">0</div><div class="lbl">Months</div></div>
+            <div class="stat-cell"><div class="num" id="age-days">0</div><div class="lbl">Days</div></div>
+            <div class="stat-cell"><div class="num" id="age-hours">0</div><div class="lbl">Hours</div></div>
+            <div class="stat-cell"><div class="num" id="age-minutes">0</div><div class="lbl">Minutes</div></div>
+            <div class="stat-cell"><div class="num" id="age-total-days">0</div><div class="lbl">Total Days</div></div>
+            <div class="stat-cell"><div class="num" id="age-dow">—</div><div class="lbl">Born On</div></div>
+          </div>
+
+          <div class="bday-banner">
+            <span>🎉</span>
+            <span class="label">Next Birthday:</span>
+            <span class="value" id="next-bday">—</span>
+            <span class="label" id="bday-countdown"></span>
+            <span class="live-dot"></span><span class="text-xs text-gray-500">Live</span>
+          </div>
+        </div>
+        <details class="calc-formula-box mt-6">
+          <summary class="cursor-pointer text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">How it works</summary>
+          <div class="mt-3 text-sm text-gray-500 dark:text-gray-400"><p>Age is calculated by subtracting the birth date from the current date, accounting for month/day boundaries. The next birthday is the upcoming anniversary of the birth date.</p></div>
+        </details>
+      </div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script src="/assets/js/engines/date-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const dobInput = document.getElementById('dob-input');
+      const mainYears = document.getElementById('main-years');
+      const ageMonths = document.getElementById('age-months');
+      const ageDays = document.getElementById('age-days');
+      const ageHours = document.getElementById('age-hours');
+      const ageMinutes = document.getElementById('age-minutes');
+      const ageTotalDays = document.getElementById('age-total-days');
+      const ageDow = document.getElementById('age-dow');
+      const nextBday = document.getElementById('next-bday');
+      const bdayCountdown = document.getElementById('bday-countdown');
+
+      // Set default to 30 years ago
+      const now = new Date();
+      const defaultDob = new Date(now.getFullYear() - 30, now.getMonth(), now.getDate());
+      dobInput.value = defaultDob.toISOString().split('T')[0];
+
+      function updateAge() {
+        const dobStr = dobInput.value;
+        if (!dobStr) return;
+        const dob = new Date(dobStr + 'T00:00:00');
+        const ref = new Date();
+
+        const age = DateEngine.age(dob, ref);
+
+        mainYears.textContent = age.years;
+        ageMonths.textContent = age.months;
+        ageDays.textContent = age.days;
+        ageHours.textContent = MathEngine.formatNumber(age.hours, 0);
+        ageMinutes.textContent = MathEngine.formatNumber(age.minutes, 0);
+        ageTotalDays.textContent = MathEngine.formatNumber(age.totalDays, 0);
+        ageDow.textContent = age.dayOfWeek.slice(0, 3);
+
+        if (age.nextBirthday) {
+          nextBday.textContent = DateEngine.formatDate(age.nextBirthday, 'long');
+          if (age.daysUntilBirthday === 0) {
+            bdayCountdown.textContent = '🎉 Today!';
+          } else {
+            bdayCountdown.textContent = '(' + age.daysUntilBirthday + ' days away)';
+          }
+        }
+
+      }
+
+      function saveAgeHistory() {
+        const dobStr = dobInput.value;
+        if (!dobStr) return;
+        const dob = new Date(dobStr + 'T00:00:00');
+        const ref = new Date();
+        const age = DateEngine.age(dob, ref);
+        CalcStorage.addHistory('day-age', {
+          expression: 'Age from '+dobStr,
+          result: age.years + ' years, ' + age.months + ' months, ' + age.days + ' days',
+          timestamp: Date.now()
+        });
+      }
+
+      dobInput.addEventListener('change', function() { updateAge(); saveAgeHistory(); });
+
+      // Live ticking timer
+      let tickTimer;
+      function startTicker() {
+        clearInterval(tickTimer);
+        tickTimer = setInterval(updateAge, 10000);
+      }
+
+      updateAge();
+      startTicker();
+
+      // Favorite
+      document.getElementById('btn-favorite')?.addEventListener('click', function() {
+        const isFav = CalcStorage.toggleFavorite(this.dataset.calcId);
+        this.textContent = isFav ? '★ Favorited' : '☆ Favorite';
+        this.classList.toggle('text-primary', isFav);
+        Toast.show(isFav ? 'Added to favorites' : 'Removed from favorites', isFav ? 'success' : 'info');
+      });
+      if (CalcStorage.isFavorite('day-age')) { document.getElementById('btn-favorite').textContent = '★ Favorited'; document.getElementById('btn-favorite').classList.add('text-primary'); }
+
+      document.getElementById('btn-share')?.addEventListener('click', function() {
+        const txt = 'I am ' + mainYears.textContent + ' years old (calculated by CalcVerse Age Calculator)';
+        Modal.show({ title: 'Share Age', content: '<p class="text-sm text-gray-500 mb-3">Copy your age:</p><div class="flex gap-2"><input type="text" class="flex-1 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border-0 text-sm" value="' + txt + '" readonly id="share-text"/><button class="btn-primary px-4 py-2 rounded-lg text-sm" onclick="navigator.clipboard.writeText(document.getElementById(\'share-text\').value).then(()=>{Modal.close();Toast.show(\'Copied!\',\'success\');})">Copy</button></div>' });
+      });
+
+      document.getElementById('btn-formula')?.addEventListener('click', function() {
+        Modal.show({ title: 'Age Calculation', content: '<div class="text-sm text-gray-500 dark:text-gray-400"><p><strong>Age</strong> = Current Date − Birth Date</p><p class="mt-2">The calculation accounts for:<br/>• Month boundaries (if today\'s day &lt; birth day, borrow from previous month)<br/>• Leap years<br/>• Time of day</p></div>' });
+      });
+
+      document.getElementById('theme-toggle-page')?.addEventListener('click', () => themeEngine.toggle());
+      const sidebar = new CalcVerseSidebar('#sidebar-container', { collapsed: window.innerWidth < 1024 });
+      window.calcSidebar = sidebar;
+      CalcStorage.recordVisit('day-age', 'Age Calculator');
+    });
+  </script>
+</body>
+</html>

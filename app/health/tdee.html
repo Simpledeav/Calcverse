@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TDEE Calculator — CalcVerse</title>
+  <meta name="description" content="Calculate your Total Daily Energy Expenditure and see calorie targets for cutting, maintaining, or bulking." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.tdee-result{font-size:2.5rem;font-weight:800;font-family:'JetBrains Mono',monospace;color:theme('colors.primary.DEFAULT')}.target-card{flex:1;padding:14px;border-radius:12px;text-align:center;border:1px solid}.target-card .val{font-size:1.5rem;font-weight:700;font-family:'JetBrains Mono',monospace;margin-top:4px}.target-card.cut{border-color:#ef4444/30;background:#ef4444/8}.target-card.maintain{border-color:#77d202/30;background:#77d202/8}.target-card.bulk{border-color:#3b82f6/30;background:#3b82f6/8}.activity-card{padding:10px 14px;border-radius:10px;cursor:pointer;transition:all .15s;border:2px solid transparent}.activity-card:hover{border-color:theme('colors.primary.DEFAULT')/30}.activity-card.active{border-color:theme('colors.primary.DEFAULT');background:theme('colors.primary.DEFAULT')/8}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Health</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">TDEE Calculator</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Health</span>
+          <h1 class="calc-title">TDEE Calculator</h1>
+          <p class="calc-description" id="calc-desc">Calculate your Total Daily Energy Expenditure and get personalized calorie targets for cutting, maintaining, or building.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="health-tdee"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <div class="flex gap-2 mb-4">
+            <span class="sex-btn active" data-sex="male">♂ Male</span>
+            <span class="sex-btn" data-sex="female">♀ Female</span>
+          </div>
+          <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="input-group"><label class="input-label" for="tdee-age">Age</label><input type="number" class="input-field" id="tdee-age" value="30" min="1" /></div>
+            <div class="input-group"><label class="input-label" for="tdee-weight">Weight (kg)</label><input type="number" class="input-field" id="tdee-weight" value="70" step="0.1" /></div>
+            <div class="input-group"><label class="input-label" for="tdee-height">Height (cm)</label><input type="number" class="input-field" id="tdee-height" value="175" step="0.1" /></div>
+          </div>
+          <div class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Activity Level</div>
+          <div class="space-y-2 mb-4" id="activity-list"></div>
+          <button class="btn-primary w-full" id="btn-calc-tdee">Calculate TDEE</button>
+          <div id="tdee-result" class="mt-4"></div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Calorie Targets</h3>
+          <div id="tdee-targets"><p class="text-sm text-gray-400 italic">Enter your details and click Calculate to see your calorie targets.</p></div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content"><p class="text-gray-500 dark:text-gray-400">TDEE = BMR × Activity Multiplier. BMR uses Mifflin-St Jeor equation. Cut = TDEE - 500, Bulk = TDEE + 500 kcal/day.</p></div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script src="/assets/js/engines/health-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'health-tdee',name:'TDEE Calculator',category:'Health',categoryPath:'/app/dashboard.html',description:'Calculate your Total Daily Energy Expenditure.',icon:'⚡',related:[{id:'health-bmi',name:'BMI',icon:'⚖️',category:'Health',path:'/app/health/bmi.html'},{id:'health-bmr',name:'BMR',icon:'🔥',category:'Health',path:'/app/health/bmr.html'},{id:'health-calorie',name:'Calorie Burn',icon:'🏃',category:'Health',path:'/app/health/calorie.html'},{id:'health-idealwt',name:'Ideal Weight',icon:'🎯',category:'Health',path:'/app/health/ideal-weight.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'TDEE = BMR × Activity Multiplier',CALC.description,{'BMR':'Mifflin-St Jeor','TDEE':'BMR × Activity','Cut':'TDEE - 500','Bulk':'TDEE + 500'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Tab between inputs. Click an activity level. Enter to calculate.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      let sex='male';let actIdx=2;
+      document.querySelectorAll('.sex-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.sex-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');sex=btn.dataset.sex;calcTDEE()})});
+
+      // Render activity levels
+      const al=document.getElementById('activity-list');
+      HealthEngine.ACTIVITY_LEVELS.forEach((a,i)=>{
+        const d=document.createElement('div');d.className=`activity-card${i===2?' active':''}`;d.dataset.idx=i;
+        d.innerHTML=`<div class="flex justify-between"><span class="font-semibold text-sm">${a.label}</span><span class="text-xs font-mono text-primary">×${a.multiplier}</span></div><div class="text-xs text-gray-400 mt-0.5">${a.description}</div>`;
+        d.addEventListener('click',()=>{document.querySelectorAll('.activity-card').forEach(c=>c.classList.remove('active'));d.classList.add('active');actIdx=i;calcTDEE()});
+        al.appendChild(d);
+      });
+
+      function fmt(n){return MathEngine.formatNumber(n)}
+
+      function calcTDEE(){
+        const age=parseFloat(document.getElementById('tdee-age').value);const w=parseFloat(document.getElementById('tdee-weight').value);const h=parseFloat(document.getElementById('tdee-height').value);
+        const el=document.getElementById('tdee-result');const tg=document.getElementById('tdee-targets');
+        if(isNaN(age)||isNaN(w)||isNaN(h)||age<=0||w<=0||h<=0){el.innerHTML='<p class="text-sm text-red-500">Enter valid values.</p>';return}
+        const bmr=HealthEngine.bmrMifflin(sex,w,h,age);
+        const mult=HealthEngine.ACTIVITY_LEVELS[actIdx].multiplier;
+        const tdee=HealthEngine.tdee(bmr,mult);
+        const targets=HealthEngine.calorieTargets(tdee);
+        el.innerHTML=`<div class="solution-box text-center"><div class="tdee-result">${fmt(tdee)} <span class="text-sm text-gray-400 font-normal">kcal/day</span></div><div class="text-xs text-gray-400 mt-1">BMR: ${fmt(bmr)} × ${HealthEngine.ACTIVITY_LEVELS[actIdx].label}</div></div>`;
+        tg.innerHTML=`<div class="flex gap-3"><div class="target-card cut"><div class="text-xs text-gray-400">🔻 Cut</div><div class="val" style="color:#ef4444">${fmt(targets.cut)}</div><div class="text-xs text-gray-400">kcal</div></div><div class="target-card maintain"><div class="text-xs text-gray-400">✅ Maintain</div><div class="val" style="color:#77d202">${fmt(targets.maintain)}</div><div class="text-xs text-gray-400">kcal</div></div><div class="target-card bulk"><div class="text-xs text-gray-400">🔺 Bulk</div><div class="val" style="color:#3b82f6">${fmt(targets.bulk)}</div><div class="text-xs text-gray-400">kcal</div></div></div>`;
+        CalcStorage.addHistory(CALC.id,{expression:`TDEE: ${sex}, ${age}yr, ${w}kg, ${HealthEngine.ACTIVITY_LEVELS[actIdx].label}`,result:`${fmt(tdee)} kcal/day`});
+      }
+
+      document.getElementById('btn-calc-tdee').addEventListener('click',calcTDEE);
+      calcTDEE();
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>

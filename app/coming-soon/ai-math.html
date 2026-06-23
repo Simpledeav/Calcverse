@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Math Solver — Coming Soon · CalcVerse</title>
+  <meta name="description" content="CalcVerse AI Math Solver — natural language math problem solving, coming soon." />
+  <meta name="theme-color" content="#77d202" />
+  <script>
+    (function() {
+      const theme = localStorage.getItem('cv-theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" as="style" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>
+    .ai-card {
+      background: var(--bg-surface);
+      border: 2px solid rgba(119, 210, 2, 0.2);
+      border-radius: 20px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    .dark .ai-card { background: #0f1010; border-color: rgba(119, 210, 2, 0.2); }
+    .ai-card:hover { border-color: rgba(119, 210, 2, 0.4); }
+    .sparkle { position: absolute; font-size: 1.5rem; opacity: 0.3; animation: float 6s ease-in-out infinite; }
+    .sparkle:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+    .sparkle:nth-child(2) { top: 20%; right: 15%; animation-delay: 1.5s; }
+    .sparkle:nth-child(3) { bottom: 15%; left: 20%; animation-delay: 3s; }
+    .sparkle:nth-child(4) { bottom: 25%; right: 10%; animation-delay: 4.5s; }
+    @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; } 50% { transform: translateY(-10px) rotate(15deg); opacity: 0.6; } }
+    .demo-input {
+      width: 100%;
+      padding: 16px 20px;
+      border-radius: 14px;
+      border: 1px solid;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .dark .demo-input { background: #000; border-color: #2a2e2e; color: #f3f5f6; }
+    .demo-input:focus { outline: none; border-color: #77d202; box-shadow: 0 0 0 3px rgba(119,210,2,0.15); }
+    .demo-output {
+      border-radius: 12px;
+      padding: 20px;
+      background: rgba(119,210,2,0.04);
+      border: 1px solid rgba(119,210,2,0.12);
+      min-height: 80px;
+      position: relative;
+    }
+    .demo-output .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background: #77d202;
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (max-width: 640px) { .feature-grid { grid-template-columns: 1fr; } }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid;
+      background: var(--bg-base);
+      transition: all 0.2s;
+    }
+    .dark .feature-item { background: #000; border-color: #2a2e2e; }
+    .feature-item:hover { border-color: #77d202; background: rgba(119,210,2,0.03); }
+    .feature-item .icon { font-size: 1.5rem; }
+    .feature-item .text h4 { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .feature-item .text p { font-size: 0.75rem; color: #8e9aab; }
+  </style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-between px-6 h-16">
+        <nav class="breadcrumb text-sm text-gray-400" aria-label="Breadcrumb">
+          <a href="/app/dashboard.html" class="hover:text-primary transition-colors">Dashboard</a>
+          <span class="mx-1.5">/</span>
+          <span class="text-gray-600 dark:text-gray-300 font-medium">AI Math Solver</span>
+        </nav>
+        <div class="flex items-center gap-2">
+          <button class="btn-icon" id="theme-toggle-page" aria-label="Toggle theme">
+            <span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    <div class="p-6 flex items-center justify-center min-h-[calc(100vh-80px)]">
+      <div class="w-full max-w-2xl">
+        <div class="ai-card">
+          <!-- Floating sparkles -->
+          <span class="sparkle">✨</span>
+          <span class="sparkle">⚡</span>
+          <span class="sparkle">🤖</span>
+          <span class="sparkle">🧠</span>
+
+          <div class="text-center mb-8 relative z-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-semibold mb-4">
+              <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+              Coming Soon
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-3">AI Math Solver</h1>
+            <p class="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
+              Type any math problem in plain English and get instant step-by-step solutions.
+            </p>
+          </div>
+
+          <!-- Demo input -->
+          <div class="mb-4 relative z-10">
+            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2" for="demo-question">Try a demo</label>
+            <div class="relative">
+              <input type="text" id="demo-question" class="demo-input pr-24" placeholder='e.g. "What is 15% tip on a $127 dinner split between 4 people?"' />
+              <button class="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors" id="btn-demo-ask">Solve →</button>
+            </div>
+          </div>
+
+          <!-- Demo output area -->
+          <div class="demo-output z-10 relative" id="demo-output">
+            <div class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">AI Solution</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400" id="demo-text">
+              Ask a math question above to see a preview of how the AI solver will work.<span class="cursor"></span>
+            </div>
+          </div>
+
+          <!-- Feature grid -->
+          <div class="feature-grid mt-6 z-10 relative">
+            <div class="feature-item"><span class="icon">💬</span><div class="text"><h4>Natural Language</h4><p>Ask questions in plain English — no formulas needed</p></div></div>
+            <div class="feature-item"><span class="icon">📝</span><div class="text"><h4>Step-by-Step</h4><p>See the full solution broken down into clear steps</p></div></div>
+            <div class="feature-item"><span class="icon">📈</span><div class="text"><h4>Graph Generation</h4><p>Describe a function and get an instant graph</p></div></div>
+            <div class="feature-item"><span class="icon">🎯</span><div class="text"><h4>Word Problems</h4><p>Extract equations from real-world scenarios</p></div></div>
+          </div>
+
+          <!-- Bottom CTA -->
+          <div class="mt-8 text-center z-10 relative">
+            <p class="text-xs text-gray-500 mb-4">We're building something amazing. Be the first to know when it launches.</p>
+            <div class="flex gap-2 max-w-sm mx-auto">
+              <input type="email" placeholder="your@email.com" class="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border-0 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" id="notify-email" aria-label="Email for AI waitlist" />
+              <button class="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:shadow-glow transition-shadow" id="btn-notify">Notify Me</button>
+            </div>
+            <p class="text-xs text-gray-500 mt-3">Meanwhile, explore our <a href="/app/dashboard.html" class="text-primary hover:underline">64 live calculators</a>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = new CalcVerseSidebar('#sidebar-container', { collapsed: window.innerWidth < 1024 });
+      window.calcSidebar = sidebar;
+      document.getElementById('theme-toggle-page')?.addEventListener('click', () => themeEngine.toggle());
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click', () => { window.innerWidth < 768 ? sidebar.show() : sidebar.toggle(); });
+
+      const demoResponses = {
+        'tip': '🍕 15% of $127 = $19.05\nTotal with tip: $146.05\nSplit 4 ways: $36.51 per person',
+        'quadratic': '📐 Solving x² − 5x + 6 = 0:\nStep 1: Factor: (x − 2)(x − 3) = 0\nStep 2: x − 2 = 0 → x = 2\nStep 3: x − 3 = 0 → x = 3\n✅ Solutions: x = 2, x = 3',
+        'compound': '📈 $10,000 at 7% compounded annually for 10 years:\nA = P(1 + r)ⁿ\nA = $10,000(1 + 0.07)¹⁰\nA = $10,000 × 1.96715\n✅ Final amount: $19,671.51',
+        'default': '🤔 Interesting problem! Our AI solver is being trained to handle this type of question.\n\nWhile you wait, try one of our existing calculators:\n→ /app/math/algebra.html — Algebra Solver\n→ /app/finance/loan.html — Loan Calculator\n→ /app/math/statistics.html — Statistics'
+      };
+
+      document.getElementById('btn-demo-ask')?.addEventListener('click', function() {
+        const q = document.getElementById('demo-question').value.toLowerCase();
+        const output = document.getElementById('demo-text');
+        let response;
+        if (q.includes('tip') || q.includes('split') || q.includes('dinner') || q.includes('bill')) response = demoResponses.tip;
+        else if (q.includes('quadratic') || q.includes('equation') || q.includes('x²') || q.includes('solve')) response = demoResponses.quadratic;
+        else if (q.includes('compound') || q.includes('interest') || q.includes('investment') || q.includes('growth')) response = demoResponses.compound;
+        else response = demoResponses.default;
+        output.textContent = response + '\n\n';
+        // Add cursor back
+        const cursor = document.createElement('span');
+        cursor.className = 'cursor';
+        output.appendChild(cursor);
+        Toast.show('✨ Demo AI response generated!', 'success');
+        CalcStorage.addHistory('ai-math', { expression: q.slice(0, 50) + '...', result: 'AI preview', timestamp: Date.now() });
+      });
+
+      document.getElementById('demo-question')?.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('btn-demo-ask').click();
+      });
+
+      document.getElementById('btn-notify')?.addEventListener('click', function() {
+        const email = document.getElementById('notify-email').value.trim();
+        if (email && email.includes('@')) {
+          Toast.show('📩 Thanks! We\'ll notify you when AI launches.', 'success');
+          document.getElementById('notify-email').value = '';
+        } else {
+          Toast.show('Please enter a valid email address', 'error');
+        }
+      });
+
+      // Typewriter effect on load
+      const demoText = document.getElementById('demo-text');
+      const typewriterText = 'Ask a math question above to see a preview of how the AI solver will work.';
+      let charIdx = 0;
+      function typewriter() {
+        if (charIdx <= typewriterText.length) {
+          const cursor = demoText.querySelector('.cursor');
+          if (cursor) cursor.remove();
+          demoText.textContent = typewriterText.slice(0, charIdx);
+          const newCursor = document.createElement('span');
+          newCursor.className = 'cursor';
+          demoText.appendChild(newCursor);
+          charIdx++;
+          setTimeout(typewriter, 25);
+        }
+      }
+      setTimeout(typewriter, 500);
+      CalcStorage.recordVisit('ai-math', 'AI Math Solver');
+    });
+  </script>
+</body>
+</html>

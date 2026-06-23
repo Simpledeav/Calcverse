@@ -24,11 +24,7 @@ module.exports = {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Courier New', 'monospace'],
       },
-      backgroundImage: {
-        'brand-gradient': 'linear-gradient(135deg, #77d202 0%, #3a6b00 50%, #000000 100%)',
-        'brand-gradient-h': 'linear-gradient(90deg, #77d202, #000000)',
-        'brand-gradient-v': 'linear-gradient(180deg, #77d202, #000000)',
-      },
+      /* Gradients removed — using solid primary color #77d202 only */
       boxShadow: {
         'glow': '0 0 20px rgba(119, 210, 2, 0.25)',
         'glow-lg': '0 0 40px rgba(119, 210, 2, 0.35)',
@@ -38,6 +34,8 @@ module.exports = {
         'slide-up': 'slideUp 0.4s ease-out',
         'key-press': 'keyPress 0.1s ease-in-out',
         'pulse-glow': 'pulseGlow 2s infinite',
+        'blink': 'blink 1s step-end infinite',
+
       },
       keyframes: {
         fadeIn: {
@@ -57,6 +55,11 @@ module.exports = {
           '0%, 100%': { boxShadow: '0 0 20px rgba(119, 210, 2, 0.25)' },
           '50%': { boxShadow: '0 0 40px rgba(119, 210, 2, 0.45)' },
         },
+        blink: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0' },
+        },
+
       },
     },
   },

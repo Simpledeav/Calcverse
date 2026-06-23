@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hex Color Converter — CalcVerse</title>
+  <meta name="description" content="Convert colors between HEX, RGB, HSL, and HSV formats. Live color swatch preview and WCAG contrast ratio checker." />
+  <script>(function(){const t=localStorage.getItem('cv-theme')||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.classList.toggle('dark',t==='dark')})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/main.css" />
+  <link rel="stylesheet" href="/assets/css/calculator.css" />
+  <link rel="stylesheet" href="/assets/css/themes.css" />
+  <link href="/assets/css/output.css" rel="stylesheet" />
+  <style>.color-swatch{width:100%;height:80px;border-radius:12px;border:1px solid theme('colors.gray.200');transition:background .2s}.dark .color-swatch{border-color:theme('colors.gray.700')}.hex-result{font-size:1.5rem;font-weight:700;font-family:'JetBrains Mono',monospace}.hex-preset{width:28px;height:28px;border-radius:6px;border:1px solid theme('colors.gray.300');cursor:pointer;transition:all .1s}.hex-preset:hover{transform:scale(1.15);border-color:theme('colors.primary.DEFAULT')}.hex-preset.selected{border-color:theme('colors.primary.DEFAULT');box-shadow:0 0 8px rgba(119,210,2,.4)}.contrast-box{padding:12px;border-radius:8px;text-align:center;font-weight:600;font-size:14px}.contrast-box.pass{border:1px solid #77d202;background:#77d20210}.contrast-box.fail{border:1px solid #ef4444;background:#ef444410}</style>
+</head>
+<body>
+  <div id="sidebar-container"></div>
+  <button id="mobile-menu-toggle" class="fixed top-4 left-4 z-50 btn-icon lg:hidden" aria-label="Toggle menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <main class="ml-0 md:ml-16 lg:ml-64 transition-all duration-300 ease-out min-h-screen" id="main-content">
+    <header class="sticky top-0 z-20 glass border-b border-gray-200 dark:border-gray-800">
+      <div class="flex items-center justify-end px-6 h-16 gap-2">
+        <button class="btn-icon" id="btn-keyboard-help" title="Keyboard shortcuts"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg></button>
+        <button class="btn-icon" id="theme-toggle-calc" aria-label="Toggle theme"><span class="dark:hidden">🌙</span><span class="hidden dark:inline">☀️</span></button>
+      </div>
+    </header>
+    <div class="calc-page" id="calc-app">
+      <nav class="breadcrumb"><a href="/app/dashboard.html">Dashboard</a><span class="breadcrumb-separator">/</span><a href="/app/dashboard.html" id="breadcrumb-category">Engineering</a><span class="breadcrumb-separator">/</span><span id="breadcrumb-name">Hex Color Converter</span></nav>
+      <div class="calc-header">
+        <div>
+          <span class="calc-category-badge">Engineering</span>
+          <h1 class="calc-title">Hex Color Converter</h1>
+          <p class="calc-description" id="calc-desc">Convert colors between HEX, RGB, HSL, and HSV formats with live preview, presets, and contrast ratio checking.</p>
+        </div>
+        <div class="calc-actions">
+          <button class="btn-ghost" id="btn-favorite" data-calc-id="eng-hex"><span>☆</span> <span class="hidden sm:inline">Favorite</span></button>
+          <button class="btn-ghost" id="btn-share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="hidden sm:inline">Share</span></button>
+          <button class="btn-ghost" id="btn-formula"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span class="hidden sm:inline">Formula</span></button>
+        </div>
+      </div>
+      <div class="calc-body" id="calc-body">
+        <div class="calc-display-panel" id="calc-left">
+          <div class="color-swatch" id="color-swatch" style="background:#77d202"></div>
+          <div class="input-group mt-4"><label class="input-label" for="hex-input">HEX</label><input type="text" class="input-field font-mono" id="hex-input" value="#77d202" placeholder="#RRGGBB" /></div>
+          <div class="grid grid-cols-3 gap-2 mt-4">
+            <div class="input-group"><label class="input-label" for="rgb-r">R</label><input type="number" class="input-field" id="rgb-r" value="119" min="0" max="255" /></div>
+            <div class="input-group"><label class="input-label" for="rgb-g">G</label><input type="number" class="input-field" id="rgb-g" value="210" min="0" max="255" /></div>
+            <div class="input-group"><label class="input-label" for="rgb-b">B</label><input type="number" class="input-field" id="rgb-b" value="2" min="0" max="255" /></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-2">
+            <div class="input-group"><label class="input-label" for="hsl-h">H</label><input type="number" class="input-field" id="hsl-h" value="110" min="0" max="360" step="1" /></div>
+            <div class="input-group"><label class="input-label" for="hsl-s">S%</label><input type="number" class="input-field" id="hsl-s" value="98" min="0" max="100" /></div>
+            <div class="input-group"><label class="input-label" for="hsl-l">L%</label><input type="number" class="input-field" id="hsl-l" value="42" min="0" max="100" /></div>
+          </div>
+          <div class="flex gap-2 mt-2 overflow-x-auto pb-2" id="color-presets"></div>
+          <div id="hex-result" class="mt-4"></div>
+        </div>
+        <div class="calc-form-box" id="calc-right">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Contrast Checker</h3>
+          <div id="contrast-checker"><p class="text-sm text-gray-400 italic">Enter a foreground and background color.</p></div>
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <div class="input-group"><label class="input-label" for="fg-color">Foreground</label><input type="text" class="input-field font-mono text-xs" id="fg-color" value="#000000" /></div>
+            <div class="input-group"><label class="input-label" for="bg-color">Background</label><input type="text" class="input-field font-mono text-xs" id="bg-color" value="#ffffff" /></div>
+          </div>
+          <button class="btn-primary w-full mt-2" id="btn-check-contrast">Check Contrast</button>
+          <div id="contrast-result" class="mt-2"></div>
+          <div id="calc-results" class="mt-4"></div>
+        </div>
+      </div>
+      <details class="calc-formula-box">
+        <summary>How it's calculated</summary>
+        <div class="formula-content"><p class="text-gray-500 dark:text-gray-400">Standard RGB↔HSL/HSV conversion. Contrast ratio per WCAG 2.1: ≥4.5:1 for normal text AA, ≥3:1 for large text AA, ≥7:1 for AAA.</p></div>
+      </details>
+      <div class="related-calcs"><h3>Related Calculators</h3><div class="flex gap-4 overflow-x-auto pb-2 scrollbar-none" id="related-list"></div></div>
+    </div>
+  </main>
+  <script src="/assets/js/core/storage.js"></script>
+  <script src="/assets/js/core/theme.js"></script>
+  <script src="/assets/js/core/search.js"></script>
+  <script src="/assets/js/core/router.js"></script>
+  <script src="/assets/js/components/sidebar.js"></script>
+  <script src="/assets/js/components/toast.js"></script>
+  <script src="/assets/js/components/modal.js"></script>
+  <script src="/assets/js/engines/math-engine.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',function(){
+      const sidebar=new CalcVerseSidebar('#sidebar-container',{collapsed:window.innerWidth<1024});window.calcSidebar=sidebar;
+      window.themeEngine=themeEngine;document.getElementById('theme-toggle-calc')?.addEventListener('click',()=>themeEngine.toggle());
+      const CALC={id:'eng-hex',name:'Hex Color Converter',category:'Engineering',categoryPath:'/app/dashboard.html',description:'Convert colors between HEX, RGB, HSL, and HSV.',icon:'#',related:[{id:'eng-binary',name:'Binary',icon:'01',category:'Engineering',path:'/app/engineering/binary.html'},{id:'eng-unit',name:'Unit Converter',icon:'📐',category:'Engineering',path:'/app/engineering/unit-converter.html'},{id:'sci-wavelength',name:'Wavelength',icon:'〰️',category:'Science',path:'/app/science/wavelength.html'}]};
+      document.getElementById('breadcrumb-category').textContent=CALC.category;document.getElementById('breadcrumb-category').href=CALC.categoryPath;document.getElementById('breadcrumb-name').textContent=CALC.name;document.getElementById('btn-favorite').dataset.calcId=CALC.id;document.title=CALC.name+' — CalcVerse';document.querySelector('meta[name="description"]').content=CALC.description;sidebar.setActive(CALC.id);CalcStorage.recordVisit(CALC.id,CALC.name);
+      const favBtn=document.getElementById('btn-favorite');function ufb(){const f=CalcStorage.isFavorite(CALC.id);favBtn.innerHTML=f?'<span>★</span> <span class="hidden sm:inline">Favorited</span>':'<span>☆</span> <span class="hidden sm:inline">Favorite</span>';favBtn.classList.toggle('text-primary',f)}
+      favBtn?.addEventListener('click',()=>{CalcStorage.toggleFavorite(CALC.id);ufb();Toast.show(CalcStorage.isFavorite(CALC.id)?'Added to favorites ⭐':'Removed from favorites',CalcStorage.isFavorite(CALC.id)?'success':'info')});ufb();document.addEventListener('cv:favorites-update',ufb);
+      document.getElementById('btn-share')?.addEventListener('click',()=>{if(navigator.share)navigator.share({title:CALC.name,text:CALC.description,url:window.location.href});else{navigator.clipboard.writeText(window.location.href);Toast.show('Link copied!','success')}});
+      document.getElementById('btn-formula')?.addEventListener('click',()=>Modal.showFormula(CALC.name,'Color conversion between standard color models.',CALC.description,{'HEX':'#RRGGBB','RGB':'0-255','HSL':'Hue/Staturation/Lightness','HSV':'Hue/Sat/Value'}));
+      document.getElementById('btn-keyboard-help')?.addEventListener('click',()=>Modal.show({title:'⌨️ Shortcuts',content:'<p class="text-sm text-gray-500">Type a hex color or adjust RGB/HSL values. Click presets to test colors.</p>'}));
+      document.getElementById('mobile-menu-toggle')?.addEventListener('click',()=>{window.innerWidth<768?sidebar.show():sidebar.toggle()});
+      let rT;window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(()=>{window.innerWidth<1024?sidebar.collapse():sidebar.expand()},150)});
+
+      function hexToRgb(hex){
+        const m=hex.replace('#','').match(/^([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/);
+        if(!m)return null;
+        return{r:parseInt(m[1],16),g:parseInt(m[2],16),b:parseInt(m[3],16)};
+      }
+
+      function rgbToHex(r,g,b){
+        return '#'+[r,g,b].map(c=>Math.max(0,Math.min(255,Math.round(c))).toString(16).padStart(2,'0')).join('').toLowerCase();
+      }
+
+      function rgbToHsl(r,g,b){
+        r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b);
+        let h=0,s=0,l=(max+min)/2;
+        if(max!==min){
+          const d=max-min;s=l>0.5?d/(2-max-min):d/(max+min);
+          if(max===r)h=((g-b)/d+(g<b?6:0))/6;
+          else if(max===g)h=((b-r)/d+2)/6;
+          else h=((r-g)/d+4)/6;
+        }
+        return{h:Math.round(h*360),s:Math.round(s*100),l:Math.round(l*100)};
+      }
+
+      function hslToRgb(h,s,l){
+        h/=360;s/=100;l/=100;
+        const fn=n=>{const k=(n+h*12)%12;const a=s*Math.min(l,1-l);return l-a*Math.max(-1,Math.min(k-3,9-k,1))};
+        return{r:Math.round(255*fn(0)),g:Math.round(255*fn(8)),b:Math.round(255*fn(4))};
+      }
+
+      function rgbToHsv(r,g,b){
+        r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b);
+        let h=0,s=max===0?0:(max-min)/max,v=max;
+        if(max!==min){
+          const d=max-min;
+          if(max===r)h=((g-b)/d+(g<b?6:0))/6;
+          else if(max===g)h=((b-r)/d+2)/6;
+          else h=((r-g)/d+4)/6;
+        }
+        return{h:Math.round(h*360),s:Math.round(s*100),v:Math.round(v*100)};
+      }
+
+      let updating=false;
+
+      function updateFromHex(hex){
+        if(updating)return;updating=true;
+        const rgb=hexToRgb(hex);if(!rgb){updating=false;return}
+        document.getElementById('hex-input').value=hex;
+        document.getElementById('rgb-r').value=rgb.r;
+        document.getElementById('rgb-g').value=rgb.g;
+        document.getElementById('rgb-b').value=rgb.b;
+        document.getElementById('color-swatch').style.background=hex;
+        const hsl=rgbToHsl(rgb.r,rgb.g,rgb.b);
+        document.getElementById('hsl-h').value=hsl.h;
+        document.getElementById('hsl-s').value=hsl.s;
+        document.getElementById('hsl-l').value=hsl.l;
+        const hsv=rgbToHsv(rgb.r,rgb.g,rgb.b);
+        document.getElementById('hex-result').innerHTML=`<div class="solution-box"><div class="hex-result">${hex}</div><div class="grid grid-cols-2 gap-2 mt-2 text-sm">${[
+          ['RGB',`rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`],['HSL',`hsl(${hsl.h}°, ${hsl.s}%, ${hsl.l}%)`],
+          ['HSV',`hsv(${hsv.h}°, ${hsv.s}%, ${hsv.v}%)`],['Hex',hex],
+        ].map(([k,v])=>`<div class="p-2 rounded-lg bg-gray-50 dark:bg-black/30"><span class="text-xs text-gray-400">${k}</span><div class="font-mono font-semibold text-sm">${v}</div></div>`).join('')}</div></div>`;
+        updating=false;
+      }
+
+      document.getElementById('hex-input').addEventListener('input',function(){
+        let v=this.value.trim();if(v[0]!=='#')v='#'+v;
+        if(/^#[0-9a-fA-F]{6}$/.test(v))updateFromHex(v.toLowerCase());
+      });
+
+      document.querySelectorAll('#rgb-r,#rgb-g,#rgb-b').forEach(inp=>{
+        inp.addEventListener('input',()=>{
+          const r=parseInt(document.getElementById('rgb-r').value)||0;
+          const g=parseInt(document.getElementById('rgb-g').value)||0;
+          const b=parseInt(document.getElementById('rgb-b').value)||0;
+          updateFromHex(rgbToHex(r,g,b));
+        });
+      });
+
+      document.querySelectorAll('#hsl-h,#hsl-s,#hsl-l').forEach(inp=>{
+        inp.addEventListener('input',()=>{
+          const h=parseInt(document.getElementById('hsl-h').value)||0;
+          const s=parseInt(document.getElementById('hsl-s').value)||0;
+          const l=parseInt(document.getElementById('hsl-l').value)||0;
+          const rgb=hslToRgb(h,s,l);
+          updateFromHex(rgbToHex(rgb.r,rgb.g,rgb.b));
+        });
+      });
+
+      // Color presets
+      const presets=['#77d202','#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff','#000000','#ffffff','#ff8c00','#8a2be2','#ff69b4','#808080','#c0c0c0','#8b4513'];
+      const pc=document.getElementById('color-presets');
+      presets.forEach(c=>{
+        const d=document.createElement('div');d.className='hex-preset';d.style.background=c;
+        d.addEventListener('click',()=>updateFromHex(c));
+        pc.appendChild(d);
+      });
+
+      // Contrast checker
+      document.getElementById('btn-check-contrast').addEventListener('click',()=>{
+        const fg=document.getElementById('fg-color').value.trim();
+        const bg=document.getElementById('bg-color').value.trim();
+        const el=document.getElementById('contrast-result');
+        const fgRgb=hexToRgb(fg);const bgRgb=hexToRgb(bg);
+        if(!fgRgb||!bgRgb){el.innerHTML='<p class="text-sm text-red-500">Invalid hex color.</p>';return}
+        const luminance=(r,g,b)=>{const [R,G,B]=[r/255,g/255,b/255].map(c=>c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4));return 0.2126*R+0.7152*G+0.0722*B};
+        const l1=luminance(fgRgb.r,fgRgb.g,fgRgb.b);
+        const l2=luminance(bgRgb.r,bgRgb.g,bgRgb.b);
+        const ratio=(Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05);
+        const aa=(ratio>=4.5);const aaLarge=(ratio>=3);const aaa=(ratio>=7);const aaaLarge=(ratio>=4.5);
+        el.innerHTML=`<div class="text-center"><div class="hex-result">${ratio.toFixed(2)}:1</div><div class="space-y-1 mt-2">${[
+          [aa,'AA (normal text)'],['',''],
+          [aaa,'AAA (normal text)'],['',''],
+        ].filter(x=>x[1]).map(([p,t])=>`<div class="contrast-box ${p?'pass':'fail'}">${p?'✅':'❌'} WCAG ${t}</div>`).join('')}</div></div>`;
+      });
+
+      updateFromHex('#77d202');
+
+      const rl=document.getElementById('related-list');rl.innerHTML=CALC.related.map(r=>`<a href="${r.path}" class="card-hover p-4 min-w-[160px] shrink-0"><div class="text-xl mb-1">${r.icon||'🔢'}</div><h4 class="font-semibold text-sm text-gray-900 dark:text-gray-100">${r.name}</h4><p class="text-xs text-gray-400 mt-0.5">${r.category}</p></a>`).join('');
+    });
+  </script>
+</body>
+</html>
